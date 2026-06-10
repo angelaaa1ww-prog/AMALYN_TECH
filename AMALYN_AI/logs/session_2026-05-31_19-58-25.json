@@ -1,0 +1,10 @@
+{
+    "session_start": "2026-05-31T19:58:25.784421",
+    "session_end": "2026-05-31T20:27:00.191184",
+    "total_events": 134331,
+    "events": [
+        {
+            "timestamp": "2026-05-31T19:58:26.943337",
+            "status": "CRITICAL",
+            "frequency_hz": 775.2,
+            "magnitude_db": 

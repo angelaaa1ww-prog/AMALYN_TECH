@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AMALYN TECH</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    background:#05050a;
+    color:#fff;
+    font-family:'Segoe UI',sans-serif;
+    height:100vh;
+    overflow:hidden;
+    user-select:none;
+}
+.bar{
+    height:42px;
+    background:#08080f;
+    border-bottom:1px solid #0f0f1a;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+}
+.logo{
+    font-size:14px;
+    font-weight:900;
+    letter-spacing:5px;
+    color:#00ff88;
+    text-shadow:0 0 30px #00ff8844;
+}
+.tagline{font-size:9px;color:#222;letter-spacing:2px;margin-left:12px}
+.conn{font-size:9px;letter-spacing:2px;color:#222;text-transform:uppercase}
+.conn.ok{color:#00ff88}
+.conn.err{color:#ff3333;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.app{display:flex;height:calc(100vh - 42px)}
+.left{
+    width:190px;min-width:190px;
+    background:#08080f;
+    border-right:1px solid #0f0f1a;
+    padding:14px;
+    display:flex;flex-direction:column;gap:10px;
+}
+.sec{font-size:8px;letter-spacing:2px;color:#222;text-transform:uppercase;margin-bottom:4px}
+.badge{
+    background:#0c0c18;border:1px solid #151525;
+    border-radius:6px;padding:12px;
+    display:flex;align-items:center;gap:10px;
+}
+.dot{
+    width:9px;height:9px;border-radius:50%;
+    background:#00ff88;box-shadow:0 0 12px #00ff88;
+    flex-shrink:0;transition:background .05s,box-shadow .05s;
+}
+.slbl{font-size:12px;font-weight:800;letter-spacing:2px;color:#00ff88;transition:color .05s}
+.card{background:#0c0c18;border:1px solid #151525;border-radius:6px;padding:11px;}
+.r{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:4px 0;border-bottom:1px solid #0f0f1a;
+}
+.r:last-child{border-bottom:none}
+.rk{font-size:9px;color:#333}
+.rv{font-size:10px;color:#999;font-weight:700;font-variant-numeric:tabular-nums}
+.g{color:#00ff88}.w{color:#ffaa00}.c{color:#ff3333}
+.center{
+    flex:1;display:flex;flex-direction:column;
+    background:#05050a;padding:14px;gap:8px;
+}
+.wrap{
+    flex:1;position:relative;
+    border-radius:6px;overflow:hidden;
+    border:1px solid #0f0f1a;
+}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
+.ov{position:absolute;top:10px;left:12px;pointer-events:none;}
+.ov-s{
+    font-size:12px;font-weight:800;
+    color:#00ff88;letter-spacing:2px;
+    transition:color .05s;
+}
+.ov-f{font-size:9px;color:#333;margin-top:3px;font-variant-numeric:tabular-nums}
+.dbl{
+    position:absolute;right:6px;top:0;height:100%;
+    display:flex;flex-direction:column;
+    justify-content:space-between;padding:4px 0;pointer-events:none;
+}
+.dbl span{font-size:8px;color:#1a1a2a;text-align:right}
+.fbar{display:flex;justify-content:space-between;padding:0 2px;}
+.fbar span{font-size:8px;color:#252525}
+.right{
+    width:230px;min-width:230px;
+    background:#08080f;
+    border-left:1px solid #0f0f1a;
+    padding:14px;
+    display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;
+}
+.eq-card{
+    background:#0c0c18;border:1px solid #151525;
+    border-radius:6px;padding:14px;
+    min-height:200px;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+}
+.eq-none{font-size:10px;color:#1a1a2a;text-align:center;letter-spacing:1px}
+.eq-body{width:100%;display:none}
+.eq-hz{
+    font-size:40px;font-weight:900;
+    color:#ff3333;text-align:center;
+    text-shadow:0 0 30px #ff333333;
+    font-variant-numeric:tabular-nums;
+    line-height:1;transition:all .05s;
+}
+.eq-unit{font-size:9px;color:#333;text-align:center;letter-spacing:3px;margin-bottom:12px;margin-top:2px}
+.eq-cut{
+    font-size:26px;font-weight:800;
+    color:#ffaa00;text-align:center;
+    margin-bottom:2px;
+}
+.eq-cutl{font-size:8px;color:#333;text-align:center;letter-spacing:2px;margin-bottom:12px}
+.eq-div{height:1px;background:#151525;margin-bottom:10px}
+.log-card{
+    background:#0c0c18;border:1px solid #151525;
+    border-radius:6px;padding:11px;flex:1;
+    display:flex;flex-direction:column;
+}
+.log-list{flex:1;overflow-y:auto;max-height:240px}
+.li{
+    font-size:8px;padding:4px 0;
+    border-bottom:1px solid #0f0f1a;
+    color:#222;font-variant-numeric:tabular-nums;
+}
+.li:last-child{border-bottom:none}
+.li.w{color:#ffaa0088}
+.li.c{color:#ff333388}
+::-webkit-scrollbar{width:2px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1a1a2a;border-radius:1px}
+</style>
+</head>
+<body>
+
+<div class="bar">
+    <div style="display:flex;align-items:center">
+        <span class="logo">AMALYN TECH</span>
+        <span class="tagline">AI AUDIO INTELLIGENCE</span>
+    </div>
+    <span class="conn" id="conn">● CONNECTING</span>
+</div>
+
+<div class="app">
+
+<div class="left">
+    <div>
+        <div class="sec">Status</div>
+        <div class="badge">
+            <div class="dot" id="dot"></div>
+            <div class="slbl" id="slbl">LISTENING</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="sec">Signal</div>
+        <div class="r"><span class="rk">Dominant</span><span class="rv g" id="domf">--</span></div>
+        <div class="r"><span class="rk">Magnitude</span><span class="rv" id="domm">--</span></div>
+        <div class="r"><span class="rk">Rate</span><span class="rv">44.1 kHz</span></div>
+        <div class="r"><span class="rk">Depth</span><span class="rv">16-bit</span></div>
+        <div class="r"><span class="rk">Channels</span><span class="rv">Mono</span></div>
+    </div>
+    <div class="card">
+        <div class="sec">Session</div>
+        <div class="r"><span class="rk">Warnings</span><span class="rv w" id="wc">0</span></div>
+        <div class="r"><span class="rk">Criticals</span><span class="rv c" id="cc">0</span></div>
+        <div class="r"><span class="rk">Corrections</span><span class="rv g" id="mc">0</span></div>
+        <div class="r"><span class="rk">Uptime</span><span class="rv" id="upt">00:00</span></div>
+    </div>
+    <div class="card">
+        <div class="sec">Mixer</div>
+        <div class="r"><span class="rk">Mode</span><span class="rv g">Simulator</span></div>
+        <div class="r"><span class="rk">Channel</span><span class="rv">01</span></div>
+        <div class="r"><span class="rk">Last Fix</span><span class="rv g" id="mlf">--</span></div>
+        <div class="r"><span class="rk">Protocol</span><span class="rv">OSC</span></div>
+    </div>
+</div>
+
+<div class="center">
+    <div class="sec">Live Spectrum Analyzer</div>
+    <div class="wrap">
+        <canvas id="cv"></canvas>
+        <div class="ov">
+            <div class="ov-s" id="ovs">● CLEAN</div>
+            <div class="ov-f" id="ovf">Listening to your room...</div>
+        </div>
+        <div class="dbl">
+            <span>0</span><span>-10</span><span>-20</span><span>-30</span>
+            <span>-40</span><span>-50</span><span>-60</span><span>-70</span><span>-80</span>
+        </div>
+    </div>
+    <div class="fbar">
+        <span>20</span><span>31</span><span>63</span><span>125</span><span>250</span>
+        <span>500</span><span>1k</span><span>2k</span><span>4k</span><span>8k</span>
+        <span>16k</span><span>20k</span>
+    </div>
+</div>
+
+<div class="right">
+    <div>
+        <div class="sec">EQ Suggestion</div>
+        <div class="eq-card">
+            <div class="eq-none" id="eqn">No issues detected</div>
+            <div class="eq-body" id="eqb">
+                <div class="eq-hz" id="eqhz">--</div>
+                <div class="eq-unit">FREQUENCY (Hz)</div>
+                <div class="eq-cut" id="eqcut">--</div>
+                <div class="eq-cutl">RECOMMENDED CUT</div>
+                <div class="eq-div"></div>
+                <div class="r"><span class="rk">Band</span><span class="rv" id="eqband">--</span></div>
+                <div class="r"><span class="rk">Problem</span><span class="rv" id="eqprob">--</span></div>
+                <div class="r"><span class="rk">Q Value</span><span class="rv" id="eqq">--</span></div>
+                <div class="r"><span class="rk">Filter</span><span class="rv" id="eqflt">--</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="log-card">
+        <div class="sec">Event Log</div>
+        <div class="log-list" id="log"></div>
+    </div>
+</div>
+
+</div>
+
+<script>
+const cv = document.getElementById('cv')
+const ctx = cv.getContext('2d')
+let W, H, smooth = null
+let wc=0, cc=0, lastStatus='CLEAN'
+let startTime = Date.now()
+const minF = Math.log10(20), maxF = Math.log10(20000)
+
+function resize(){
+    const r = cv.parentElement.getBoundingClientRect()
+    cv.width = W = r.width
+    cv.height = H = r.height
+}
+resize()
+window.addEventListener('resize', resize)
+
+setInterval(()=>{
+    const s = Math.floor((Date.now()-startTime)/1000)
+    document.getElementById('upt').textContent =
+        `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
+}, 1000)
+
+function drawBg(){
+    ctx.fillStyle='#05050a'
+    ctx.fillRect(0,0,W,H)
+    ctx.strokeStyle='#0f0f1a'
+    ctx.lineWidth=1
+    for(let db=-10;db>=-80;db-=10){
+        const y=H-((db+80)/80)*H
+        ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()
+    }
+    ctx.setLineDash([2,6])
+    ctx.strokeStyle='#ffaa0022'
+    const wy=H-(55/80)*H
+    ctx.beginPath();ctx.moveTo(0,wy);ctx.lineTo(W,wy);ctx.stroke()
+    ctx.strokeStyle='#ff333322'
+    const cy=H-(65/80)*H
+    ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke()
+    ctx.setLineDash([])
+}
+
+function draw(freqs, mags, status){
+    if(!freqs||!mags||freqs.length===0) return
+
+    if(!smooth||smooth.length!==mags.length) smooth=[...mags]
+    const a = 0.6
+    for(let i=0;i<mags.length;i++) smooth[i]=smooth[i]*(1-a)+mags[i]*a
+
+    drawBg()
+
+    const col = status==='CRITICAL'?'#ff3333':status==='WARNING'?'#ffaa00':'#00ff88'
+
+    ctx.beginPath()
+    ctx.strokeStyle=col
+    ctx.lineWidth=1.8
+    ctx.shadowBlur=0
+
+    let fx=0, first=true
+    for(let i=0;i<freqs.length;i++){
+        if(freqs[i]<20||freqs[i]>20000) continue
+        const x=((Math.log10(freqs[i])-minF)/(maxF-minF))*W
+        const y=H-((Math.max(smooth[i],-80)+80)/80)*H
+        if(first){ctx.moveTo(x,y);first=false}
+        else ctx.lineTo(x,y)
+        fx=x
+    }
+    ctx.stroke()
+
+    ctx.lineTo(fx,H);ctx.lineTo(0,H);ctx.closePath()
+    const gr=ctx.createLinearGradient(0,0,0,H)
+    gr.addColorStop(0,col+'44')
+    gr.addColorStop(0.5,col+'11')
+    gr.addColorStop(1,col+'00')
+    ctx.fillStyle=gr
+    ctx.fill()
+}
+
+function updateStatus(status, df, dm){
+    const col = status==='CRITICAL'?'#ff3333':status==='WARNING'?'#ffaa00':'#00ff88'
+    document.getElementById('dot').style.background=col
+    document.getElementById('dot').style.boxShadow=`0 0 12px ${col}`
+    document.getElementById('slbl').style.color=col
+    document.getElementById('slbl').textContent=status
+    document.getElementById('ovs').style.color=col
+    document.getElementById('ovs').textContent=
+        status==='CLEAN'?'● CLEAN':
+        status==='WARNING'?`● WARNING — ${df.toFixed(0)}Hz`:
+        `● CRITICAL — ${df.toFixed(0)}Hz`
+
+    if(status==='CRITICAL'&&lastStatus!=='CRITICAL'){
+        cc++;document.getElementById('cc').textContent=cc;addLog('c',df,dm)
+    } else if(status==='WARNING'&&lastStatus!=='WARNING'){
+        wc++;document.getElementById('wc').textContent=wc;addLog('w',df,dm)
+    }
+    lastStatus=status
+}
+
+function showEQ(s){
+    document.getElementById('eqn').style.display='none'
+    document.getElementById('eqb').style.display='block'
+    document.getElementById('eqhz').textContent=s.frequency
+    document.getElementById('eqcut').textContent=`${s.cut_db} dB`
+    document.getElementById('eqband').textContent=s.band_name
+    document.getElementById('eqprob').textContent=s.problem
+    document.getElementById('eqq').textContent=s.q_value
+    document.getElementById('eqflt').textContent=s.filter_type
+}
+function hideEQ(){
+    document.getElementById('eqn').style.display='block'
+    document.getElementById('eqb').style.display='none'
+}
+
+function addLog(type,freq,mag){
+    const list=document.getElementById('log')
+    const t=new Date().toLocaleTimeString()
+    const el=document.createElement('div')
+    el.className=`li ${type}`
+    el.textContent=`${t} — ${type==='c'?'CRITICAL':'WARNING'} ${freq?freq.toFixed(0):'--'}Hz (${mag?mag.toFixed(1):'--'}dB)`
+    list.prepend(el)
+    while(list.children.length>100) list.removeChild(list.lastChild)
+}
+
+function connect(){
+    const ws = new WebSocket('ws://localhost:8000/ws')
+
+    ws.onopen=()=>{
+        document.getElementById('conn').textContent='● CONNECTED'
+        document.getElementById('conn').className='conn ok'
+    }
+
+    ws.onmessage=(e)=>{
+        const d=JSON.parse(e.data)
+        updateStatus(d.status, d.danger_freq||0, d.danger_mag||0)
+
+        if(d.dominant_freq){
+            document.getElementById('domf').textContent=`${d.dominant_freq.toFixed(0)} Hz`
+            document.getElementById('domm').textContent=`${d.dominant_mag.toFixed(1)} dB`
+            document.getElementById('ovf').textContent=
+                `Dominant: ${d.dominant_freq.toFixed(0)}Hz at ${d.dominant_mag.toFixed(1)}dB`
+        }
+
+        if(d.mixer_corrections){
+            const tot=d.mixer_corrections.total_corrections
+            document.getElementById('mc').textContent=tot
+            if(tot>0){
+                const last=d.mixer_corrections.corrections[tot-1]
+                document.getElementById('mlf').textContent=`${last.frequency}Hz`
+            }
+        }
+
+        if(d.suggestion&&d.status!=='CLEAN') showEQ(d.suggestion)
+        else hideEQ()
+
+        draw(d.frequencies, d.magnitudes, d.status)
+    }
+
+    ws.onclose=()=>{
+        document.getElementById('conn').textContent='● RECONNECTING'
+        document.getElementById('conn').className='conn err'
+        drawBg()
+        setTimeout(connect, 1000)
+    }
+
+    ws.onerror=()=>{ ws.close() }
+}
+
+drawBg()
+connect()
+</script>
+</body>
+</html>
