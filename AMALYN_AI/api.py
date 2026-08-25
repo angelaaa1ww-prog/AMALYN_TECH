@@ -1,11 +1,11 @@
 import pyaudio
 import numpy as np
 import asyncio
-import copy
 import json
 import threading
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import uvicorn
 from config import FORMAT, CHANNELS, RATE, CHUNK
 from audio_utils import get_frequency_map, get_dominant_frequency
@@ -13,6 +13,7 @@ from alerts import check_for_feedback
 from eq_engine import suggest_eq
 from logger import log_event
 from mixer import AmalynMixerBridge
+from library import get_perfect_state, list_all_speakers, list_all_microphones, list_all_mixers, list_all_venues
 
 app = FastAPI()
 app.add_middleware(
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+# --- SHARED STATE ---
 latest_frame = {
     "status": "CLEAN",
     "dominant_freq": 0.0,
@@ -31,47 +33,40 @@ latest_frame = {
     "frequencies": [],
     "magnitudes": [],
     "suggestion": None,
-    "mixer_corrections": {"total_corrections": 0, "corrections": []}
+    "mixer_corrections": {"total_corrections": 0, "corrections": []},
+    "perfect_state": None
 }
 frame_lock = threading.Lock()
 
-active_queues = set()
-main_loop = None
+# --- AUDIO ---
+p = pyaudio.PyAudio()
+stream = p.open(
+    format=FORMAT,
+    channels=CHANNELS,
+    rate=RATE,
+    input=True,
+    frames_per_buffer=CHUNK
+)
 
-def push_to_queue(q, frame):
-    try:
-        if q.full():
-            q.get_nowait()
-        q.put_nowait(frame)
-    except Exception:
-        pass
-
-try:
-    p = pyaudio.PyAudio()
-    stream = p.open(
-        format=FORMAT,
-        channels=CHANNELS,
-        rate=RATE,
-        input=True,
-        frames_per_buffer=CHUNK
-    )
-except Exception as e:
-    print(f"[ENGINE] WARNING: Audio device init failed: {e}")
-    stream = None
-
+# --- MIXER ---
 mixer = AmalynMixerBridge(mixer_type="simulator", channel=1)
 mixer.connect()
 
 last_status = "CLEAN"
 last_correction_freq = 0
+current_perfect_state = None
+
+
+class SetupRequest(BaseModel):
+    venue: str
+    speaker: str = None
+    mic: str = None
+    mixer_type: str = None
 
 
 def audio_engine():
-    global last_status, last_correction_freq, main_loop
+    global last_status, last_correction_freq
 
-    if stream is None:
-        print("[ENGINE] No audio stream available — engine not started")
-        return
     print("[ENGINE] Audio engine started")
 
     while True:
@@ -105,18 +100,12 @@ def audio_engine():
                 "frequencies": [round(f, 1) for f in frequencies.tolist()[::2]],
                 "magnitudes": [round(m, 1) for m in magnitudes_db.tolist()[::2]],
                 "suggestion": suggestion,
-                "mixer_corrections": {
-                    "total_corrections": mixer.get_corrections_summary()["total_corrections"],
-                    "corrections": mixer.get_corrections_summary()["corrections"][-20:]
-                }
+                "mixer_corrections": mixer.get_corrections_summary(),
+                "perfect_state": current_perfect_state
             }
 
             with frame_lock:
                 latest_frame.update(frame)
-
-            if main_loop and active_queues:
-                for q in list(active_queues):
-                    main_loop.call_soon_threadsafe(push_to_queue, q, frame)
 
         except OSError:
             continue
@@ -131,31 +120,46 @@ audio_thread.start()
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    global main_loop
-    if main_loop is None:
-        main_loop = asyncio.get_running_loop()
-
     await websocket.accept()
     print("[WS] Client connected")
-
-    # Send current snapshot immediately on connect
-    with frame_lock:
-        init_frame = copy.deepcopy(latest_frame)
-    await websocket.send_text(json.dumps(init_frame))
-
-    queue = asyncio.Queue(maxsize=1)
-    active_queues.add(queue)
     try:
         while True:
-            frame = await queue.get()
+            with frame_lock:
+                frame = dict(latest_frame)
             await websocket.send_text(json.dumps(frame))
+            await asyncio.sleep(0.025)
     except WebSocketDisconnect:
         print("[WS] Client disconnected")
     except Exception as e:
         print(f"[WS] Error: {e}")
-    finally:
-        active_queues.remove(queue)
 
+
+@app.post("/setup")
+def setup(request: SetupRequest):
+    global current_perfect_state
+    current_perfect_state = get_perfect_state(
+        venue_type=request.venue,
+        speaker_key=request.speaker,
+        mic_key=request.mic,
+        mixer_key=request.mixer_type
+    )
+    print(f"\n[SETUP] Perfect State loaded:")
+    print(f"  Venue   : {current_perfect_state['venue']}")
+    print(f"  Speaker : {current_perfect_state['speaker']}")
+    print(f"  Mic     : {current_perfect_state['microphone']}")
+    print(f"  Mixer   : {current_perfect_state['mixer']}")
+    print(f"  EQ Bands: {len(current_perfect_state['combined_eq'])}")
+    return current_perfect_state
+
+
+@app.get("/library")
+def get_library():
+    return {
+        "speakers": list_all_speakers(),
+        "microphones": list_all_microphones(),
+        "mixers": list_all_mixers(),
+        "venues": list_all_venues()
+    }
 
 
 @app.get("/health")

@@ -6,43 +6,115 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-    background:#05050a;
-    color:#fff;
+    background:#05050a;color:#fff;
     font-family:'Segoe UI',sans-serif;
-    height:100vh;
-    overflow:hidden;
-    user-select:none;
+    height:100vh;overflow:hidden;user-select:none;
 }
-.bar{
-    height:42px;
-    background:#08080f;
-    border-bottom:1px solid #0f0f1a;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 20px;
+
+/* SETUP OVERLAY */
+.setup-overlay{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:#05050a;
+    display:flex;align-items:center;justify-content:center;
+    z-index:1000;
 }
-.logo{
-    font-size:14px;
-    font-weight:900;
-    letter-spacing:5px;
-    color:#00ff88;
-    text-shadow:0 0 30px #00ff8844;
+.setup-box{
+    background:#0c0c18;
+    border:1px solid #1a1a2a;
+    border-radius:12px;
+    padding:40px;
+    width:480px;
 }
-.tagline{font-size:9px;color:#222;letter-spacing:2px;margin-left:12px}
-.conn{font-size:9px;letter-spacing:2px;color:#222;text-transform:uppercase}
-.conn.ok{color:#00ff88}
-.conn.err{color:#ff3333;animation:blink 1s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.app{display:flex;height:calc(100vh - 42px)}
-.left{
-    width:190px;min-width:190px;
-    background:#08080f;
-    border-right:1px solid #0f0f1a;
+.setup-logo{
+    font-size:20px;font-weight:900;
+    letter-spacing:5px;color:#00ff88;
+    margin-bottom:6px;
+}
+.setup-sub{
+    font-size:10px;color:#333;
+    letter-spacing:2px;margin-bottom:30px;
+}
+.setup-title{
+    font-size:11px;color:#444;
+    letter-spacing:2px;text-transform:uppercase;
+    margin-bottom:20px;
+}
+.setup-group{
+    margin-bottom:16px;
+}
+.setup-label{
+    font-size:9px;color:#444;
+    letter-spacing:1px;text-transform:uppercase;
+    margin-bottom:6px;display:block;
+}
+.setup-select{
+    width:100%;
+    background:#0f0f1a;
+    border:1px solid #1a1a2a;
+    border-radius:6px;
+    color:#ccc;
+    padding:10px 12px;
+    font-size:11px;
+    outline:none;
+    cursor:pointer;
+    appearance:none;
+}
+.setup-select:focus{border-color:#00ff8844}
+.setup-btn{
+    width:100%;
+    background:#00ff88;
+    border:none;
+    border-radius:6px;
+    color:#000;
     padding:14px;
-    display:flex;flex-direction:column;gap:10px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:2px;
+    cursor:pointer;
+    margin-top:10px;
+    transition:opacity .1s;
 }
-.sec{font-size:8px;letter-spacing:2px;color:#222;text-transform:uppercase;margin-bottom:4px}
+.setup-btn:hover{opacity:0.85}
+.setup-skip{
+    display:block;text-align:center;
+    font-size:9px;color:#333;
+    letter-spacing:1px;margin-top:12px;
+    cursor:pointer;
+    text-decoration:underline;
+}
+.setup-skip:hover{color:#555}
+
+/* MAIN APP */
+.bar{
+    height:42px;background:#08080f;
+    border-bottom:1px solid #0f0f1a;
+    display:flex;align-items:center;
+    justify-content:space-between;padding:0 20px;
+}
+.logo{font-size:14px;font-weight:900;letter-spacing:5px;color:#00ff88;}
+.tagline{font-size:9px;color:#1a1a2a;letter-spacing:2px;margin-left:12px}
+.bar-right{display:flex;align-items:center;gap:16px}
+.conn{font-size:9px;letter-spacing:2px;color:#333;text-transform:uppercase}
+.conn.ok{color:#00ff88}
+.conn.err{color:#ff3333}
+.setup-trigger{
+    font-size:9px;color:#333;letter-spacing:1px;
+    cursor:pointer;border:1px solid #1a1a2a;
+    border-radius:4px;padding:4px 10px;
+    text-transform:uppercase;
+    transition:all .1s;
+}
+.setup-trigger:hover{color:#00ff88;border-color:#00ff8844}
+
+.app{display:flex;height:calc(100vh - 42px)}
+
+.left{
+    width:190px;min-width:190px;background:#08080f;
+    border-right:1px solid #0f0f1a;padding:14px;
+    display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;
+}
+.sec{font-size:8px;letter-spacing:2px;color:#252535;text-transform:uppercase;margin-bottom:4px}
 .badge{
     background:#0c0c18;border:1px solid #151525;
     border-radius:6px;padding:12px;
@@ -50,103 +122,171 @@ body{
 }
 .dot{
     width:9px;height:9px;border-radius:50%;
-    background:#00ff88;box-shadow:0 0 12px #00ff88;
-    flex-shrink:0;transition:background .05s,box-shadow .05s;
+    background:#00ff88;box-shadow:0 0 10px #00ff88;flex-shrink:0;
 }
-.slbl{font-size:12px;font-weight:800;letter-spacing:2px;color:#00ff88;transition:color .05s}
-.card{background:#0c0c18;border:1px solid #151525;border-radius:6px;padding:11px;}
+.slbl{font-size:12px;font-weight:800;letter-spacing:2px;color:#00ff88}
+.card{background:#0c0c18;border:1px solid #151525;border-radius:6px;padding:11px}
 .r{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:4px 0;border-bottom:1px solid #0f0f1a;
+    display:flex;justify-content:space-between;
+    align-items:center;padding:4px 0;
+    border-bottom:1px solid #0f0f1a;
 }
 .r:last-child{border-bottom:none}
-.rk{font-size:9px;color:#333}
-.rv{font-size:10px;color:#999;font-weight:700;font-variant-numeric:tabular-nums}
+.rk{font-size:9px;color:#2a2a3a}
+.rv{font-size:10px;color:#888;font-weight:700;font-variant-numeric:tabular-nums}
 .g{color:#00ff88}.w{color:#ffaa00}.c{color:#ff3333}
+
 .center{
     flex:1;display:flex;flex-direction:column;
     background:#05050a;padding:14px;gap:8px;
 }
 .wrap{
-    flex:1;position:relative;
-    border-radius:6px;overflow:hidden;
-    border:1px solid #0f0f1a;
+    flex:1;position:relative;border-radius:6px;
+    overflow:hidden;border:1px solid #0f0f1a;
 }
-canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
-.ov{position:absolute;top:10px;left:12px;pointer-events:none;}
-.ov-s{
-    font-size:12px;font-weight:800;
-    color:#00ff88;letter-spacing:2px;
-    transition:color .05s;
-}
-.ov-f{font-size:9px;color:#333;margin-top:3px;font-variant-numeric:tabular-nums}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+.ov{position:absolute;top:10px;left:12px;pointer-events:none}
+.ov-s{font-size:12px;font-weight:800;color:#00ff88;letter-spacing:2px}
+.ov-f{font-size:9px;color:#2a2a3a;margin-top:3px;font-variant-numeric:tabular-nums}
 .dbl{
     position:absolute;right:6px;top:0;height:100%;
     display:flex;flex-direction:column;
     justify-content:space-between;padding:4px 0;pointer-events:none;
 }
-.dbl span{font-size:8px;color:#1a1a2a;text-align:right}
-.fbar{display:flex;justify-content:space-between;padding:0 2px;}
-.fbar span{font-size:8px;color:#252525}
+.dbl span{font-size:8px;color:#151525;text-align:right}
+.fbar{display:flex;justify-content:space-between;padding:0 2px}
+.fbar span{font-size:8px;color:#1a1a2a}
+
 .right{
-    width:230px;min-width:230px;
-    background:#08080f;
-    border-left:1px solid #0f0f1a;
-    padding:14px;
-    display:flex;flex-direction:column;gap:10px;
-    overflow-y:auto;
+    width:240px;min-width:240px;background:#08080f;
+    border-left:1px solid #0f0f1a;padding:14px;
+    display:flex;flex-direction:column;gap:10px;overflow-y:auto;
 }
 .eq-card{
     background:#0c0c18;border:1px solid #151525;
-    border-radius:6px;padding:14px;
-    min-height:200px;
+    border-radius:6px;padding:14px;min-height:180px;
     display:flex;flex-direction:column;
     align-items:center;justify-content:center;
 }
 .eq-none{font-size:10px;color:#1a1a2a;text-align:center;letter-spacing:1px}
 .eq-body{width:100%;display:none}
 .eq-hz{
-    font-size:40px;font-weight:900;
-    color:#ff3333;text-align:center;
-    text-shadow:0 0 30px #ff333333;
-    font-variant-numeric:tabular-nums;
-    line-height:1;transition:all .05s;
+    font-size:38px;font-weight:900;color:#ff3333;
+    text-align:center;font-variant-numeric:tabular-nums;line-height:1;
 }
-.eq-unit{font-size:9px;color:#333;text-align:center;letter-spacing:3px;margin-bottom:12px;margin-top:2px}
-.eq-cut{
-    font-size:26px;font-weight:800;
-    color:#ffaa00;text-align:center;
-    margin-bottom:2px;
-}
-.eq-cutl{font-size:8px;color:#333;text-align:center;letter-spacing:2px;margin-bottom:12px}
+.eq-unit{font-size:9px;color:#252535;text-align:center;letter-spacing:3px;margin-bottom:10px;margin-top:2px}
+.eq-cut{font-size:24px;font-weight:800;color:#ffaa00;text-align:center;margin-bottom:2px}
+.eq-cutl{font-size:8px;color:#252535;text-align:center;letter-spacing:2px;margin-bottom:10px}
 .eq-div{height:1px;background:#151525;margin-bottom:10px}
+
+/* PERFECT STATE CARD */
+.ps-card{
+    background:#0c0c18;border:1px solid #00ff8822;
+    border-radius:6px;padding:12px;
+}
+.ps-title{
+    font-size:8px;letter-spacing:2px;color:#00ff8866;
+    text-transform:uppercase;margin-bottom:10px;
+}
+.ps-empty{font-size:9px;color:#1a1a2a;text-align:center;padding:10px 0}
+.ps-eq-item{
+    display:flex;justify-content:space-between;
+    padding:3px 0;border-bottom:1px solid #0f0f1a;
+    font-size:9px;
+}
+.ps-eq-item:last-child{border-bottom:none}
+.ps-freq{color:#00ff8888}
+.ps-cut{color:#ffaa0088}
+
 .log-card{
     background:#0c0c18;border:1px solid #151525;
     border-radius:6px;padding:11px;flex:1;
-    display:flex;flex-direction:column;
 }
-.log-list{flex:1;overflow-y:auto;max-height:240px}
+.log-list{overflow-y:auto;max-height:180px}
 .li{
     font-size:8px;padding:4px 0;
     border-bottom:1px solid #0f0f1a;
-    color:#222;font-variant-numeric:tabular-nums;
+    color:#1a1a2a;font-variant-numeric:tabular-nums;
 }
 .li:last-child{border-bottom:none}
-.li.w{color:#ffaa0088}
-.li.c{color:#ff333388}
+.li.w{color:#ffaa0066}
+.li.c{color:#ff333366}
+
 ::-webkit-scrollbar{width:2px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#1a1a2a;border-radius:1px}
+::-webkit-scrollbar-thumb{background:#151525;border-radius:1px}
 </style>
 </head>
 <body>
 
+<!-- SETUP OVERLAY -->
+<div class="setup-overlay" id="setup-overlay">
+    <div class="setup-box">
+        <div class="setup-logo">AMALYN TECH</div>
+        <div class="setup-sub">AI AUDIO INTELLIGENCE</div>
+        <div class="setup-title">Session Setup — Perfect State</div>
+
+        <div class="setup-group">
+            <label class="setup-label">Venue Type</label>
+            <select class="setup-select" id="s-venue">
+                <option value="">Select venue...</option>
+                <option value="church">House of Worship</option>
+                <option value="concert">Concert Hall</option>
+                <option value="studio">Recording Studio</option>
+                <option value="conference">Conference Room</option>
+                <option value="outdoor">Outdoor Stage</option>
+            </select>
+        </div>
+
+        <div class="setup-group">
+            <label class="setup-label">Speaker System</label>
+            <select class="setup-select" id="s-speaker">
+                <option value="">Select speaker...</option>
+                <option value="jbl_srx835p">JBL SRX835P</option>
+                <option value="jbl_eon615">JBL EON615</option>
+                <option value="qsc_k12_2">QSC K12.2</option>
+                <option value="rcf_art_735a">RCF ART 735-A</option>
+                <option value="ev_elx200_12p">Electro-Voice ELX200-12P</option>
+            </select>
+        </div>
+
+        <div class="setup-group">
+            <label class="setup-label">Microphone</label>
+            <select class="setup-select" id="s-mic">
+                <option value="">Select microphone...</option>
+                <option value="shure_sm58">Shure SM58</option>
+                <option value="shure_sm7b">Shure SM7B</option>
+                <option value="sennheiser_e835">Sennheiser e835</option>
+                <option value="akg_c414">AKG C414 XLII</option>
+                <option value="neumann_u87">Neumann U87 Ai</option>
+            </select>
+        </div>
+
+        <div class="setup-group">
+            <label class="setup-label">Mixer</label>
+            <select class="setup-select" id="s-mixer">
+                <option value="">Select mixer...</option>
+                <option value="yamaha_cl5">Yamaha CL5</option>
+                <option value="behringer_x32">Behringer X32</option>
+                <option value="allen_heath_sq6">Allen & Heath SQ-6</option>
+            </select>
+        </div>
+
+        <button class="setup-btn" onclick="submitSetup()">LOAD PERFECT STATE</button>
+        <span class="setup-skip" onclick="skipSetup()">Skip — start monitoring without setup</span>
+    </div>
+</div>
+
+<!-- MAIN APP -->
 <div class="bar">
     <div style="display:flex;align-items:center">
         <span class="logo">AMALYN TECH</span>
         <span class="tagline">AI AUDIO INTELLIGENCE</span>
     </div>
-    <span class="conn" id="conn">● CONNECTING</span>
+    <div class="bar-right">
+        <span class="setup-trigger" onclick="showSetup()">Setup</span>
+        <span class="conn" id="conn">● CONNECTING</span>
+    </div>
 </div>
 
 <div class="app">
@@ -165,7 +305,6 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
         <div class="r"><span class="rk">Magnitude</span><span class="rv" id="domm">--</span></div>
         <div class="r"><span class="rk">Rate</span><span class="rv">44.1 kHz</span></div>
         <div class="r"><span class="rk">Depth</span><span class="rv">16-bit</span></div>
-        <div class="r"><span class="rk">Channels</span><span class="rv">Mono</span></div>
     </div>
     <div class="card">
         <div class="sec">Session</div>
@@ -175,11 +314,11 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
         <div class="r"><span class="rk">Uptime</span><span class="rv" id="upt">00:00</span></div>
     </div>
     <div class="card">
-        <div class="sec">Mixer</div>
-        <div class="r"><span class="rk">Mode</span><span class="rv g">Simulator</span></div>
-        <div class="r"><span class="rk">Channel</span><span class="rv">01</span></div>
-        <div class="r"><span class="rk">Last Fix</span><span class="rv g" id="mlf">--</span></div>
-        <div class="r"><span class="rk">Protocol</span><span class="rv">OSC</span></div>
+        <div class="sec">Setup</div>
+        <div class="r"><span class="rk">Venue</span><span class="rv g" id="ps-venue">--</span></div>
+        <div class="r"><span class="rk">Speaker</span><span class="rv" id="ps-speaker">--</span></div>
+        <div class="r"><span class="rk">Mic</span><span class="rv" id="ps-mic">--</span></div>
+        <div class="r"><span class="rk">Mixer</span><span class="rv" id="ps-mixer">--</span></div>
     </div>
 </div>
 
@@ -197,9 +336,9 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
         </div>
     </div>
     <div class="fbar">
-        <span>20</span><span>31</span><span>63</span><span>125</span><span>250</span>
-        <span>500</span><span>1k</span><span>2k</span><span>4k</span><span>8k</span>
-        <span>16k</span><span>20k</span>
+        <span>20</span><span>63</span><span>125</span><span>250</span>
+        <span>500</span><span>1k</span><span>2k</span><span>4k</span>
+        <span>8k</span><span>16k</span><span>20k</span>
     </div>
 </div>
 
@@ -221,6 +360,13 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
             </div>
         </div>
     </div>
+
+    <div class="ps-card">
+        <div class="ps-title">Perfect State EQ</div>
+        <div class="ps-empty" id="ps-empty">Run setup to load perfect state</div>
+        <div id="ps-eq-list"></div>
+    </div>
+
     <div class="log-card">
         <div class="sec">Event Log</div>
         <div class="log-list" id="log"></div>
@@ -232,15 +378,17 @@ canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;}
 <script>
 const cv = document.getElementById('cv')
 const ctx = cv.getContext('2d')
-let W, H, smooth = null
+let W, H
+const minF = Math.log10(20), maxF = Math.log10(20000)
+let displayMags = null, displayFreqs = null
 let wc=0, cc=0, lastStatus='CLEAN'
 let startTime = Date.now()
-const minF = Math.log10(20), maxF = Math.log10(20000)
 
 function resize(){
     const r = cv.parentElement.getBoundingClientRect()
-    cv.width = W = r.width
-    cv.height = H = r.height
+    cv.width = W = Math.floor(r.width)
+    cv.height = H = Math.floor(r.height)
+    drawBg()
 }
 resize()
 window.addEventListener('resize', resize)
@@ -254,91 +402,112 @@ setInterval(()=>{
 function drawBg(){
     ctx.fillStyle='#05050a'
     ctx.fillRect(0,0,W,H)
-    ctx.strokeStyle='#0f0f1a'
+    ctx.strokeStyle='#0d0d18'
     ctx.lineWidth=1
     for(let db=-10;db>=-80;db-=10){
         const y=H-((db+80)/80)*H
         ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()
     }
-    ctx.setLineDash([2,6])
-    ctx.strokeStyle='#ffaa0022'
-    const wy=H-(55/80)*H
-    ctx.beginPath();ctx.moveTo(0,wy);ctx.lineTo(W,wy);ctx.stroke()
-    ctx.strokeStyle='#ff333322'
-    const cy=H-(65/80)*H
-    ctx.beginPath();ctx.moveTo(0,cy);ctx.lineTo(W,cy);ctx.stroke()
+    ctx.setLineDash([2,8])
+    ctx.strokeStyle='#ffaa0018'
+    ctx.beginPath();ctx.moveTo(0,H-(55/80)*H);ctx.lineTo(W,H-(55/80)*H);ctx.stroke()
+    ctx.strokeStyle='#ff333318'
+    ctx.beginPath();ctx.moveTo(0,H-(65/80)*H);ctx.lineTo(W,H-(65/80)*H);ctx.stroke()
     ctx.setLineDash([])
 }
 
-function draw(freqs, mags, status){
-    if(!freqs||!mags||freqs.length===0) return
+let pendingData = null
 
-    if(!smooth||smooth.length!==mags.length) smooth=[...mags]
-    const a = 0.6
-    for(let i=0;i<mags.length;i++) smooth[i]=smooth[i]*(1-a)+mags[i]*a
-
-    drawBg()
-
-    const col = status==='CRITICAL'?'#ff3333':status==='WARNING'?'#ffaa00':'#00ff88'
-
-    ctx.beginPath()
-    ctx.strokeStyle=col
-    ctx.lineWidth=1.8
-    ctx.shadowBlur=0
-
-    let fx=0, first=true
-    for(let i=0;i<freqs.length;i++){
-        if(freqs[i]<20||freqs[i]>20000) continue
-        const x=((Math.log10(freqs[i])-minF)/(maxF-minF))*W
-        const y=H-((Math.max(smooth[i],-80)+80)/80)*H
-        if(first){ctx.moveTo(x,y);first=false}
-        else ctx.lineTo(x,y)
-        fx=x
+function renderLoop(){
+    if(pendingData){
+        const {freqs, mags, status} = pendingData
+        pendingData = null
+        if(!displayMags||displayMags.length!==mags.length){
+            displayMags=[...mags]; displayFreqs=[...freqs]
+        }
+        const a=0.5
+        for(let i=0;i<mags.length;i++) displayMags[i]=displayMags[i]*(1-a)+mags[i]*a
+        drawBg()
+        const col=status==='CRITICAL'?'#ff3333':status==='WARNING'?'#ffaa00':'#00ff88'
+        ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=1.5
+        let fx=0,first=true
+        for(let i=0;i<displayFreqs.length;i++){
+            if(displayFreqs[i]<20||displayFreqs[i]>20000) continue
+            const x=((Math.log10(displayFreqs[i])-minF)/(maxF-minF))*W
+            const y=H-((Math.max(displayMags[i],-80)+80)/80)*H
+            if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)
+            fx=x
+        }
+        ctx.stroke()
+        ctx.lineTo(fx,H);ctx.lineTo(0,H);ctx.closePath()
+        const gr=ctx.createLinearGradient(0,0,0,H)
+        gr.addColorStop(0,col+'33');gr.addColorStop(0.6,col+'08');gr.addColorStop(1,col+'00')
+        ctx.fillStyle=gr;ctx.fill()
     }
-    ctx.stroke()
+    requestAnimationFrame(renderLoop)
+}
+renderLoop()
 
-    ctx.lineTo(fx,H);ctx.lineTo(0,H);ctx.closePath()
-    const gr=ctx.createLinearGradient(0,0,0,H)
-    gr.addColorStop(0,col+'44')
-    gr.addColorStop(0.5,col+'11')
-    gr.addColorStop(1,col+'00')
-    ctx.fillStyle=gr
-    ctx.fill()
+const cache={}
+function set(id,val){
+    if(cache[id]===val) return
+    cache[id]=val
+    const el=document.getElementById(id)
+    if(el) el.textContent=val
+}
+function setStyle(id,prop,val){
+    const key=id+prop
+    if(cache[key]===val) return
+    cache[key]=val
+    const el=document.getElementById(id)
+    if(el) el.style[prop]=val
 }
 
-function updateStatus(status, df, dm){
-    const col = status==='CRITICAL'?'#ff3333':status==='WARNING'?'#ffaa00':'#00ff88'
-    document.getElementById('dot').style.background=col
-    document.getElementById('dot').style.boxShadow=`0 0 12px ${col}`
-    document.getElementById('slbl').style.color=col
-    document.getElementById('slbl').textContent=status
-    document.getElementById('ovs').style.color=col
-    document.getElementById('ovs').textContent=
-        status==='CLEAN'?'● CLEAN':
-        status==='WARNING'?`● WARNING — ${df.toFixed(0)}Hz`:
-        `● CRITICAL — ${df.toFixed(0)}Hz`
-
-    if(status==='CRITICAL'&&lastStatus!=='CRITICAL'){
-        cc++;document.getElementById('cc').textContent=cc;addLog('c',df,dm)
-    } else if(status==='WARNING'&&lastStatus!=='WARNING'){
-        wc++;document.getElementById('wc').textContent=wc;addLog('w',df,dm)
-    }
+function updateStatus(status,df,dm){
+    const col=status==='CRITICAL'?'#ff3333':status==='WARNING'?'#ffaa00':'#00ff88'
+    setStyle('dot','background',col)
+    setStyle('dot','boxShadow',`0 0 10px ${col}`)
+    setStyle('slbl','color',col)
+    setStyle('ovs','color',col)
+    set('slbl',status==='CLEAN'?'CLEAN':status)
+    set('ovs',status==='CLEAN'?'● CLEAN':status==='WARNING'?`● WARNING — ${df.toFixed(0)}Hz`:`● CRITICAL — ${df.toFixed(0)}Hz`)
+    if(status==='CRITICAL'&&lastStatus!=='CRITICAL'){cc++;set('cc',cc);addLog('c',df,dm)}
+    else if(status==='WARNING'&&lastStatus!=='WARNING'){wc++;set('wc',wc);addLog('w',df,dm)}
     lastStatus=status
 }
 
 function showEQ(s){
     document.getElementById('eqn').style.display='none'
     document.getElementById('eqb').style.display='block'
-    document.getElementById('eqhz').textContent=s.frequency
-    document.getElementById('eqcut').textContent=`${s.cut_db} dB`
-    document.getElementById('eqband').textContent=s.band_name
-    document.getElementById('eqprob').textContent=s.problem
-    document.getElementById('eqq').textContent=s.q_value
-    document.getElementById('eqflt').textContent=s.filter_type
+    set('eqhz',s.frequency);set('eqcut',`${s.cut_db} dB`)
+    set('eqband',s.band_name);set('eqprob',s.problem)
+    set('eqq',s.q_value);set('eqflt',s.filter_type)
 }
 function hideEQ(){
     document.getElementById('eqn').style.display='block'
     document.getElementById('eqb').style.display='none'
+}
+
+function updatePerfectState(ps){
+    if(!ps) return
+    set('ps-venue', ps.venue || '--')
+    set('ps-speaker', ps.speaker || '--')
+    set('ps-mic', ps.microphone || '--')
+    set('ps-mixer', ps.mixer || '--')
+
+    const list = document.getElementById('ps-eq-list')
+    const empty = document.getElementById('ps-empty')
+
+    if(ps.combined_eq && ps.combined_eq.length > 0){
+        empty.style.display='none'
+        list.innerHTML=''
+        ps.combined_eq.forEach(eq=>{
+            const item=document.createElement('div')
+            item.className='ps-eq-item'
+            item.innerHTML=`<span class="ps-freq">${eq.frequency}Hz</span><span class="ps-cut">${eq.cut_db}dB</span>`
+            list.appendChild(item)
+        })
+    }
 }
 
 function addLog(type,freq,mag){
@@ -351,48 +520,70 @@ function addLog(type,freq,mag){
     while(list.children.length>100) list.removeChild(list.lastChild)
 }
 
+// Setup functions
+async function submitSetup(){
+    const venue = document.getElementById('s-venue').value
+    if(!venue){ alert('Please select a venue'); return }
+
+    const body = {
+        venue: venue,
+        speaker: document.getElementById('s-speaker').value || null,
+        mic: document.getElementById('s-mic').value || null,
+        mixer_type: document.getElementById('s-mixer').value || null
+    }
+
+    try {
+        const res = await fetch('http://localhost:8000/setup', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(body)
+        })
+        const ps = await res.json()
+        updatePerfectState(ps)
+        document.getElementById('setup-overlay').style.display='none'
+    } catch(e){
+        alert('Could not connect to AMALYN API. Make sure api.py is running.')
+    }
+}
+
+function skipSetup(){
+    document.getElementById('setup-overlay').style.display='none'
+}
+
+function showSetup(){
+    document.getElementById('setup-overlay').style.display='flex'
+}
+
+// WebSocket
 function connect(){
     const ws = new WebSocket('ws://localhost:8000/ws')
-
     ws.onopen=()=>{
-        document.getElementById('conn').textContent='● CONNECTED'
-        document.getElementById('conn').className='conn ok'
+        set('conn','● CONNECTED')
+        setStyle('conn','color','#00ff88')
     }
-
     ws.onmessage=(e)=>{
         const d=JSON.parse(e.data)
-        updateStatus(d.status, d.danger_freq||0, d.danger_mag||0)
-
+        pendingData={freqs:d.frequencies,mags:d.magnitudes,status:d.status}
+        updateStatus(d.status,d.danger_freq||0,d.danger_mag||0)
         if(d.dominant_freq){
-            document.getElementById('domf').textContent=`${d.dominant_freq.toFixed(0)} Hz`
-            document.getElementById('domm').textContent=`${d.dominant_mag.toFixed(1)} dB`
-            document.getElementById('ovf').textContent=
-                `Dominant: ${d.dominant_freq.toFixed(0)}Hz at ${d.dominant_mag.toFixed(1)}dB`
+            set('domf',`${d.dominant_freq.toFixed(0)} Hz`)
+            set('domm',`${d.dominant_mag.toFixed(1)} dB`)
+            set('ovf',`Dominant: ${d.dominant_freq.toFixed(0)}Hz at ${d.dominant_mag.toFixed(1)}dB`)
         }
-
         if(d.mixer_corrections){
             const tot=d.mixer_corrections.total_corrections
-            document.getElementById('mc').textContent=tot
-            if(tot>0){
-                const last=d.mixer_corrections.corrections[tot-1]
-                document.getElementById('mlf').textContent=`${last.frequency}Hz`
-            }
+            set('mc',tot)
         }
-
         if(d.suggestion&&d.status!=='CLEAN') showEQ(d.suggestion)
         else hideEQ()
-
-        draw(d.frequencies, d.magnitudes, d.status)
+        if(d.perfect_state) updatePerfectState(d.perfect_state)
     }
-
     ws.onclose=()=>{
-        document.getElementById('conn').textContent='● RECONNECTING'
-        document.getElementById('conn').className='conn err'
-        drawBg()
-        setTimeout(connect, 1000)
+        set('conn','● RECONNECTING')
+        setStyle('conn','color','#ff3333')
+        setTimeout(connect,1000)
     }
-
-    ws.onerror=()=>{ ws.close() }
+    ws.onerror=()=>ws.close()
 }
 
 drawBg()

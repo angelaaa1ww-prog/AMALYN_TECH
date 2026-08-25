@@ -1,0 +1,217 @@
+{
+    "version": "1.0",
+    "description": "AMALYN TECH Brand Frequency Library",
+    "speakers": {
+        "jbl_srx835p": {
+            "brand": "JBL",
+            "model": "SRX835P",
+            "type": "Full Range",
+            "frequency_range": [35, 20000],
+            "sensitivity_db": 99,
+            "max_spl": 133,
+            "known_peaks": [
+                {"frequency": 2400, "magnitude_db": 3.5, "description": "Upper mid presence peak"},
+                {"frequency": 8000, "magnitude_db": 2.0, "description": "High frequency air boost"},
+                {"frequency": 80,   "magnitude_db": 2.5, "description": "Bass resonance"}
+            ],
+            "recommended_eq": [
+                {"frequency": 2400, "cut_db": -3.0, "q": 1.4, "reason": "Tame harsh presence peak"},
+                {"frequency": 80,   "cut_db": -2.0, "q": 0.8, "reason": "Control bass resonance"}
+            ],
+            "crossover_hz": 1500,
+            "safe_gain_db": -6
+        },
+        "jbl_eon615": {
+            "brand": "JBL",
+            "model": "EON615",
+            "type": "Full Range",
+            "frequency_range": [39, 20000],
+            "sensitivity_db": 98,
+            "max_spl": 126,
+            "known_peaks": [
+                {"frequency": 3200, "magnitude_db": 3.0, "description": "Mid-high presence peak"},
+                {"frequency": 100,  "magnitude_db": 2.0, "description": "Low end warmth"}
+            ],
+            "recommended_eq": [
+                {"frequency": 3200, "cut_db": -2.5, "q": 1.2, "reason": "Smooth presence peak"},
+                {"frequency": 100,  "cut_db": -1.5, "q": 0.7, "reason": "Tighten low end"}
+            ],
+            "crossover_hz": 1800,
+            "safe_gain_db": -6
+        },
+        "qsc_k12_2": {
+            "brand": "QSC",
+            "model": "K12.2",
+            "type": "Full Range",
+            "frequency_range": [45, 20000],
+            "sensitivity_db": 100,
+            "max_spl": 132,
+            "known_peaks": [
+                {"frequency": 1800, "magnitude_db": 2.5, "description": "Upper mid peak"},
+                {"frequency": 60,   "magnitude_db": 3.0, "description": "Sub bass bump"}
+            ],
+            "recommended_eq": [
+                {"frequency": 1800, "cut_db": -2.0, "q": 1.2, "reason": "Smooth upper mids"},
+                {"frequency": 60,   "cut_db": -2.5, "q": 0.8, "reason": "Control sub bump"}
+            ],
+            "crossover_hz": 1200,
+            "safe_gain_db": -6
+        },
+        "rcf_art_735a": {
+            "brand": "RCF",
+            "model": "ART 735-A",
+            "type": "Full Range",
+            "frequency_range": [50, 20000],
+            "sensitivity_db": 99,
+            "max_spl": 131,
+            "known_peaks": [
+                {"frequency": 2800, "magnitude_db": 2.0, "description": "Presence peak"},
+                {"frequency": 90,   "magnitude_db": 2.5, "description": "Bass warmth"}
+            ],
+            "recommended_eq": [
+                {"frequency": 2800, "cut_db": -2.0, "q": 1.3, "reason": "Smooth presence"},
+                {"frequency": 90,   "cut_db": -2.0, "q": 0.8, "reason": "Tighten bass"}
+            ],
+            "crossover_hz": 1600,
+            "safe_gain_db": -6
+        },
+        "ev_elx200_12p": {
+            "brand": "Electro-Voice",
+            "model": "ELX200-12P",
+            "type": "Full Range",
+            "frequency_range": [52, 20000],
+            "sensitivity_db": 98,
+            "max_spl": 127,
+            "known_peaks": [
+                {"frequency": 3500, "magnitude_db": 2.5, "description": "High mid peak"},
+                {"frequency": 80,   "magnitude_db": 2.0, "description": "Bass resonance"}
+            ],
+            "recommended_eq": [
+                {"frequency": 3500, "cut_db": -2.0, "q": 1.4, "reason": "Tame high mids"},
+                {"frequency": 80,   "cut_db": -1.5, "q": 0.8, "reason": "Control bass"}
+            ],
+            "crossover_hz": 1800,
+            "safe_gain_db": -6
+        }
+    },
+    "microphones": {
+        "shure_sm58": {
+            "brand": "Shure",
+            "model": "SM58",
+            "type": "Dynamic Vocal",
+            "frequency_range": [50, 15000],
+            "sensitivity_db": -54.5,
+            "known_peaks": [
+                {"frequency": 5000, "magnitude_db": 4.0, "description": "Presence peak"},
+                {"frequency": 200,  "magnitude_db": 3.0, "description": "Proximity effect"}
+            ],
+            "recommended_eq": [
+                {"frequency": 200,  "cut_db": -3.0, "q": 0.8, "reason": "Reduce proximity effect"},
+                {"frequency": 5000, "cut_db": -2.0, "q": 1.2, "reason": "Tame harsh presence"}
+            ],
+            "high_pass_hz": 100,
+            "gain_trim_db": 45
+        },
+        "shure_sm7b": {
+            "brand": "Shure",
+            "model": "SM7B",
+            "type": "Dynamic Broadcast",
+            "frequency_range": [50, 20000],
+            "sensitivity_db": -59.0,
+            "known_peaks": [
+                {"frequency": 5000, "magnitude_db": 3.0, "description": "Presence peak"},
+                {"frequency": 100,  "magnitude_db": 4.0, "description": "Bass warmth"}
+            ],
+            "recommended_eq": [
+                {"frequency": 100,  "cut_db": -3.0, "q": 0.7, "reason": "Reduce proximity effect"},
+                {"frequency": 5000, "cut_db": -1.5, "q": 1.0, "reason": "Smooth presence"}
+            ],
+            "high_pass_hz": 80,
+            "gain_trim_db": 60
+        },
+        "sennheiser_e835": {
+            "brand": "Sennheiser",
+            "model": "e835",
+            "type": "Dynamic Vocal",
+            "frequency_range": [40, 16000],
+            "sensitivity_db": -53.0,
+            "known_peaks": [
+                {"frequency": 4000, "magnitude_db": 3.5, "description": "Presence peak"},
+                {"frequency": 150,  "magnitude_db": 2.5, "description": "Low warmth"}
+            ],
+            "recommended_eq": [
+                {"frequency": 150,  "cut_db": -2.5, "q": 0.8, "reason": "Clean low end"},
+                {"frequency": 4000, "cut_db": -2.0, "q": 1.2, "reason": "Smooth presence"}
+            ],
+            "high_pass_hz": 100,
+            "gain_trim_db": 45
+        },
+        "akg_c414": {
+            "brand": "AKG",
+            "model": "C414 XLII",
+            "type": "Condenser",
+            "frequency_range": [20, 20000],
+            "sensitivity_db": -32.0,
+            "known_peaks": [
+                {"frequency": 8000,  "magnitude_db": 3.0, "description": "Air boost"},
+                {"frequency": 12000, "magnitude_db": 2.0, "description": "High frequency sparkle"}
+            ],
+            "recommended_eq": [
+                {"frequency": 8000,  "cut_db": -2.0, "q": 1.0, "reason": "Tame excessive air"},
+                {"frequency": 200,   "cut_db": -2.0, "q": 0.8, "reason": "Clean low end"}
+            ],
+            "high_pass_hz": 80,
+            "gain_trim_db": 25
+        },
+        "neumann_u87": {
+            "brand": "Neumann",
+            "model": "U87 Ai",
+            "type": "Condenser",
+            "frequency_range": [20, 20000],
+            "sensitivity_db": -29.0,
+            "known_peaks": [
+                {"frequency": 10000, "magnitude_db": 2.5, "description": "High end presence"},
+                {"frequency": 100,   "magnitude_db": 3.0, "description": "Proximity warmth"}
+            ],
+            "recommended_eq": [
+                {"frequency": 100,   "cut_db": -2.0, "q": 0.7, "reason": "Control proximity effect"},
+                {"frequency": 10000, "cut_db": -1.5, "q": 1.0, "reason": "Smooth high end"}
+            ],
+            "high_pass_hz": 80,
+            "gain_trim_db": 20
+        }
+    },
+    "mixers": {
+        "yamaha_cl5": {
+            "brand": "Yamaha",
+            "model": "CL5",
+            "type": "Digital Console",
+            "channels": 72,
+            "osc_port": 10300,
+            "recommended_gain_staging": {
+                "preamp_target_db": -18,
+                "bus_target_db": -12,
+                "master_target_db": -6
+            }
+        },
+        "behringer_x32": {
+            "brand": "Behringer",
+            "model": "X32",
+            "type": "Digital Console",
+            "channels": 32,
+            "osc_port": 10023,
+            "recommended_gain_staging": {
+                "preamp_target_db": -20,
+                "bus_target_db": -14,
+                "master_target_db": -8
+            }
+        },
+        "allen_heath_sq6": {
+            "brand": "Allen & Heath",
+            "model": "SQ-6",
+            "type": "Digital Console",
+            "channels": 48,
+            "osc_port": 51325,
+            "recommended_gain_staging": {
+                "preamp_target_db": -18,
+                "bus_target_db": -12,
