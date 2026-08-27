@@ -1,0 +1,9 @@
+{
+  "input_size": 257,
+  "classes": {
+    "0": "CLEAN",
+    "1": "WARNING",
+    "2": "CRITICAL"
+  },
+  "accuracy": 100.0
+}
