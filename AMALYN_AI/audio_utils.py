@@ -33,7 +33,8 @@ def get_frequency_map(audio_data, rate=RATE):
     if magnitudes.size > 1:
         # rFFT contains only positive-frequency energy. Restore the omitted half,
         # excluding DC and Nyquist bins.
-        magnitudes[1:-1] *= 2
+        positive_bins = slice(1, -1) if samples.size % 2 == 0 else slice(1, None)
+        magnitudes[positive_bins] *= 2
 
     magnitudes_db = 20 * np.log10(
         np.maximum(magnitudes / FULL_SCALE_INT16, 10 ** (MIN_DBFS / 20))

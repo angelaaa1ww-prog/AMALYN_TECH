@@ -9,11 +9,18 @@ from datetime import datetime
 import numpy as np
 
 from audio_utils import get_frequency_map
-from config import CHANNELS, CHUNK, RATE, get_pyaudio_format
+from config import (
+    CHANNELS,
+    CHUNK,
+    ML_FEATURE_COUNT,
+    ML_FEATURE_SCALE,
+    RATE,
+    get_pyaudio_format,
+)
 
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "ml_data")
-FRAME_SIZE = 257
+FRAME_SIZE = ML_FEATURE_COUNT
 
 
 class AudioDataCollector:
@@ -48,7 +55,7 @@ class AudioDataCollector:
 
             with open(self.output_path, "a", newline="", encoding="utf-8") as file:
                 csv.writer(file).writerow(
-                    [label, *[round(value, 2) for value in magnitudes]]
+                    [ML_FEATURE_SCALE, label, *[round(value, 2) for value in magnitudes]]
                 )
             self.counts[label] += 1
         except Exception as error:
@@ -83,7 +90,9 @@ def main():
             frames_per_buffer=CHUNK,
         )
         with open(output_path, "w", newline="", encoding="utf-8") as file:
-            csv.writer(file).writerow(["label", *[f"bin_{index}" for index in range(FRAME_SIZE)]])
+            csv.writer(file).writerow(
+                ["feature_scale", "label", *[f"bin_{index}" for index in range(FRAME_SIZE)]]
+            )
 
         collector = AudioDataCollector(stream, output_path)
         worker = threading.Thread(target=collector.run, name="amalyn-data-collector", daemon=True)

@@ -1,34 +1,15 @@
-# ml_inference.py — AMALYN ML Inference Engine
-# Replaces fixed threshold detection with trained ML model
+"""Inference wrapper for the AMALYN feedback-status model."""
 
-import numpy as np
+import json
 import os
+
 import torch
-import torch.nn as nn
 
-MODEL_DIR = os.path.join(os.path.dirname(__file__), 'ml_models')
-MODEL_PATH = os.path.join(MODEL_DIR, 'amalyn_detector.pth')
-
-LABEL_NAMES = {0: "CLEAN", 1: "WARNING", 2: "CRITICAL"}
+from ml_model import AmalynDetector, FEATURE_COUNT, FEATURE_SCALE, LABEL_NAMES, normalize_magnitudes
 
 
-class AmalynDetector(nn.Module):
-    def __init__(self):
-        super(AmalynDetector, self).__init__()
-        self.network = nn.Sequential(
-            nn.Linear(257, 512),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, 3)
-        )
-
-    def forward(self, x):
-        return self.network(x)
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "ml_models", "amalyn_detector.pth")
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "ml_models", "model_config.json")
 
 
 class MLInference:
@@ -40,55 +21,48 @@ class MLInference:
     def load_model(self):
         if not os.path.exists(MODEL_PATH):
             print("[ML] No trained model found — using threshold detection")
-            return
+            return False
 
         try:
-            self.model = AmalynDetector()
-            self.model.load_state_dict(torch.load(MODEL_PATH, map_location='cpu'))
-            self.model.eval()
+            with open(CONFIG_PATH, encoding="utf-8") as file:
+                metadata = json.load(file)
+            if metadata.get("input_size") != FEATURE_COUNT or metadata.get("feature_scale") != FEATURE_SCALE:
+                print("[ML] Model was trained with an incompatible feature scale; retrain before use")
+                return False
+            model = AmalynDetector()
+            model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu", weights_only=True))
+            model.eval()
+            self.model = model
             self.model_loaded = True
             print("[ML] Model loaded successfully")
-        except Exception as e:
-            print(f"[ML] Model load failed: {e} — using threshold detection")
+            return True
+        except Exception as error:
+            self.model = None
+            self.model_loaded = False
+            print(f"[ML] Model load failed: {error} — using threshold detection")
+            return False
 
     def predict(self, magnitudes_db):
-        if not self.model_loaded:
+        if not self.model_loaded or self.model is None:
             return None, None
 
         try:
-            mags = magnitudes_db[:257].tolist()
-            if len(mags) < 257:
-                mags += [-80.0] * (257 - len(mags))
-
-            # Normalize
-            mags = [(m + 80) / 80 for m in mags]
-            x = torch.FloatTensor(mags).unsqueeze(0)
-
-            with torch.no_grad():
-                output = self.model(x)
-                probabilities = torch.softmax(output, dim=1)[0]
-                predicted_class = torch.argmax(probabilities).item()
-                confidence = probabilities[predicted_class].item()
-
-            status = LABEL_NAMES[predicted_class]
-            return status, round(confidence * 100, 1)
-
-        except Exception as e:
-            print(f"[ML] Inference error: {e}")
+            features = torch.from_numpy(normalize_magnitudes(magnitudes_db)).unsqueeze(0)
+            with torch.inference_mode():
+                probabilities = torch.softmax(self.model(features), dim=1)[0]
+            predicted_class = torch.argmax(probabilities).item()
+            return LABEL_NAMES[predicted_class], round(float(probabilities[predicted_class]) * 100, 1)
+        except Exception as error:
+            print(f"[ML] Inference error: {error}")
             return None, None
 
     def is_ready(self):
         return self.model_loaded
 
 
-# Global instance
 ml_engine = MLInference()
 
 
 def ml_check(magnitudes_db):
-    """
-    Drop-in replacement for check_for_feedback.
-    Returns status and confidence score.
-    Falls back to None if model not loaded.
-    """
+    """Return a predicted status/confidence pair, or ``(None, None)`` on fallback."""
     return ml_engine.predict(magnitudes_db)

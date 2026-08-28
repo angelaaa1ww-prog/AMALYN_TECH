@@ -3,6 +3,10 @@ CHANNELS = 1
 RATE = 44100
 CHUNK = 512
 
+# --- ML FEATURE SCHEMA ---
+ML_FEATURE_COUNT = 257
+ML_FEATURE_SCALE = "dbfs-v2"
+
 
 def get_pyaudio_format():
     """Load PyAudio only in programs that actually open an audio device."""

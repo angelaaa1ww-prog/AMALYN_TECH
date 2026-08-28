@@ -35,6 +35,19 @@ class AudioAnalysisTests(unittest.TestCase):
         self.assertTrue(np.all(magnitudes_db == MIN_DBFS))
         self.assertEqual(check_for_feedback(frequencies, magnitudes_db), ("CLEAN", 0.0, 0.0))
 
+    def test_odd_length_fft_scales_the_final_positive_frequency_bin(self):
+        sample_rate = 4095
+        sample_count = 4095
+        frequency = 1024
+        samples = 0.25 * 32767 * np.sin(
+            2 * np.pi * frequency * np.arange(sample_count) / sample_rate
+        )
+        frequencies, magnitudes_db = get_frequency_map(samples, rate=sample_rate)
+        peak = np.argmax(magnitudes_db)
+
+        self.assertEqual(frequencies[peak], frequency)
+        self.assertAlmostEqual(magnitudes_db[peak], -12.04, delta=0.15)
+
     def test_feedback_prefers_the_loudest_critical_frequency(self):
         status, frequency, magnitude = check_for_feedback(
             np.array([150.0, 500.0, 1000.0, 17000.0]),

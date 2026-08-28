@@ -90,7 +90,10 @@ def main():
                 print(f"Visualizer error: {error}")
             return line, status_text, suggestion_text, dominant_text
 
-        animation.FuncAnimation(figure, update, interval=50, blit=False, cache_frame_data=False)
+        visualizer_animation = animation.FuncAnimation(
+            figure, update, interval=50, blit=False, cache_frame_data=False
+        )
+        figure._amalyn_animation = visualizer_animation
         print("AMALYN TECH Spectrum Visualizer Active -- close the window to stop")
         plt.show()
     finally:
