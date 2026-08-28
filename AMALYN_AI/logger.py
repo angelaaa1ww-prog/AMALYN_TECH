@@ -2,6 +2,7 @@ import os
 import json
 import time
 import atexit
+import threading
 from datetime import datetime
 
 LOG_DIR = os.path.join(os.path.dirname(__file__), 'logs')
@@ -17,6 +18,7 @@ LOG_FILE = get_log_filename()
 session_events = []
 session_start = datetime.now().isoformat()
 _last_save_time = 0
+_session_lock = threading.RLock()
 
 
 def log_event(status, danger_freq, danger_mag, suggestion=None):
@@ -32,23 +34,25 @@ def log_event(status, danger_freq, danger_mag, suggestion=None):
         "eq_suggestion": suggestion if suggestion else None
     }
 
-    session_events.append(event)
-    now = time.time()
-    if now - _last_save_time >= 5:
-        save_session()
-        _last_save_time = now
+    with _session_lock:
+        session_events.append(event)
+        now = time.time()
+        if now - _last_save_time >= 5:
+            save_session()
+            _last_save_time = now
     print(f"\n[LOG] Event saved -- {status} at {danger_freq:.0f}Hz ({danger_mag:.1f}dB)")
 
 
 def save_session():
-    session_data = {
-        "session_start": session_start,
-        "session_end": datetime.now().isoformat(),
-        "total_events": len(session_events),
-        "events": session_events
-    }
-    with open(LOG_FILE, 'w') as f:
-        json.dump(session_data, f, indent=4)
+    with _session_lock:
+        session_data = {
+            "session_start": session_start,
+            "session_end": datetime.now().isoformat(),
+            "total_events": len(session_events),
+            "events": session_events
+        }
+        with open(LOG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(session_data, f, indent=4)
 
 
 def print_session_summary():
@@ -75,4 +79,4 @@ def print_session_summary():
     print("=" * 50 + "\n")
 
 
-atexit.register(save_session)
+atexit.register(save_session)

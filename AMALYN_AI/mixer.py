@@ -1,9 +1,11 @@
 # mixer.py — AMALYN Mixer Integration via OSC
 
-from pythonosc import udp_client
-from pythonosc.dispatcher import Dispatcher
-from pythonosc.osc_server import BlockingOSCUDPServer
 import threading
+
+try:
+    from pythonosc import udp_client
+except ImportError:
+    udp_client = None
 
 # --- MIXER PROFILES ---
 # Each mixer brand uses different OSC address patterns
@@ -82,12 +84,19 @@ class AmalynMixerBridge:
     """
 
     def __init__(self, mixer_type="simulator", channel=1):
+        if mixer_type not in MIXER_PROFILES:
+            supported = ", ".join(sorted(MIXER_PROFILES))
+            raise ValueError(f"Unknown mixer type '{mixer_type}'. Supported: {supported}")
+        if channel < 1:
+            raise ValueError("channel must be at least 1")
+
         self.profile = MIXER_PROFILES[mixer_type]
         self.channel = channel
         self.mixer_type = mixer_type
         self.connected = False
         self.client = None
         self.corrections_sent = []
+        self._corrections_lock = threading.Lock()
 
         print(f"\n[MIXER] Initializing: {self.profile['name']}")
         print(f"[MIXER] Target IP: {self.profile['ip']}:{self.profile['port']}")
@@ -95,6 +104,9 @@ class AmalynMixerBridge:
 
     def connect(self):
         """Connect to the mixer via OSC."""
+        if udp_client is None:
+            print("[MIXER] python-osc is not installed; mixer control is disabled")
+            return False
         try:
             self.client = udp_client.SimpleUDPClient(
                 self.profile["ip"],
@@ -153,9 +165,10 @@ class AmalynMixerBridge:
                 "channel": self.channel,
                 "mixer": self.profile["name"]
             }
-            self.corrections_sent.append(correction)
-            if len(self.corrections_sent) > 100:
-                self.corrections_sent = self.corrections_sent[-100:]
+            with self._corrections_lock:
+                self.corrections_sent.append(correction)
+                if len(self.corrections_sent) > 100:
+                    self.corrections_sent = self.corrections_sent[-100:]
 
             print(f"\n[MIXER] Correction sent to {self.profile['name']}")
             print(f"[MIXER] Channel {self.channel} | {suggestion['frequency']}Hz | {suggestion['cut_db']}dB | Q:{suggestion['q_value']}")
@@ -172,24 +185,26 @@ class AmalynMixerBridge:
         if a critical failure is detected.
         """
         if not self.connected or not self.client:
-            return
+            return False
 
-        print(f"\n[MIXER] EMERGENCY — Applying Safe Profile to Channel {self.channel}")
-
-        for band_index in range(1, 5):
-            gain_addr = self.profile["eq_address"].format(
-                channel=self.channel, band=band_index
-            )
-            self.client.send_message(gain_addr, 0.0)
-
-        print(f"[MIXER] Safe profile applied — all EQ bands reset to 0dB")
+        try:
+            print(f"\n[MIXER] EMERGENCY — Applying Safe Profile to Channel {self.channel}")
+            for band_index in range(1, 5):
+                gain_addr = self.profile["eq_address"].format(
+                    channel=self.channel, band=band_index
+                )
+                self.client.send_message(gain_addr, 0.0)
+            print(f"[MIXER] Safe profile applied — all EQ bands reset to 0dB")
+            return True
+        except Exception as error:
+            print(f"[MIXER] Safe profile failed: {error}")
+            return False
 
     def get_corrections_summary(self):
         """Returns a summary of all corrections sent this session."""
-        return {
-            "total_corrections": len(self.corrections_sent),
-            "corrections": self.corrections_sent
-        }
+        with self._corrections_lock:
+            corrections = [correction.copy() for correction in self.corrections_sent]
+        return {"total_corrections": len(corrections), "corrections": corrections}
 
     def disconnect(self):
         self.connected = False

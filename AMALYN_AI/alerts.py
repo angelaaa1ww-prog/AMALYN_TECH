@@ -3,7 +3,6 @@ from config import (
     FEEDBACK_FREQ_MAX,
     WARNING_THRESHOLD_DB,
     CRITICAL_THRESHOLD_DB,
-    FEEDBACK_THRESHOLD_DB
 )
 
 
@@ -18,36 +17,24 @@ def check_for_feedback(frequencies, magnitudes_db):
         danger_freq (float): the frequency causing the problem (0 if clean)
         danger_mag (float): its magnitude in dB (0 if clean)
     """
-    danger_freq = 0.0
-    danger_mag = -999.0  # Must start below any real dB value (all dB values are negative)
-    status = "CLEAN"
+    candidates = [
+        (float(freq), float(magnitude))
+        for freq, magnitude in zip(frequencies, magnitudes_db)
+        if FEEDBACK_FREQ_MIN <= freq <= FEEDBACK_FREQ_MAX
+    ]
+    if not candidates:
+        return "CLEAN", 0.0, 0.0
 
-    for freq, mag in zip(frequencies, magnitudes_db):
+    critical = [candidate for candidate in candidates if candidate[1] >= CRITICAL_THRESHOLD_DB]
+    warning = [candidate for candidate in candidates if candidate[1] >= WARNING_THRESHOLD_DB]
 
-        # Only analyze frequencies in the audible feedback range
-        if not (FEEDBACK_FREQ_MIN <= freq <= FEEDBACK_FREQ_MAX):
-            continue
-
-        # Check for CRITICAL level first
-        if mag >= CRITICAL_THRESHOLD_DB:
-            # Only update if this is louder than previous danger found
-            if mag > danger_mag:
-                status = "CRITICAL"
-                danger_freq = freq
-                danger_mag = mag
-
-        # Check for WARNING level
-        elif mag >= WARNING_THRESHOLD_DB:
-            if mag > danger_mag and status != "CRITICAL":
-                status = "WARNING"
-                danger_freq = freq
-                danger_mag = mag
-
-    # Reset to 0 if no danger was found, to preserve clean return format
-    if status == "CLEAN":
-        danger_mag = 0.0
-
-    return status, danger_freq, danger_mag
+    if critical:
+        danger_freq, danger_mag = max(critical, key=lambda candidate: candidate[1])
+        return "CRITICAL", danger_freq, danger_mag
+    if warning:
+        danger_freq, danger_mag = max(warning, key=lambda candidate: candidate[1])
+        return "WARNING", danger_freq, danger_mag
+    return "CLEAN", 0.0, 0.0
 
 
 def print_alert(status, danger_freq, danger_mag, dominant_freq, dominant_mag):

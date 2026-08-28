@@ -1,7 +1,12 @@
 import numpy as np
-from config import RATE, CHUNK
 
-def get_frequency_map(audio_data):
+from config import RATE
+
+
+FULL_SCALE_INT16 = float(np.iinfo(np.int16).max)
+MIN_DBFS = -120.0
+
+def get_frequency_map(audio_data, rate=RATE):
     """
     Takes raw audio data from the microphone,
     runs FFT on it, and returns the frequency
@@ -11,22 +16,29 @@ def get_frequency_map(audio_data):
         frequencies (array): frequency bins in Hz
         magnitudes_db (array): magnitude of each frequency in dB
     """
-    # Run Fast Fourier Transform on the audio data
-    window = np.hanning(len(audio_data))
-    fft_result = np.fft.rfft(audio_data * window)
+    samples = np.asarray(audio_data, dtype=np.float64)
+    if samples.ndim != 1 or samples.size == 0:
+        raise ValueError("audio_data must be a non-empty one-dimensional array")
+    if rate <= 0:
+        raise ValueError("rate must be positive")
 
-    # Get the magnitude of each frequency component
-    magnitudes = np.abs(fft_result)
+    # Compensate for the Hann window so a full-scale, bin-centred sine is 0 dBFS.
+    window = np.hanning(samples.size)
+    window_sum = window.sum()
+    if window_sum == 0:
+        window = np.ones(samples.size)
+        window_sum = float(samples.size)
 
-    # Convert magnitude to decibels (dB scale)
-    # Adding small value (1e-10) to avoid log(0) error
-    magnitudes_db = 20 * np.log10(magnitudes + 1e-10)
+    magnitudes = np.abs(np.fft.rfft(samples * window)) / window_sum
+    if magnitudes.size > 1:
+        # rFFT contains only positive-frequency energy. Restore the omitted half,
+        # excluding DC and Nyquist bins.
+        magnitudes[1:-1] *= 2
 
-    # Normalize so 0dB = maximum possible value for 16-bit audio
-    magnitudes_db -= 20 * np.log10(32768)
-
-    # Generate the corresponding frequency values for each bin
-    frequencies = np.fft.rfftfreq(CHUNK, d=1.0 / RATE)
+    magnitudes_db = 20 * np.log10(
+        np.maximum(magnitudes / FULL_SCALE_INT16, 10 ** (MIN_DBFS / 20))
+    )
+    frequencies = np.fft.rfftfreq(samples.size, d=1.0 / rate)
 
     return frequencies, magnitudes_db
 
@@ -39,7 +51,12 @@ def get_dominant_frequency(frequencies, magnitudes_db):
         dominant_freq (float): the loudest frequency in Hz
         dominant_mag (float): its magnitude in dB
     """
-    peak_index = np.argmax(magnitudes_db)
+    if len(frequencies) != len(magnitudes_db) or not len(frequencies):
+        raise ValueError("frequencies and magnitudes_db must be non-empty and aligned")
+
+    # Ignore DC offset: it is not an audible feedback frequency.
+    start_index = 1 if len(frequencies) > 1 else 0
+    peak_index = start_index + np.argmax(magnitudes_db[start_index:])
     dominant_freq = frequencies[peak_index]
     dominant_mag = magnitudes_db[peak_index]
 

@@ -1,0 +1,7 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+numpy>=1.26
+PyAudio>=0.2.14
+python-osc>=1.8
+matplotlib>=3.8
+torch>=2.2

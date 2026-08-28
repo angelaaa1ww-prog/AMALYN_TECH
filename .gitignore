@@ -1,0 +1,12 @@
+# Python bytecode and virtual environments
+__pycache__/
+*.py[cod]
+amalyn_env/
+
+# Runtime-generated audio and ML artifacts
+AMALYN_AI/logs/
+AMALYN_AI/ml_data/
+AMALYN_AI/ml_models/*.pth
+
+# Local tool state
+.pytest_cache/

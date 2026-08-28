@@ -1,7 +1,7 @@
 import pyaudio
 import numpy as np
 
-from config import FORMAT, CHANNELS, RATE, CHUNK
+from config import CHANNELS, RATE, CHUNK, get_pyaudio_format
 from audio_utils import get_frequency_map, get_dominant_frequency
 from alerts import check_for_feedback, print_alert
 
@@ -13,11 +13,12 @@ def start_detector():
     and fires alerts when feedback is detected.
     """
     p = pyaudio.PyAudio()
+    stream = None
 
     try:
         # Open microphone stream
         stream = p.open(
-            format=FORMAT,
+            format=get_pyaudio_format(),
             channels=CHANNELS,
             rate=RATE,
             input=True,
@@ -66,8 +67,9 @@ def start_detector():
         print(f"\n❌ AMALYN ERROR: {e}")
 
     finally:
-        stream.stop_stream()
-        stream.close()
+        if stream is not None:
+            stream.stop_stream()
+            stream.close()
         p.terminate()
 
 
