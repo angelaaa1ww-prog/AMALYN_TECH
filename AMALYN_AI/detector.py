@@ -1,4 +1,3 @@
-import pyaudio
 import numpy as np
 
 from config import CHANNELS, RATE, CHUNK, get_pyaudio_format
@@ -12,6 +11,8 @@ def start_detector():
     Opens the microphone, analyzes audio in real time,
     and fires alerts when feedback is detected.
     """
+    import pyaudio
+
     p = pyaudio.PyAudio()
     stream = None
 

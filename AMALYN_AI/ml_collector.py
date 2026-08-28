@@ -1,112 +1,116 @@
-# ml_collector.py — AMALYN ML Training Data Collector
-# Run this during a live session to collect labeled audio data
+"""Collect explicitly labelled audio frames for AMALYN model training."""
 
-import pyaudio
-import numpy as np
 import csv
 import os
+import threading
 import time
 from datetime import datetime
-from config import CHANNELS, RATE, CHUNK, get_pyaudio_format
+
+import numpy as np
+
 from audio_utils import get_frequency_map
-from alerts import check_for_feedback
-
-# --- DATA DIRECTORY ---
-DATA_DIR = os.path.join(os.path.dirname(__file__), 'ml_data')
-os.makedirs(DATA_DIR, exist_ok=True)
-
-timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-DATA_FILE = os.path.join(DATA_DIR, f'training_{timestamp}.csv')
-
-# --- AUDIO ---
-p = pyaudio.PyAudio()
-stream = p.open(
-    format=get_pyaudio_format(),
-    channels=CHANNELS,
-    rate=RATE,
-    input=True,
-    frames_per_buffer=CHUNK
-)
-
-print("\n" + "="*50)
-print("   AMALYN ML Data Collector")
-print("="*50)
-print("Commands:")
-print("  Press Enter      — label current audio as CLEAN")
-print("  Type 'w' + Enter — label as WARNING")
-print("  Type 'c' + Enter — label as CRITICAL")
-print("  Type 'q' + Enter — quit and save")
-print("="*50 + "\n")
-
-frames_collected = {"CLEAN": 0, "WARNING": 0, "CRITICAL": 0}
-current_label = "CLEAN"
-
-# Write CSV header
-with open(DATA_FILE, 'w', newline='') as f:
-    writer = csv.writer(f)
-    # Header: label + 257 frequency magnitude bins
-    header = ['label'] + [f'bin_{i}' for i in range(257)]
-    writer.writerow(header)
+from config import CHANNELS, CHUNK, RATE, get_pyaudio_format
 
 
-def collect_frame(label):
+DATA_DIR = os.path.join(os.path.dirname(__file__), "ml_data")
+FRAME_SIZE = 257
+
+
+class AudioDataCollector:
+    def __init__(self, stream, output_path):
+        self.stream = stream
+        self.output_path = output_path
+        self.counts = {"CLEAN": 0, "WARNING": 0, "CRITICAL": 0}
+        self._label = "CLEAN"
+        self._label_lock = threading.Lock()
+        self._stop_event = threading.Event()
+
+    @property
+    def label(self):
+        with self._label_lock:
+            return self._label
+
+    def set_label(self, label):
+        if label not in self.counts:
+            raise ValueError(f"Unsupported label: {label}")
+        with self._label_lock:
+            self._label = label
+
+    def collect_frame(self):
+        label = self.label
+        try:
+            data = self.stream.read(CHUNK, exception_on_overflow=False)
+            _, magnitudes_db = get_frequency_map(
+                np.frombuffer(data, dtype=np.int16)
+            )
+            magnitudes = magnitudes_db[:FRAME_SIZE].tolist()
+            magnitudes.extend([-80.0] * (FRAME_SIZE - len(magnitudes)))
+
+            with open(self.output_path, "a", newline="", encoding="utf-8") as file:
+                csv.writer(file).writerow(
+                    [label, *[round(value, 2) for value in magnitudes]]
+                )
+            self.counts[label] += 1
+        except Exception as error:
+            print(f"[COLLECTOR] Frame skipped: {error}")
+
+    def run(self):
+        while not self._stop_event.is_set():
+            self.collect_frame()
+            self._stop_event.wait(0.05)
+
+    def stop(self):
+        self._stop_event.set()
+
+
+def main():
+    import pyaudio
+
+    os.makedirs(DATA_DIR, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    output_path = os.path.join(DATA_DIR, f"training_{timestamp}.csv")
+
+    audio = pyaudio.PyAudio()
+    stream = None
+    collector = None
+    worker = None
     try:
-        data = stream.read(CHUNK, exception_on_overflow=False)
-        audio_data = np.frombuffer(data, dtype=np.int16).astype(np.float32)
-        frequencies, magnitudes_db = get_frequency_map(audio_data)
-        mags = magnitudes_db[:257].tolist()
-        if len(mags) < 257:
-            mags += [-80.0] * (257 - len(mags))
-        row = [label] + [round(m, 2) for m in mags]
-        with open(DATA_FILE, 'a', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(row)
-        frames_collected[label] += 1
-        return True
-    except Exception as e:
-        print(f"Error: {e}")
-        return False
+        stream = audio.open(
+            format=get_pyaudio_format(),
+            channels=CHANNELS,
+            rate=RATE,
+            input=True,
+            frames_per_buffer=CHUNK,
+        )
+        with open(output_path, "w", newline="", encoding="utf-8") as file:
+            csv.writer(file).writerow(["label", *[f"bin_{index}" for index in range(FRAME_SIZE)]])
+
+        collector = AudioDataCollector(stream, output_path)
+        worker = threading.Thread(target=collector.run, name="amalyn-data-collector", daemon=True)
+        worker.start()
+
+        print("\nAMALYN ML Data Collector")
+        print("Enter = CLEAN | w = WARNING | c = CRITICAL | q = quit\n")
+        while True:
+            command = input(f"[{collector.label}] collecting: ").strip().lower()
+            if command == "q":
+                break
+            collector.set_label({"w": "WARNING", "c": "CRITICAL"}.get(command, "CLEAN"))
+            print(f"Collected: {collector.counts} | total={sum(collector.counts.values())}")
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if collector is not None:
+            collector.stop()
+        if worker is not None:
+            worker.join(timeout=1)
+        if stream is not None:
+            stream.stop_stream()
+            stream.close()
+        audio.terminate()
+        if collector is not None:
+            print(f"\n[SAVED] {sum(collector.counts.values())} frames to {output_path}")
 
 
-import threading
-
-collecting = True
-label = "CLEAN"
-
-
-def auto_collect():
-    while collecting:
-        collect_frame(label)
-        time.sleep(0.05)
-
-
-collector_thread = threading.Thread(target=auto_collect, daemon=True)
-collector_thread.start()
-
-try:
-    while True:
-        cmd = input(f"[{label}] collecting... (Enter=CLEAN, w=WARNING, c=CRITICAL, q=quit): ").strip().lower()
-        if cmd == 'q':
-            break
-        elif cmd == 'w':
-            label = "WARNING"
-        elif cmd == 'c':
-            label = "CRITICAL"
-        else:
-            label = "CLEAN"
-
-        total = sum(frames_collected.values())
-        print(f"Collected: CLEAN={frames_collected['CLEAN']} WARNING={frames_collected['WARNING']} CRITICAL={frames_collected['CRITICAL']} TOTAL={total}")
-
-except KeyboardInterrupt:
-    pass
-finally:
-    collecting = False
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-    total = sum(frames_collected.values())
-    print(f"\n[SAVED] {total} frames saved to {DATA_FILE}")
-    print(f"  CLEAN    : {frames_collected['CLEAN']}")
-    print(f"  WARNING  : {frames_collected['WARNING']}")
-    print(f"  CRITICAL : {frames_collected['CRITICAL']}")
+if __name__ == "__main__":
+    main()
