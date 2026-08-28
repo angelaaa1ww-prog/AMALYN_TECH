@@ -1,7 +1,7 @@
 {
     "session_start": "2026-08-28T10:30:19.383235",
-    "session_end": "2026-08-28T12:37:00.060655",
-    "total_events": 29317,
+    "session_end": "2026-08-28T12:37:05.403405",
+    "total_events": 29361,
     "events": [
         {
             "timestamp": "2026-08-28T10:30:20.655601",
@@ -439750,6 +439750,666 @@
             "magnitude_db": -21.2,
             "eq_suggestion": {
                 "frequency": 689.1,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -6,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.366079",
+            "status": "WARNING",
+            "frequency_hz": 258.4,
+            "magnitude_db": -17.5,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -9,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.371666",
+            "status": "CRITICAL",
+            "frequency_hz": 258.4,
+            "magnitude_db": -14.3,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.401582",
+            "status": "WARNING",
+            "frequency_hz": 344.5,
+            "magnitude_db": -17.0,
+            "eq_suggestion": {
+                "frequency": 344.5,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -9,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.448482",
+            "status": "WARNING",
+            "frequency_hz": 258.4,
+            "magnitude_db": -19.5,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -6,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.591251",
+            "status": "CRITICAL",
+            "frequency_hz": 689.1,
+            "magnitude_db": -3.0,
+            "eq_suggestion": {
+                "frequency": 689.1,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.728528",
+            "status": "WARNING",
+            "frequency_hz": 861.3,
+            "magnitude_db": -17.1,
+            "eq_suggestion": {
+                "frequency": 861.3,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -9,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.731182",
+            "status": "CRITICAL",
+            "frequency_hz": 258.4,
+            "magnitude_db": -15.0,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.870147",
+            "status": "WARNING",
+            "frequency_hz": 430.7,
+            "magnitude_db": -16.2,
+            "eq_suggestion": {
+                "frequency": 430.7,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -9,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.874207",
+            "status": "CRITICAL",
+            "frequency_hz": 258.4,
+            "magnitude_db": -12.9,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.891532",
+            "status": "WARNING",
+            "frequency_hz": 258.4,
+            "magnitude_db": -15.0,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -9,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.908655",
+            "status": "CRITICAL",
+            "frequency_hz": 258.4,
+            "magnitude_db": -12.6,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.940668",
+            "status": "WARNING",
+            "frequency_hz": 430.7,
+            "magnitude_db": -16.6,
+            "eq_suggestion": {
+                "frequency": 430.7,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -9,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.942683",
+            "status": "CRITICAL",
+            "frequency_hz": 258.4,
+            "magnitude_db": -12.4,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:02.981747",
+            "status": "WARNING",
+            "frequency_hz": 689.1,
+            "magnitude_db": -15.5,
+            "eq_suggestion": {
+                "frequency": 689.1,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -9,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.031443",
+            "status": "CRITICAL",
+            "frequency_hz": 344.5,
+            "magnitude_db": -13.7,
+            "eq_suggestion": {
+                "frequency": 344.5,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.048602",
+            "status": "WARNING",
+            "frequency_hz": 344.5,
+            "magnitude_db": -22.2,
+            "eq_suggestion": {
+                "frequency": 344.5,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.071291",
+            "status": "CRITICAL",
+            "frequency_hz": 344.5,
+            "magnitude_db": -3.1,
+            "eq_suggestion": {
+                "frequency": 344.5,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.142377",
+            "status": "WARNING",
+            "frequency_hz": 947.5,
+            "magnitude_db": -18.5,
+            "eq_suggestion": {
+                "frequency": 947.5,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -9,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.172321",
+            "status": "CRITICAL",
+            "frequency_hz": 258.4,
+            "magnitude_db": -2.5,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.328559",
+            "status": "WARNING",
+            "frequency_hz": 947.5,
+            "magnitude_db": -21.9,
+            "eq_suggestion": {
+                "frequency": 947.5,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -6,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.351896",
+            "status": "CRITICAL",
+            "frequency_hz": 516.8,
+            "magnitude_db": -12.1,
+            "eq_suggestion": {
+                "frequency": 516.8,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.419456",
+            "status": "WARNING",
+            "frequency_hz": 430.7,
+            "magnitude_db": -15.3,
+            "eq_suggestion": {
+                "frequency": 430.7,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -9,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.468562",
+            "status": "WARNING",
+            "frequency_hz": 947.5,
+            "magnitude_db": -22.9,
+            "eq_suggestion": {
+                "frequency": 947.5,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.560599",
+            "status": "WARNING",
+            "frequency_hz": 861.3,
+            "magnitude_db": -24.0,
+            "eq_suggestion": {
+                "frequency": 861.3,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.658781",
+            "status": "WARNING",
+            "frequency_hz": 861.3,
+            "magnitude_db": -23.1,
+            "eq_suggestion": {
+                "frequency": 861.3,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.768736",
+            "status": "CRITICAL",
+            "frequency_hz": 12919.9,
+            "magnitude_db": -1.8,
+            "eq_suggestion": {
+                "frequency": 12919.9,
+                "band_name": "Air",
+                "problem": "Hiss",
+                "cut_db": -12,
+                "q_value": 1.4,
+                "filter_type": "Notch",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.791479",
+            "status": "WARNING",
+            "frequency_hz": 602.9,
+            "magnitude_db": -24.6,
+            "eq_suggestion": {
+                "frequency": 602.9,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.822438",
+            "status": "CRITICAL",
+            "frequency_hz": 775.2,
+            "magnitude_db": -9.4,
+            "eq_suggestion": {
+                "frequency": 775.2,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.892378",
+            "status": "WARNING",
+            "frequency_hz": 12833.8,
+            "magnitude_db": -15.6,
+            "eq_suggestion": {
+                "frequency": 12833.8,
+                "band_name": "Air",
+                "problem": "Hiss",
+                "cut_db": -9,
+                "q_value": 1.4,
+                "filter_type": "Notch",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.915898",
+            "status": "CRITICAL",
+            "frequency_hz": 12919.9,
+            "magnitude_db": 8.8,
+            "eq_suggestion": {
+                "frequency": 12919.9,
+                "band_name": "Air",
+                "problem": "Hiss",
+                "cut_db": -12,
+                "q_value": 1.4,
+                "filter_type": "Notch",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:03.978514",
+            "status": "WARNING",
+            "frequency_hz": 344.5,
+            "magnitude_db": -21.0,
+            "eq_suggestion": {
+                "frequency": 344.5,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -6,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.189848",
+            "status": "WARNING",
+            "frequency_hz": 861.3,
+            "magnitude_db": -24.8,
+            "eq_suggestion": {
+                "frequency": 861.3,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.242011",
+            "status": "WARNING",
+            "frequency_hz": 947.5,
+            "magnitude_db": -24.5,
+            "eq_suggestion": {
+                "frequency": 947.5,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.328398",
+            "status": "WARNING",
+            "frequency_hz": 258.4,
+            "magnitude_db": -22.1,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.331030",
+            "status": "CRITICAL",
+            "frequency_hz": 258.4,
+            "magnitude_db": -13.6,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.378760",
+            "status": "WARNING",
+            "frequency_hz": 258.4,
+            "magnitude_db": -21.5,
+            "eq_suggestion": {
+                "frequency": 258.4,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -6,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.444295",
+            "status": "WARNING",
+            "frequency_hz": 947.5,
+            "magnitude_db": -23.6,
+            "eq_suggestion": {
+                "frequency": 947.5,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.792217",
+            "status": "WARNING",
+            "frequency_hz": 1033.6,
+            "magnitude_db": -25.0,
+            "eq_suggestion": {
+                "frequency": 1033.6,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 1.4,
+                "filter_type": "Notch",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.841388",
+            "status": "WARNING",
+            "frequency_hz": 516.8,
+            "magnitude_db": -24.2,
+            "eq_suggestion": {
+                "frequency": 516.8,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.888761",
+            "status": "WARNING",
+            "frequency_hz": 602.9,
+            "magnitude_db": -23.2,
+            "eq_suggestion": {
+                "frequency": 602.9,
+                "band_name": "Mid",
+                "problem": "Honk / Nasality",
+                "cut_db": -3,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:04.963034",
+            "status": "CRITICAL",
+            "frequency_hz": 344.5,
+            "magnitude_db": -11.3,
+            "eq_suggestion": {
+                "frequency": 344.5,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:05.028523",
+            "status": "WARNING",
+            "frequency_hz": 344.5,
+            "magnitude_db": -19.8,
+            "eq_suggestion": {
+                "frequency": 344.5,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -6,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "WARNING"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:05.052041",
+            "status": "CRITICAL",
+            "frequency_hz": 344.5,
+            "magnitude_db": -8.9,
+            "eq_suggestion": {
+                "frequency": 344.5,
+                "band_name": "Low Mid",
+                "problem": "Muddiness",
+                "cut_db": -12,
+                "q_value": 0.8,
+                "filter_type": "Bell",
+                "status": "CRITICAL"
+            }
+        },
+        {
+            "timestamp": "2026-08-28T12:37:05.403405",
+            "status": "WARNING",
+            "frequency_hz": 516.8,
+            "magnitude_db": -20.6,
+            "eq_suggestion": {
+                "frequency": 516.8,
                 "band_name": "Mid",
                 "problem": "Honk / Nasality",
                 "cut_db": -6,
