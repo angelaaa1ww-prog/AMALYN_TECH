@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import pyaudio
-from config import FORMAT, CHANNELS, RATE, CHUNK
+from config import CHANNELS, RATE, CHUNK, get_pyaudio_format
 from audio_utils import get_frequency_map
 from alerts import check_for_feedback
 from eq_engine import suggest_eq
@@ -13,7 +13,7 @@ from logger import log_event
 
 p = pyaudio.PyAudio()
 stream = p.open(
-    format=FORMAT,
+    format=get_pyaudio_format(),
     channels=CHANNELS,
     rate=RATE,
     input=True,

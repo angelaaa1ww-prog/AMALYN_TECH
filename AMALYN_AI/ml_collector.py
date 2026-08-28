@@ -7,7 +7,7 @@ import csv
 import os
 import time
 from datetime import datetime
-from config import FORMAT, CHANNELS, RATE, CHUNK
+from config import CHANNELS, RATE, CHUNK, get_pyaudio_format
 from audio_utils import get_frequency_map
 from alerts import check_for_feedback
 
@@ -21,7 +21,7 @@ DATA_FILE = os.path.join(DATA_DIR, f'training_{timestamp}.csv')
 # --- AUDIO ---
 p = pyaudio.PyAudio()
 stream = p.open(
-    format=FORMAT,
+    format=get_pyaudio_format(),
     channels=CHANNELS,
     rate=RATE,
     input=True,
