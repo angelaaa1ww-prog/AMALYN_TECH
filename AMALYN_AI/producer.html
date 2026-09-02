@@ -307,19 +307,6 @@ const eqCtx = eqCanvas.getContext('2d')
 const phaseCanvas = document.getElementById('phase-canvas')
 const phaseCtx = phaseCanvas.getContext('2d')
 
-const minF = Math.log10(20), maxF = Math.log10(20000)
-
-let smoothMags = null, smoothFreqs = null
-let currentData = null
-let sessionEvents = []
-let warnings = 0, criticals = 0, corrections = 0
-let lastStatus = 'CLEAN'
-let startTime = Date.now()
-
-// Resize all canvases
-function resizeCanvases(){
-    const r = Math.min(devicePixelRatio || 1, 2)
-
     const specRect = specCanvas.parentElement.getBoundingClientRect()
     specCanvas.width = specRect.width * r
     specCanvas.height = specRect.height * r
@@ -495,37 +482,12 @@ function drawPhase(mags){
     phaseCtx.strokeStyle = '#7be8ff66'
     phaseCtx.lineWidth = 1.5
     phaseCtx.beginPath()
-
-    const points = Math.min(mags.length, 80)
-    for(let i=0; i<points; i++){
-        const mag = Math.max(mags[i], -80)
-        const norm = (mag + 80) / 80
-        const angle = (i / points) * Math.PI * 2
-        const jitter = (Math.random() - 0.5) * 0.15
-        const r = norm * scale * (0.8 + jitter)
-        const x = cx + Math.cos(angle) * r
-        const y = cy + Math.sin(angle) * r * 0.6
-        i === 0 ? phaseCtx.moveTo(x,y) : phaseCtx.lineTo(x,y)
-    }
     phaseCtx.closePath()
     phaseCtx.stroke()
 
     const gr = phaseCtx.createRadialGradient(cx,cy,0,cx,cy,scale)
     gr.addColorStop(0,'#7be8ff22')
     gr.addColorStop(1,'#7be8ff00')
-    phaseCtx.fillStyle = gr
-    phaseCtx.fill()
-}
-
-// Update frequency table
-function updateFreqTable(freqs, mags, suggestion){
-    if(!freqs || !mags || freqs.length < 5) return
-
-    // Find top 8 loudest frequencies in audible range
-    const pairs = []
-    for(let i=0; i<freqs.length; i++){
-        if(freqs[i] >= 20 && freqs[i] <= 20000){
-            pairs.push({freq: freqs[i], mag: mags[i]})
         }
     }
     pairs.sort((a,b)=>b.mag-a.mag)
@@ -668,38 +630,9 @@ ${'─'.repeat(40)}
 
     report += `
 ${'═'.repeat(40)}
-AMALYN TECH — AI Audio Intelligence
-`
-    document.getElementById('report-box').textContent = report
-}
-
-function copyReport(){
-    const text = document.getElementById('report-box').textContent
-    navigator.clipboard.writeText(text).then(()=>{
-        document.querySelector('.btn.primary').textContent = 'Copied!'
-        setTimeout(()=>document.querySelector('.btn.primary').textContent='Generate Report', 2000)
-    })
-}
-
-function clearReport(){
-    document.getElementById('report-box').textContent =
-        '-- AMALYN TECH Producer Report --\nClick "Generate Report" to produce a full session analysis.'
-}
 
 // Uptime
 setInterval(()=>{
-    const s = Math.floor((Date.now()-startTime)/1000)
-    document.getElementById('st-upt').textContent =
-        `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
-}, 1000)
-
-// WebSocket
-function connect(){
-    const ws = new WebSocket(WS)
-
-    ws.onopen = () => {
-        document.getElementById('conn').textContent = 'CONNECTED'
-        document.getElementById('conn').className = 'conn ok'
     }
 
     ws.onmessage = (e) => {
@@ -759,30 +692,6 @@ function connect(){
                 addEvent('CRITICAL', d.danger_freq, d.danger_mag)
             } else if(status==='WARNING' && lastStatus!=='WARNING'){
                 warnings++
-                document.getElementById('st-warn').textContent = warnings
-                addEvent('WARNING', d.danger_freq, d.danger_mag)
-            }
-            lastStatus = status
-
-            // Sentinel alerts
-            if(d.sentinel && d.sentinel.alerts && d.sentinel.alerts.length > 0){
-                const alert = d.sentinel.alerts[0]
-                addEvent('SENTINEL', 0, 0, `${alert.type}: ${alert.message}`)
-            }
-
-            // Draw
-            if(d.frequencies && d.magnitudes){
-                drawSpectrum(d.frequencies, d.magnitudes, status)
-                drawPhase(d.magnitudes)
-                updateFreqTable(d.frequencies, d.magnitudes, d.suggestion)
-            }
-            drawEQ(d.suggestion)
-
-        }catch(err){ console.error(err) }
-    }
-
-    ws.onclose = () => {
-        document.getElementById('conn').textContent = 'RECONNECTING'
         document.getElementById('conn').className = 'conn'
         setTimeout(connect, 1500)
     }

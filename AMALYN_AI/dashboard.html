@@ -532,7 +532,18 @@
   <script>
     const host=location.hostname||'localhost',api=`${location.protocol==='file:'?'http:':location.protocol}//${host}:8000`,wsUrl=`${location.protocol==='https:'?'wss:':'ws:'}//${host}:8000/ws`,cv=document.getElementById('cv'),ctx=cv.getContext('2d'),minLog=Math.log10(20),maxLog=Math.log10(20000),$=id=>document.getElementById(id),s={status:'CLEAN',last:'CLEAN',warnings:0,criticals:0,start:Date.now(),pending:null,mags:null,freqs:null,socket:null,timer:null,toast:null,profileKey:'',sentinelKey:''};let w=1,h=1;
     const text=(id,v)=>{const e=$(id);if(e&&e.textContent!==String(v))e.textContent=v},color=status=>({CLEAN:'#5cebac',WARNING:'#ffc971',CRITICAL:'#ff7d92'}[status]||'#9db6d1'),name=status=>({CLEAN:'Clean',WARNING:'Warning',CRITICAL:'Critical'}[status]||'Listening'),number=v=>Number.isFinite(v)?v.toFixed(1):'--';
-    function toast(message,error=false){const e=$('toast');e.textContent=message;e.className=`toast show${error?' error':''}`;clearTimeout(s.toast);s.toast=setTimeout(()=>e.classList.remove('show'),4200)}
+    const toastQueue = [];
+    function toast(message,error=false){
+      toastQueue.push({message,error});
+      if(toastQueue.length===1) showNextToast();
+    }
+    function showNextToast(){
+      if(!toastQueue.length) return;
+      const {message,error} = toastQueue[0];
+      const e=$('toast');e.textContent=message;e.className=`toast show${error?' error':''}`;
+      clearTimeout(s.toast);
+      s.toast=setTimeout(()=>{e.classList.remove('show');toastQueue.shift();setTimeout(showNextToast,300)},4200);
+    }
     function connection(kind,label){const e=$('conn');e.className=`connection${kind?` ${kind}`:''}`;e.textContent=label}
     function resize(){const b=cv.getBoundingClientRect(),r=Math.min(devicePixelRatio||1,2);w=Math.max(1,b.width);h=Math.max(1,b.height);cv.width=Math.round(w*r);cv.height=Math.round(h*r);ctx.setTransform(r,0,0,r,0,0);draw()}
     const y=db=>h-((Math.max(-80,Math.min(0,db))+80)/80)*h,x=f=>((Math.log10(f)-minLog)/(maxLog-minLog))*w;

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
 from copy import deepcopy
 from typing import Any
 
@@ -14,13 +15,14 @@ try:
 except ImportError:  # Allows the API's non-audio endpoints to remain available.
     pyaudio = None
 
-from alerts import check_for_feedback
+from alerts import available_sensitivity_profiles, check_for_feedback
 from audio_utils import get_dominant_frequency, get_frequency_map
 from config import CHANNELS, CHUNK, RATE, get_pyaudio_format
 from eq_engine import suggest_eq
 from library import get_perfect_state
 from logger import log_event
 from mixer import AmalynMixerBridge
+from sentinel import AmalynSentinel
 
 
 logger = logging.getLogger(__name__)
@@ -38,15 +40,28 @@ def _empty_frame() -> dict[str, Any]:
         "suggestion": None,
         "mixer_corrections": {"total_corrections": 0, "corrections": []},
         "perfect_state": None,
+        "ml_status": None,
+        "ml_confidence": None,
+        "sentinel": {"health_score": 100, "alerts": [], "signal_stats": {}},
     }
 
 
 class AudioEngine:
     """Owns the microphone stream, worker thread, and latest API frame."""
 
-    def __init__(self, mixer_type: str = "simulator", channel: int = 1) -> None:
+    def __init__(
+        self,
+        mixer_type: str = "simulator",
+        channel: int = 1,
+        sensitivity: str = "balanced",
+        enable_ml: bool = False,
+    ) -> None:
+        if sensitivity not in available_sensitivity_profiles():
+            profiles = ", ".join(available_sensitivity_profiles())
+            raise ValueError(f"Unknown sensitivity '{sensitivity}'. Supported: {profiles}")
         self.mixer_type = mixer_type
         self.channel = channel
+        self.sensitivity = sensitivity
         self._lock = threading.RLock()
         self._stop_event = threading.Event()
         self._thread: threading.Thread | None = None
@@ -57,7 +72,10 @@ class AudioEngine:
         self._perfect_state: dict[str, Any] | None = None
         self._last_status = "CLEAN"
         self._last_correction_frequency: float | None = None
+        self._last_correction_at = 0.0
         self._last_error: str | None = None
+        self._sentinel = AmalynSentinel()
+        self._ml_check = self._load_ml_check() if enable_ml else None
 
     @property
     def is_running(self) -> bool:
@@ -66,6 +84,25 @@ class AudioEngine:
     @property
     def last_error(self) -> str | None:
         return self._last_error
+
+    @staticmethod
+    def _load_ml_check():
+        """Load ML inference only for live API use, not offline DSP callers."""
+        try:
+            from ml_inference import ml_check
+
+            return ml_check
+        except Exception as error:
+            logger.warning("ML inference is unavailable: %s", error)
+            return None
+
+    def set_sensitivity(self, sensitivity: str) -> None:
+        """Select the early, balanced, or strict feedback profile."""
+        if sensitivity not in available_sensitivity_profiles():
+            profiles = ", ".join(available_sensitivity_profiles())
+            raise ValueError(f"Unknown sensitivity '{sensitivity}'. Supported: {profiles}")
+        with self._lock:
+            self.sensitivity = sensitivity
 
     def start(self) -> None:
         """Open the audio device and begin analysis. Safe to call more than once."""
@@ -86,10 +123,11 @@ class AudioEngine:
             )
             mixer = AmalynMixerBridge(mixer_type=self.mixer_type, channel=self.channel)
             mixer.connect()
-        except Exception:
+        except Exception as error:
             if stream is not None:
                 stream.close()
             audio.terminate()
+            self._last_error = str(error)
             raise
 
         with self._lock:
@@ -148,21 +186,43 @@ class AudioEngine:
         with self._lock:
             return deepcopy(self._latest_frame)
 
+    def apply_safe_profile(self) -> bool:
+        """Apply the mixer safe profile when a connected mixer is available."""
+        with self._lock:
+            mixer = self._mixer
+        return bool(mixer and mixer.send_safe_profile())
+
     def process_audio(self, audio_data: np.ndarray) -> dict[str, Any]:
         """Analyze one frame. Kept separate from I/O so the DSP path is testable."""
         frequencies, magnitudes_db = get_frequency_map(audio_data)
         dominant_freq, dominant_mag = get_dominant_frequency(frequencies, magnitudes_db)
-        status, danger_freq, danger_mag = check_for_feedback(frequencies, magnitudes_db)
+        status, danger_freq, danger_mag = check_for_feedback(
+            frequencies, magnitudes_db, sensitivity=self.sensitivity
+        )
         suggestion = suggest_eq(danger_freq, danger_mag, status)
+
+        ml_status, ml_confidence = None, None
+        if self._ml_check is not None:
+            ml_status, ml_confidence = self._ml_check(magnitudes_db)
+
+        sentinel_alerts, health_score = self._sentinel.analyze(audio_data, magnitudes_db)
 
         mixer = self._mixer
         if status == "CLEAN":
             self._last_correction_frequency = None
+            self._last_correction_at = 0.0
         elif suggestion and mixer is not None:
             correction_frequency = round(danger_freq, 1)
-            if correction_frequency != self._last_correction_frequency:
-                mixer.send_eq_correction(suggestion)
+            frequency_tolerance = max(20.0, RATE / CHUNK * 0.75)
+            correction_is_new = (
+                self._last_correction_frequency is None
+                or abs(correction_frequency - self._last_correction_frequency)
+                >= frequency_tolerance
+            )
+            cooldown_complete = time.monotonic() - self._last_correction_at >= 0.75
+            if correction_is_new and cooldown_complete and mixer.send_eq_correction(suggestion):
                 self._last_correction_frequency = correction_frequency
+                self._last_correction_at = time.monotonic()
 
         if status == "CRITICAL" and self._last_status != "CRITICAL" and mixer is not None:
             mixer.send_safe_profile()
@@ -186,6 +246,13 @@ class AudioEngine:
             "suggestion": suggestion,
             "mixer_corrections": mixer_corrections,
             "perfect_state": self._perfect_state,
+            "ml_status": ml_status,
+            "ml_confidence": ml_confidence,
+            "sentinel": {
+                "health_score": health_score,
+                "alerts": sentinel_alerts[:3],
+                "signal_stats": self._sentinel.get_signal_stats(),
+            },
         }
         with self._lock:
             self._latest_frame = frame
@@ -209,4 +276,3 @@ class AudioEngine:
                 self._last_error = str(error)
                 logger.exception("Audio analysis error")
                 self._stop_event.wait(0.1)
-

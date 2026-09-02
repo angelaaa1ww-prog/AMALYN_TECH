@@ -1,8 +1,13 @@
 # sentinel.py — AMALYN Sentinel: Predictive Healing & Hardware Monitor
 
+import logging
+
 import numpy as np
 from collections import deque
 from datetime import datetime
+
+
+logger = logging.getLogger(__name__)
 
 
 class AmalynSentinel:
@@ -33,7 +38,7 @@ class AmalynSentinel:
         # Frame counter
         self.frame_count = 0
 
-        print("[SENTINEL] Initialized — monitoring signal health")
+        logger.info("Sentinel initialized — monitoring signal health")
 
     def analyze(self, audio_data, magnitudes_db):
         """
@@ -54,8 +59,11 @@ class AmalynSentinel:
         clip_ratio = float(np.mean(np.abs(audio_float) > self.CLIP_THRESHOLD))
         self.clip_history.append(clip_ratio)
 
-        # 3. Check noise floor
-        noise_floor = float(np.percentile(np.abs(magnitudes_db), 10))
+        # 3. Check noise floor.  dBFS values are negative, so taking ``abs``
+        # reverses their meaning (a quieter -100 dBFS bin would look louder
+        # than a -50 dBFS bin).  The quiet lower percentile is the stable
+        # spectral-floor estimate we need for interference detection.
+        noise_floor = float(np.percentile(np.asarray(magnitudes_db), 20))
         self.noise_history.append(noise_floor)
 
         # 4. Check for dropout
@@ -65,7 +73,7 @@ class AmalynSentinel:
         # Set baseline noise floor on first 50 frames
         if self.frame_count == 50:
             self.NOISE_FLOOR_BASELINE = float(np.mean(list(self.noise_history)))
-            print(f"[SENTINEL] Noise floor baseline set: {self.NOISE_FLOOR_BASELINE:.1f}dB")
+            logger.info("Sentinel noise-floor baseline set: %.1f dBFS", self.NOISE_FLOOR_BASELINE)
 
         # Only start alerting after baseline is set
         if len(self.rms_history) < 20:

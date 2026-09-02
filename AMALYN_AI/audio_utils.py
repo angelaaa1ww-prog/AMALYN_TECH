@@ -58,7 +58,46 @@ def get_dominant_frequency(frequencies, magnitudes_db):
     # Ignore DC offset: it is not an audible feedback frequency.
     start_index = 1 if len(frequencies) > 1 else 0
     peak_index = start_index + np.argmax(magnitudes_db[start_index:])
-    dominant_freq = frequencies[peak_index]
+    dominant_freq = interpolate_peak_frequency(frequencies, magnitudes_db, peak_index)
     dominant_mag = magnitudes_db[peak_index]
 
     return dominant_freq, dominant_mag
+
+
+def interpolate_peak_frequency(frequencies, magnitudes_db, peak_index):
+    """Estimate a tonal peak between FFT bins using parabolic interpolation.
+
+    The FFT bin itself is still used for level measurements.  Interpolating only
+    the frequency makes an off-bin feedback tone substantially easier to place
+    with a narrow EQ filter without changing calibrated dBFS values.
+    """
+    frequencies = np.asarray(frequencies, dtype=np.float64)
+    magnitudes_db = np.asarray(magnitudes_db, dtype=np.float64)
+    if (
+        not 0 <= peak_index < len(frequencies)
+        or len(frequencies) != len(magnitudes_db)
+        or peak_index == 0
+        or peak_index == len(frequencies) - 1
+    ):
+        return float(frequencies[peak_index])
+
+    lower_width = frequencies[peak_index] - frequencies[peak_index - 1]
+    upper_width = frequencies[peak_index + 1] - frequencies[peak_index]
+    if (
+        lower_width <= 0
+        or upper_width <= 0
+        or abs(upper_width - lower_width) > max(lower_width, upper_width) * 0.05
+    ):
+        return float(frequencies[peak_index])
+
+    left, center, right = magnitudes_db[peak_index - 1 : peak_index + 2]
+    denominator = left - 2 * center + right
+    if not np.isfinite(denominator) or abs(denominator) < 1e-12:
+        return float(frequencies[peak_index])
+
+    offset = 0.5 * (left - right) / denominator
+    # A valid quadratic maximum lies between neighbouring FFT bins.
+    offset = float(np.clip(offset, -0.5, 0.5))
+    if abs(offset) < 1e-9:
+        return float(frequencies[peak_index])
+    return float(frequencies[peak_index] + offset * upper_width)

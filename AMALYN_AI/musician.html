@@ -258,6 +258,13 @@ const WS  = `${location.protocol==='https:'?'wss:':'ws:'}//${location.hostname||
 let channels = []
 let ws = null
 
+function showToast(msg){
+    let t = document.getElementById('api-toast')
+    if(!t){ t=document.createElement('div'); t.id='api-toast'; t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 20px;background:#ff7d92;color:#fff;border-radius:8px;font-size:12px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s'; document.body.appendChild(t) }
+    t.textContent=msg; t.style.opacity='1'
+    clearTimeout(t._timer); t._timer=setTimeout(()=>t.style.opacity='0', 3000)
+}
+
 // Load channels from API
 async function loadChannels(){
     try{
@@ -306,7 +313,7 @@ function renderChannels(){
                 <button class="mute-btn${ch.mute?' active':''}"
                     id="mute-${ch.id}"
                     onclick="toggleMute(${ch.id})">
-                    ${ch.mute?'MUTE':'MUT'}
+                    ${ch.mute?'MUTE':'MUTED'}
                 </button>
             </div>
         `
@@ -333,7 +340,7 @@ async function sendLevel(id, level){
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({channel_id:id,level:parseInt(level)})
         })
-    }catch(e){}
+    }catch(e){ showToast('API unreachable — change not saved') }
 }
 
 async function toggleMute(id){
@@ -349,7 +356,7 @@ async function toggleMute(id){
     } else {
         el.classList.remove('muted')
         btn.classList.remove('active')
-        btn.textContent = 'MUT'
+        btn.textContent = 'MUTED'
     }
     try{
         await fetch(`${API}/musician/mix`,{
@@ -357,13 +364,15 @@ async function toggleMute(id){
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({channel_id:id,mute:ch.mute})
         })
-    }catch(e){}
+    }catch(e){ showToast('API unreachable — change not saved') }
 }
 
 function updateMasterSlider(el){
     const val = parseInt(el.value)
     el.style.setProperty('--val',val+'%')
     document.getElementById('master-val').textContent = val
+    // Local-only control for now, but ideally sends a request to update all channels proportionally:
+    // channels.forEach(ch => sendLevel(ch.id, Math.min(100, Math.round(ch.level * (val / 100)))));
 }
 
 // WebSocket for room signal info

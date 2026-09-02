@@ -29,7 +29,10 @@ def calculate_cut(magnitude_db, threshold_db=-25):
 
 
 def suggest_eq(danger_freq, danger_mag, status):
-    if status == "CLEAN":
+    # A status can be supplied by an advisory subsystem (for example ML) that
+    # does not identify one defensible spectral peak.  Never generate or send a
+    # meaningless EQ command at 0 Hz in that case.
+    if status == "CLEAN" or danger_freq is None or danger_mag is None or danger_freq <= 0:
         return None
 
     band = get_eq_band(danger_freq)
