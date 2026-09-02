@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>AMALYN — Musician Portal</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+    background:#05050a;color:#fff;
+    font-family:'Segoe UI',sans-serif;
+    min-height:100vh;
+    overscroll-behavior:none;
+}
+.header{
+    background:#08080f;
+    border-bottom:1px solid #0f0f1a;
+    padding:16px 20px;
+    display:flex;align-items:center;
+    justify-content:space-between;
+    position:sticky;top:0;z-index:10;
+}
+.logo{font-size:13px;font-weight:900;letter-spacing:4px;color:#00ff88}
+.status{font-size:9px;color:#333;letter-spacing:1px;text-transform:uppercase}
+.status.ok{color:#00ff88}
+
+.hero{
+    padding:24px 20px 16px;
+    border-bottom:1px solid #0f0f1a;
+}
+.hero-title{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.hero-sub{font-size:11px;color:#444;letter-spacing:1px}
+
+.signal-bar{
+    margin:16px 20px;
+    background:#0c0c18;
+    border:1px solid #151525;
+    border-radius:10px;
+    padding:14px;
+    display:flex;align-items:center;
+    justify-content:space-between;
+}
+.signal-label{font-size:9px;color:#333;letter-spacing:1px;text-transform:uppercase}
+.signal-value{font-size:12px;font-weight:700;color:#00ff88;font-variant-numeric:tabular-nums}
+.signal-dot{
+    width:8px;height:8px;border-radius:50%;
+    background:#00ff88;box-shadow:0 0 8px #00ff88;
+    animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.channels{padding:0 16px 100px}
+.ch-title{
+    font-size:8px;letter-spacing:2px;color:#252535;
+    text-transform:uppercase;margin:16px 4px 10px;
+}
+
+.channel{
+    background:#0c0c18;border:1px solid #151525;
+    border-radius:12px;padding:16px;margin-bottom:10px;
+    transition:border-color .2s;
+}
+.channel.active{border-color:#00ff8833}
+.channel.muted{opacity:.5}
+
+.ch-top{
+    display:flex;align-items:center;
+    justify-content:space-between;margin-bottom:14px;
+}
+.ch-name{font-size:13px;font-weight:700;letter-spacing:.5px}
+.ch-level-display{
+    font-size:11px;font-weight:700;
+    color:#00ff88;font-variant-numeric:tabular-nums;
+    min-width:36px;text-align:right;
+}
+
+.ch-controls{display:flex;align-items:center;gap:12px}
+
+/* Slider */
+.slider-wrap{flex:1;position:relative;height:40px;display:flex;align-items:center}
+input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;height:4px;border-radius:4px;outline:none;
+    background:linear-gradient(to right, #00ff88 var(--val,75%), #1a1a2a var(--val,75%));
+    cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:22px;height:22px;border-radius:50%;
+    background:#00ff88;border:3px solid #05050a;
+    box-shadow:0 0 10px #00ff8866;
+    cursor:pointer;transition:transform .15s;
+}
+input[type=range]:active::-webkit-slider-thumb{
+    transform:scale(1.2);
+}
+input[type=range].warn{
+    background:linear-gradient(to right, #ffaa00 var(--val,75%), #1a1a2a var(--val,75%));
+}
+input[type=range].warn::-webkit-slider-thumb{background:#ffaa00;box-shadow:0 0 10px #ffaa0066}
+
+/* Mute button */
+.mute-btn{
+    width:40px;height:40px;border-radius:10px;
+    border:1px solid #1a1a2a;
+    background:#0f0f1a;
+    color:#444;font-size:10px;font-weight:800;
+    letter-spacing:.5px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .15s;flex-shrink:0;
+}
+.mute-btn.active{
+    background:#ff333322;border-color:#ff333366;color:#ff3333;
+}
+.mute-btn:active{transform:scale(.92)}
+
+/* Master section */
+.master{
+    position:fixed;bottom:0;left:0;right:0;
+    background:#08080f;border-top:1px solid #0f0f1a;
+    padding:14px 20px;
+    display:flex;align-items:center;gap:16px;
+}
+.master-label{font-size:9px;color:#333;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.master-slider{flex:1}
+.master-slider input[type=range]{
+    background:linear-gradient(to right,#4488ff var(--val,80%),#1a1a2a var(--val,80%));
+}
+.master-slider input[type=range]::-webkit-slider-thumb{
+    background:#4488ff;box-shadow:0 0 10px #4488ff66;
+}
+.master-val{font-size:11px;font-weight:700;color:#4488ff;min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <span class="logo">AMALYN</span>
+    <span class="status" id="conn">CONNECTING</span>
+</div>
+
+<div class="hero">
+    <div class="hero-title">Your Mix</div>
+    <div class="hero-sub">IEM MONITOR CONTROL</div>
+</div>
+
+<div class="signal-bar">
+    <div>
+        <div class="signal-label">Room Signal</div>
+        <div class="signal-value" id="room-signal">-- Hz</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:9px;color:#333" id="room-status">Listening</span>
+        <div class="signal-dot" id="signal-dot"></div>
+    </div>
+</div>
+
+<div class="channels">
+    <div class="ch-title">Channel Mix</div>
+    <div id="channel-list"></div>
+</div>
+
+<div class="master">
+    <div class="master-label">Master</div>
+    <div class="master-slider slider-wrap">
+        <input type="range" min="0" max="100" value="80"
+            oninput="updateMasterSlider(this)"
+            style="--val:80%">
+    </div>
+    <div class="master-val" id="master-val">80</div>
+</div>
+
+<script>
+const API = `${location.protocol==='file:'?'http:':location.protocol}//${location.hostname||'localhost'}:8000`
+const WS  = `${location.protocol==='https:'?'wss:':'ws:'}//${location.hostname||'localhost'}:8000/ws`
+
+let channels = []
+let ws = null
+
+// Load channels from API
+async function loadChannels(){
+    try{
+        const res = await fetch(`${API}/musician/channels`)
+        const data = await res.json()
+        channels = data.channels
+        renderChannels()
+        document.getElementById('conn').textContent = 'CONNECTED'
+        document.getElementById('conn').className = 'status ok'
+    }catch(e){
+        document.getElementById('conn').textContent = 'API OFFLINE'
+        // Render demo channels if API not available
+        channels = [
+            {id:1,name:'Vocals', level:75,mute:false},
+            {id:2,name:'Guitar', level:60,mute:false},
+            {id:3,name:'Bass',   level:55,mute:false},
+            {id:4,name:'Keys',   level:50,mute:false},
+            {id:5,name:'Drums',  level:65,mute:false},
+            {id:6,name:'Click',  level:40,mute:false}
+        ]
+        renderChannels()
+    }
+}
+
+function renderChannels(){
+    const list = document.getElementById('channel-list')
+    list.innerHTML = ''
+    channels.forEach(ch => {
+        const div = document.createElement('div')
+        div.className = `channel${ch.mute?' muted':''}`
+        div.id = `ch-${ch.id}`
+        const sliderClass = ch.level > 85 ? 'warn' : ''
+        div.innerHTML = `
+            <div class="ch-top">
+                <span class="ch-name">${ch.name}</span>
+                <span class="ch-level-display" id="lv-${ch.id}">${ch.level}</span>
+            </div>
+            <div class="ch-controls">
+                <div class="slider-wrap">
+                    <input type="range" class="${sliderClass}" min="0" max="100"
+                        value="${ch.level}"
+                        style="--val:${ch.level}%"
+                        oninput="onSlider(${ch.id},this)"
+                        onchange="sendLevel(${ch.id},this.value)">
+                </div>
+                <button class="mute-btn${ch.mute?' active':''}"
+                    id="mute-${ch.id}"
+                    onclick="toggleMute(${ch.id})">
+                    ${ch.mute?'MUTE':'MUT'}
+                </button>
+            </div>
+        `
+        list.appendChild(div)
+    })
+}
+
+function onSlider(id, el){
+    const val = parseInt(el.value)
+    el.style.setProperty('--val', val+'%')
+    el.className = val > 85 ? 'warn' : ''
+    document.getElementById(`lv-${val}`);
+    const lv = document.getElementById(`lv-${id}`)
+    if(lv) lv.textContent = val
+    // Update local state
+    const ch = channels.find(c=>c.id===id)
+    if(ch) ch.level = val
+}
+
+async function sendLevel(id, level){
+    try{
+        await fetch(`${API}/musician/mix`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({channel_id:id,level:parseInt(level)})
+        })
+    }catch(e){}
+}
+
+async function toggleMute(id){
+    const ch = channels.find(c=>c.id===id)
+    if(!ch) return
+    ch.mute = !ch.mute
+    const el = document.getElementById(`ch-${id}`)
+    const btn = document.getElementById(`mute-${id}`)
+    if(ch.mute){
+        el.classList.add('muted')
+        btn.classList.add('active')
+        btn.textContent = 'MUTE'
+    } else {
+        el.classList.remove('muted')
+        btn.classList.remove('active')
+        btn.textContent = 'MUT'
+    }
+    try{
+        await fetch(`${API}/musician/mix`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({channel_id:id,mute:ch.mute})
+        })
+    }catch(e){}
+}
+
+function updateMasterSlider(el){
+    const val = parseInt(el.value)
+    el.style.setProperty('--val',val+'%')
+    document.getElementById('master-val').textContent = val
+}
+
+// WebSocket for room signal info
+function connectWS(){
+    ws = new WebSocket(WS)
+    ws.onmessage = (e) => {
+        try{
+            const d = JSON.parse(e.data)
+            if(d.dominant_freq){
+                document.getElementById('room-signal').textContent =
+                    `${Math.round(d.dominant_freq)} Hz`
+            }
+            const dot = document.getElementById('signal-dot')
+            const stat = document.getElementById('room-status')
+            if(d.status==='CRITICAL'){
+                dot.style.background='#ff3333'
+                dot.style.boxShadow='0 0 8px #ff3333'
+                stat.textContent='CRITICAL'
+                stat.style.color='#ff3333'
+            } else if(d.status==='WARNING'){
+                dot.style.background='#ffaa00'
+                dot.style.boxShadow='0 0 8px #ffaa00'
+                stat.textContent='WARNING'
+                stat.style.color='#ffaa00'
+            } else {
+                dot.style.background='#00ff88'
+                dot.style.boxShadow='0 0 8px #00ff88'
+                stat.textContent='Clean'
+                stat.style.color='#00ff88'
+            }
+        }catch(e){}
+    }
+    ws.onclose = () => setTimeout(connectWS, 2000)
+    ws.onerror = () => ws.close()
+}
+
+loadChannels()
+connectWS()
+</script>
+</body>
+</html>

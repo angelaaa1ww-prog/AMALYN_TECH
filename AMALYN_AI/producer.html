@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMALYN — Producer Portal</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    background:#03030a;color:#fff;
+    font-family:'Segoe UI',sans-serif;
+    min-height:100vh;overflow-x:hidden;
+}
+
+/* HEADER */
+.header{
+    height:48px;background:#06060f;
+    border-bottom:1px solid #0f0f1a;
+    display:flex;align-items:center;
+    justify-content:space-between;
+    padding:0 24px;position:sticky;top:0;z-index:20;
+}
+.logo{font-size:13px;font-weight:900;letter-spacing:4px;color:#7b5ea7}
+.logo span{color:#b48aff}
+.header-right{display:flex;align-items:center;gap:16px}
+.conn{font-size:9px;letter-spacing:2px;color:#333;text-transform:uppercase}
+.conn.ok{color:#5cebac}
+.tab-bar{display:flex;gap:2px}
+.tab{
+    padding:6px 14px;font-size:9px;font-weight:700;
+    letter-spacing:1px;text-transform:uppercase;
+    color:#444;cursor:pointer;border-radius:6px;
+    transition:all .15s;
+}
+.tab.active{color:#b48aff;background:#b48aff18}
+.tab:hover{color:#888}
+
+/* LAYOUT */
+.app{display:flex;height:calc(100vh - 48px)}
+
+/* LEFT SIDEBAR */
+.sidebar{
+    width:220px;min-width:220px;
+    background:#06060f;border-right:1px solid #0f0f1a;
+    padding:16px;display:flex;flex-direction:column;gap:12px;
+    overflow-y:auto;
+}
+.sec{font-size:8px;letter-spacing:2px;color:#252535;text-transform:uppercase;margin-bottom:6px}
+.card{background:#0c0c1a;border:1px solid #151528;border-radius:8px;padding:12px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #0f0f1a}
+.row:last-child{border-bottom:none}
+.rk{font-size:9px;color:#2a2a3a}
+.rv{font-size:10px;color:#888;font-weight:700;font-variant-numeric:tabular-nums}
+.purple{color:#b48aff}
+.green{color:#5cebac}
+.amber{color:#ffc971}
+.red{color:#ff7d92}
+
+.health-ring{
+    width:80px;height:80px;margin:8px auto;
+    position:relative;display:flex;align-items:center;
+    justify-content:center;
+}
+.health-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.health-score{font-size:22px;font-weight:800;color:#5cebac;text-align:center}
+.health-label{font-size:8px;color:#333;text-align:center;letter-spacing:1px;margin-top:2px}
+
+/* MAIN AREA */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tab-content{display:none;flex:1;overflow-y:auto}
+.tab-content.active{display:flex;flex-direction:column}
+
+/* ANALYSIS TAB */
+.analysis-grid{
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:14px;padding:16px;
+}
+.analysis-full{grid-column:1/-1}
+
+.panel{
+    background:#0c0c1a;border:1px solid #151528;
+    border-radius:10px;padding:16px;
+}
+.panel-title{font-size:10px;font-weight:700;color:#444;
+    letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;
+    display:flex;align-items:center;justify-content:space-between;
+}
+.panel-badge{
+    font-size:8px;padding:3px 8px;border-radius:99px;
+    background:#b48aff18;color:#b48aff;border:1px solid #b48aff33;
+}
+
+/* SPECTRUM */
+.spectrum-wrap{
+    position:relative;height:200px;
+    background:#060610;border-radius:8px;
+    border:1px solid #0f0f1a;overflow:hidden;
+}
+#producer-canvas{display:block;width:100%;height:100%}
+.freq-labels{
+    display:flex;justify-content:space-between;
+    padding:6px 4px 0;font-size:8px;color:#252535;
+}
+
+/* EQ CURVE */
+.eq-wrap{
+    position:relative;height:160px;
+    background:#060610;border-radius:8px;
+    border:1px solid #0f0f1a;overflow:hidden;
+}
+#eq-canvas{display:block;width:100%;height:100%}
+
+/* PHASE */
+.phase-wrap{
+    position:relative;height:160px;
+    background:#060610;border-radius:8px;
+    border:1px solid #0f0f1a;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+}
+#phase-canvas{display:block;width:100%;height:100%}
+.phase-status{
+    position:absolute;top:10px;left:12px;
+    font-size:9px;color:#5cebac;letter-spacing:1px;
+}
+
+/* FREQUENCY TABLE */
+.freq-table{width:100%;border-collapse:collapse}
+.freq-table th{
+    font-size:8px;color:#333;letter-spacing:1px;
+    text-transform:uppercase;padding:6px 8px;
+    border-bottom:1px solid #0f0f1a;text-align:left;
+}
+.freq-table td{
+    font-size:10px;color:#888;padding:8px 8px;
+    border-bottom:1px solid #080814;font-variant-numeric:tabular-nums;
+}
+.freq-table tr:last-child td{border-bottom:none}
+.freq-table tr:hover td{background:#0f0f1a}
+.freq-table .danger{color:#ff7d92}
+.freq-table .warning{color:#ffc971}
+.freq-table .ok{color:#5cebac}
+.freq-table .freq-bar-cell{width:120px}
+.mini-bar{
+    height:4px;border-radius:2px;
+    background:linear-gradient(to right,#5cebac,#b48aff);
+    transition:width .3s;
+}
+
+/* SESSION TAB */
+.session-content{padding:16px;display:flex;flex-direction:column;gap:14px}
+.event-list{max-height:400px;overflow-y:auto}
+.event-item{
+    display:flex;align-items:flex-start;gap:12px;
+    padding:12px;border-bottom:1px solid #0f0f1a;
+}
+.event-item:last-child{border-bottom:none}
+.event-item:hover{background:#0f0f1a}
+.event-dot{
+    width:8px;height:8px;border-radius:50%;
+    flex-shrink:0;margin-top:3px;
+}
+.event-dot.warning{background:#ffc971;box-shadow:0 0 6px #ffc97166}
+.event-dot.critical{background:#ff7d92;box-shadow:0 0 6px #ff7d9266}
+.event-dot.sentinel{background:#b48aff;box-shadow:0 0 6px #b48aff66}
+.event-info{flex:1}
+.event-title{font-size:11px;font-weight:700;color:#ccc;margin-bottom:2px}
+.event-detail{font-size:9px;color:#444}
+.event-time{font-size:9px;color:#333;flex-shrink:0;font-variant-numeric:tabular-nums}
+.empty-events{
+    text-align:center;padding:40px 20px;
+    color:#333;font-size:11px;
+}
+
+/* REPORT TAB */
+.report-content{padding:16px}
+.report-box{
+    background:#0c0c1a;border:1px solid #151528;
+    border-radius:10px;padding:20px;
+    font-family:'Courier New',monospace;font-size:11px;
+    color:#5cebac;line-height:1.8;
+    white-space:pre-wrap;max-height:calc(100vh - 200px);
+    overflow-y:auto;
+}
+.report-actions{display:flex;gap:10px;margin-bottom:14px}
+.btn{
+    padding:8px 16px;border-radius:6px;
+    border:1px solid #1a1a2a;background:#0f0f1a;
+    color:#888;font-size:9px;font-weight:700;
+    letter-spacing:1px;text-transform:uppercase;
+    cursor:pointer;transition:all .15s;
+}
+.btn:hover{border-color:#b48aff44;color:#b48aff}
+.btn.primary{
+    background:#b48aff22;border-color:#b48aff44;
+    color:#b48aff;
+}
+.btn.primary:hover{background:#b48aff33}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1a1a2a;border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div style="display:flex;align-items:center;gap:12px">
+        <span class="logo">AMALYN <span>PRODUCER</span></span>
+        <div class="tab-bar">
+            <div class="tab active" onclick="switchTab('analysis')">Analysis</div>
+            <div class="tab" onclick="switchTab('session')">Session Log</div>
+            <div class="tab" onclick="switchTab('report')">Report</div>
+        </div>
+    </div>
+    <div class="header-right">
+        <span class="conn" id="conn">CONNECTING</span>
+    </div>
+</div>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+    <div>
+        <div class="sec">Signal Health</div>
+        <div class="card">
+            <div class="health-ring">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="32" fill="none" stroke="#151528" stroke-width="6"/>
+                    <circle id="health-arc" cx="40" cy="40" r="32" fill="none"
+                        stroke="#5cebac" stroke-width="6"
+                        stroke-dasharray="201" stroke-dashoffset="0"
+                        stroke-linecap="round"/>
+                </svg>
+                <div>
+                    <div class="health-score" id="health-score">100</div>
+                    <div class="health-label">HEALTH</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="sec">Live Signal</div>
+        <div class="card">
+            <div class="row"><span class="rk">Status</span><span class="rv green" id="s-status">CLEAN</span></div>
+            <div class="row"><span class="rk">Dominant</span><span class="rv purple" id="s-dom">--</span></div>
+            <div class="row"><span class="rk">Magnitude</span><span class="rv" id="s-mag">--</span></div>
+            <div class="row"><span class="rk">Danger Freq</span><span class="rv red" id="s-danger">--</span></div>
+        </div>
+    </div>
+
+    <div>
+        <div class="sec">ML Engine</div>
+        <div class="card">
+            <div class="row"><span class="rk">ML Status</span><span class="rv green" id="ml-status">--</span></div>
+            <div class="row"><span class="rk">Confidence</span><span class="rv purple" id="ml-conf">--</span></div>
+            <div class="row"><span class="rk">Model</span><span class="rv">Active</span></div>
+        </div>
+    </div>
+
+    <div>
+        <div class="sec">Session Stats</div>
+        <div class="card">
+            <div class="row"><span class="rk">Warnings</span><span class="rv amber" id="st-warn">0</span></div>
+            <div class="row"><span class="rk">Criticals</span><span class="rv red" id="st-crit">0</span></div>
+            <div class="row"><span class="rk">Corrections</span><span class="rv green" id="st-corr">0</span></div>
+            <div class="row"><span class="rk">Uptime</span><span class="rv" id="st-upt">00:00</span></div>
+        </div>
+    </div>
+
+    <div>
+        <div class="sec">Perfect State</div>
+        <div class="card">
+            <div class="row"><span class="rk">Venue</span><span class="rv purple" id="ps-venue">--</span></div>
+            <div class="row"><span class="rk">Speaker</span><span class="rv" id="ps-speaker">--</span></div>
+            <div class="row"><span class="rk">Mic</span><span class="rv" id="ps-mic">--</span></div>
+            <div class="row"><span class="rk">Mixer</span><span class="rv" id="ps-mixer">--</span></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+    <!-- ANALYSIS TAB -->
+    <div class="tab-content active" id="tab-analysis">
+        <div class="analysis-grid">
+
+            <!-- Spectrum -->
+            <div class="panel analysis-full">
+                <div class="panel-title">
+                    Live Spectrum
+                    <span class="panel-badge" id="spectrum-badge">CLEAN</span>
+                </div>
+                <div class="spectrum-wrap">
+                    <canvas id="producer-canvas"></canvas>
+                </div>
+                <div class="freq-labels">
+                    <span>20</span><span>63</span><span>125</span><span>250</span>
+                    <span>500</span><span>1k</span><span>2k</span><span>4k</span>
+                    <span>8k</span><span>16k</span><span>20k</span>
+                </div>
+            </div>
+
+            <!-- EQ Curve -->
+            <div class="panel">
+                <div class="panel-title">
+                    EQ Correction Curve
+                    <span class="panel-badge">SUGGESTED</span>
+                </div>
+                <div class="eq-wrap">
+                    <canvas id="eq-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Phase -->
+            <div class="panel">
+                <div class="panel-title">
+                    Phase Correlation
+                    <span class="panel-badge" id="phase-badge">MONO</span>
+                </div>
+                <div class="phase-wrap">
+                    <canvas id="phase-canvas"></canvas>
+                    <div class="phase-status" id="phase-status">Analyzing...</div>
+                </div>
+            </div>
+
+            <!-- Frequency Table -->
+            <div class="panel analysis-full">
+                <div class="panel-title">
+                    Frequency Analysis — Top Bands
+                    <span class="panel-badge">LIVE</span>
+                </div>
+                <table class="freq-table">
+                    <thead>
+                        <tr>
+                            <th>Band</th>
+                            <th>Frequency</th>
+                            <th>Magnitude</th>
+                            <th>Status</th>
+                            <th class="freq-bar-cell">Level</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="freq-table-body">
+                        <tr><td colspan="6" style="text-align:center;color:#333;padding:20px">Waiting for signal...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SESSION LOG TAB -->
+    <div class="tab-content" id="tab-session">
+        <div class="session-content">
+            <div class="panel">
+                <div class="panel-title">
+                    Session Events
+                    <span class="panel-badge" id="event-count">0 events</span>
+                </div>
+                <div class="event-list" id="event-list">
+                    <div class="empty-events">No events recorded yet. Events appear here when feedback or signal issues are detected.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORT TAB -->
+    <div class="tab-content" id="tab-report">
+        <div class="report-content">
+            <div class="report-actions">
+                <button class="btn primary" onclick="generateReport()">Generate Report</button>
+                <button class="btn" onclick="copyReport()">Copy to Clipboard</button>
+                <button class="btn" onclick="clearReport()">Clear</button>
+            </div>
+            <div class="report-box" id="report-box">
+-- AMALYN TECH Producer Report --
+Click "Generate Report" to produce a full session analysis.
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script>
+const API = `${location.protocol==='file:'?'http:':location.protocol}//${location.hostname||'localhost'}:8000`
+const WS  = `${location.protocol==='https:'?'wss:':'ws:'}//${location.hostname||'localhost'}:8000/ws`
+
+// Canvas setup
+const specCanvas = document.getElementById('producer-canvas')
+const specCtx = specCanvas.getContext('2d')
+const eqCanvas = document.getElementById('eq-canvas')
+const eqCtx = eqCanvas.getContext('2d')
+const phaseCanvas = document.getElementById('phase-canvas')
+const phaseCtx = phaseCanvas.getContext('2d')
+
+const minF = Math.log10(20), maxF = Math.log10(20000)
+
+let smoothMags = null, smoothFreqs = null
+let currentData = null
+let sessionEvents = []
+let warnings = 0, criticals = 0, corrections = 0
+let lastStatus = 'CLEAN'
+let startTime = Date.now()
+
+// Resize all canvases
+function resizeCanvases(){
+    const r = Math.min(devicePixelRatio || 1, 2)
+
+    const specRect = specCanvas.parentElement.getBoundingClientRect()
+    specCanvas.width = specRect.width * r
+    specCanvas.height = specRect.height * r
+    specCtx.setTransform(r,0,0,r,0,0)
+
+    const eqRect = eqCanvas.parentElement.getBoundingClientRect()
+    eqCanvas.width = eqRect.width * r
+    eqCanvas.height = eqRect.height * r
+    eqCtx.setTransform(r,0,0,r,0,0)
+
+    const phRect = phaseCanvas.parentElement.getBoundingClientRect()
+    phaseCanvas.width = phRect.width * r
+    phaseCanvas.height = phRect.height * r
+    phaseCtx.setTransform(r,0,0,r,0,0)
+}
+resizeCanvases()
+window.addEventListener('resize', resizeCanvases)
+
+// Tab switching
+function switchTab(name){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'))
+    document.querySelector(`.tab[onclick*="${name}"]`).classList.add('active')
+    document.getElementById(`tab-${name}`).classList.add('active')
+}
+
+// Draw spectrum
+function drawSpectrum(freqs, mags, status){
+    const w = specCanvas.width / (devicePixelRatio||1)
+    const h = specCanvas.height / (devicePixelRatio||1)
+
+    specCtx.fillStyle = '#060610'
+    specCtx.fillRect(0,0,w,h)
+
+    // Grid
+    specCtx.strokeStyle = '#0f0f1a'
+    specCtx.lineWidth = 1
+    for(let db=-10; db>=-80; db-=10){
+        const y = h - ((db+80)/80)*h
+        specCtx.beginPath(); specCtx.moveTo(0,y); specCtx.lineTo(w,y); specCtx.stroke()
+    }
+
+    // Threshold lines
+    specCtx.setLineDash([2,8])
+    specCtx.strokeStyle = '#ffc97122'
+    const wy = h - (55/80)*h
+    specCtx.beginPath(); specCtx.moveTo(0,wy); specCtx.lineTo(w,wy); specCtx.stroke()
+    specCtx.strokeStyle = '#ff7d9222'
+    const cy2 = h - (65/80)*h
+    specCtx.beginPath(); specCtx.moveTo(0,cy2); specCtx.lineTo(w,cy2); specCtx.stroke()
+    specCtx.setLineDash([])
+
+    if(!freqs || !mags || !freqs.length) return
+
+    // Smooth
+    if(!smoothMags || smoothMags.length !== mags.length){
+        smoothMags = [...mags]; smoothFreqs = [...freqs]
+    }
+    for(let i=0; i<mags.length; i++) smoothMags[i] = smoothMags[i]*0.5 + mags[i]*0.5
+
+    const col = status==='CRITICAL'?'#ff7d92':status==='WARNING'?'#ffc971':'#b48aff'
+
+    specCtx.beginPath()
+    specCtx.strokeStyle = col
+    specCtx.lineWidth = 1.5
+
+    let fx=0, first=true
+    for(let i=0; i<smoothFreqs.length; i++){
+        if(smoothFreqs[i]<20||smoothFreqs[i]>20000) continue
+        const x = ((Math.log10(smoothFreqs[i])-minF)/(maxF-minF))*w
+        const y = h - ((Math.max(smoothMags[i],-80)+80)/80)*h
+        if(first){specCtx.moveTo(x,y);first=false}else specCtx.lineTo(x,y)
+        fx=x
+    }
+    specCtx.stroke()
+
+    specCtx.lineTo(fx,h); specCtx.lineTo(0,h); specCtx.closePath()
+    const gr = specCtx.createLinearGradient(0,0,0,h)
+    gr.addColorStop(0, col+'44')
+    gr.addColorStop(0.6, col+'08')
+    gr.addColorStop(1, col+'00')
+    specCtx.fillStyle = gr
+    specCtx.fill()
+}
+
+// Draw EQ curve
+function drawEQ(suggestion){
+    const w = eqCanvas.width / (devicePixelRatio||1)
+    const h = eqCanvas.height / (devicePixelRatio||1)
+
+    eqCtx.fillStyle = '#060610'
+    eqCtx.fillRect(0,0,w,h)
+
+    // Center line
+    eqCtx.strokeStyle = '#151528'
+    eqCtx.lineWidth = 1
+    eqCtx.beginPath()
+    eqCtx.moveTo(0, h/2)
+    eqCtx.lineTo(w, h/2)
+    eqCtx.stroke()
+
+    // Flat line
+    eqCtx.strokeStyle = '#252535'
+    eqCtx.lineWidth = 1
+    eqCtx.setLineDash([3,6])
+    eqCtx.beginPath()
+    eqCtx.moveTo(0, h/2)
+    eqCtx.lineTo(w, h/2)
+    eqCtx.stroke()
+    eqCtx.setLineDash([])
+
+    if(!suggestion) {
+        eqCtx.strokeStyle = '#5cebac'
+        eqCtx.lineWidth = 2
+        eqCtx.beginPath()
+        eqCtx.moveTo(0, h/2)
+        eqCtx.lineTo(w, h/2)
+        eqCtx.stroke()
+        return
+    }
+
+    // Draw notch filter curve
+    const freq = suggestion.frequency
+    const cutDb = Math.abs(suggestion.cut_db)
+    const q = suggestion.q_value
+
+    eqCtx.strokeStyle = '#b48aff'
+    eqCtx.lineWidth = 2
+    eqCtx.beginPath()
+
+    for(let px=0; px<w; px++){
+        const logF = minF + (px/w)*(maxF-minF)
+        const f = Math.pow(10, logF)
+        const ratio = f / freq
+        const denom = 1 + (ratio - 1/ratio) * (ratio - 1/ratio) * q * q
+        const gainDb = -(cutDb / denom)
+        const y = h/2 - (gainDb/20)*h
+
+        if(px===0) eqCtx.moveTo(px, y)
+        else eqCtx.lineTo(px, y)
+    }
+    eqCtx.stroke()
+
+    // Label
+    eqCtx.fillStyle = '#b48aff88'
+    eqCtx.font = '9px Segoe UI'
+    const fx = ((Math.log10(freq)-minF)/(maxF-minF))*w
+    eqCtx.fillText(`${freq}Hz`, Math.min(fx+5, w-60), h/2 + cutDb*2 + 15)
+}
+
+// Draw phase lissajous
+function drawPhase(mags){
+    const w = phaseCanvas.width / (devicePixelRatio||1)
+    const h = phaseCanvas.height / (devicePixelRatio||1)
+
+    phaseCtx.fillStyle = '#060610'
+    phaseCtx.fillRect(0,0,w,h)
+
+    // Axes
+    phaseCtx.strokeStyle = '#151528'
+    phaseCtx.lineWidth = 1
+    phaseCtx.beginPath()
+    phaseCtx.moveTo(w/2,0); phaseCtx.lineTo(w/2,h)
+    phaseCtx.moveTo(0,h/2); phaseCtx.lineTo(w,h/2)
+    phaseCtx.stroke()
+
+    if(!mags || mags.length < 10) return
+
+    // Simulate phase correlation from spectrum data
+    const cx = w/2, cy = h/2
+    const scale = Math.min(w,h)*0.38
+
+    phaseCtx.strokeStyle = '#b48aff66'
+    phaseCtx.lineWidth = 1.5
+    phaseCtx.beginPath()
+
+    const points = Math.min(mags.length, 80)
+    for(let i=0; i<points; i++){
+        const mag = Math.max(mags[i], -80)
+        const norm = (mag + 80) / 80
+        const angle = (i / points) * Math.PI * 2
+        const jitter = (Math.random() - 0.5) * 0.15
+        const r = norm * scale * (0.8 + jitter)
+        const x = cx + Math.cos(angle) * r
+        const y = cy + Math.sin(angle) * r * 0.6
+        i === 0 ? phaseCtx.moveTo(x,y) : phaseCtx.lineTo(x,y)
+    }
+    phaseCtx.closePath()
+    phaseCtx.stroke()
+
+    const gr = phaseCtx.createRadialGradient(cx,cy,0,cx,cy,scale)
+    gr.addColorStop(0,'#b48aff22')
+    gr.addColorStop(1,'#b48aff00')
+    phaseCtx.fillStyle = gr
+    phaseCtx.fill()
+}
+
+// Update frequency table
+function updateFreqTable(freqs, mags, suggestion){
+    if(!freqs || !mags || freqs.length < 5) return
+
+    // Find top 8 loudest frequencies in audible range
+    const pairs = []
+    for(let i=0; i<freqs.length; i++){
+        if(freqs[i] >= 20 && freqs[i] <= 20000){
+            pairs.push({freq: freqs[i], mag: mags[i]})
+        }
+    }
+    pairs.sort((a,b)=>b.mag-a.mag)
+    const top = pairs.slice(0,8)
+
+    const EQ_BANDS = [
+        {name:'Sub Bass',min:20,max:60},
+        {name:'Bass',min:60,max:250},
+        {name:'Low Mid',min:250,max:500},
+        {name:'Mid',min:500,max:2000},
+        {name:'High Mid',min:2000,max:4000},
+        {name:'Presence',min:4000,max:8000},
+        {name:'Air',min:8000,max:20000}
+    ]
+
+    function getBand(f){
+        return EQ_BANDS.find(b=>f>=b.min&&f<=b.max)||{name:'Unknown'}
+    }
+
+    function getStatus(mag){
+        if(mag >= -15) return {label:'CRITICAL',cls:'danger'}
+        if(mag >= -25) return {label:'WARNING',cls:'warning'}
+        return {label:'CLEAN',cls:'ok'}
+    }
+
+    function getAction(mag,freq,sugg){
+        if(sugg && Math.abs(sugg.frequency - freq) < 200){
+            return `Cut ${sugg.cut_db}dB @ Q${sugg.q_value}`
+        }
+        if(mag >= -15) return 'Immediate cut needed'
+        if(mag >= -25) return 'Monitor closely'
+        return 'No action'
+    }
+
+    const body = document.getElementById('freq-table-body')
+    body.innerHTML = top.map(p=>{
+        const band = getBand(p.freq)
+        const st = getStatus(p.mag)
+        const action = getAction(p.mag, p.freq, suggestion)
+        const barWidth = Math.max(0, Math.round(((p.mag+80)/80)*100))
+        const barCol = p.mag>=-15?'#ff7d92':p.mag>=-25?'#ffc971':'#5cebac'
+        return `
+            <tr>
+                <td>${band.name}</td>
+                <td>${Math.round(p.freq)} Hz</td>
+                <td class="${st.cls}">${p.mag.toFixed(1)} dBFS</td>
+                <td class="${st.cls}">${st.label}</td>
+                <td class="freq-bar-cell">
+                    <div class="mini-bar" style="width:${barWidth}%;background:${barCol}"></div>
+                </td>
+                <td style="color:#555;font-size:9px">${action}</td>
+            </tr>
+        `
+    }).join('')
+}
+
+// Health ring
+function updateHealthRing(score){
+    const arc = document.getElementById('health-arc')
+    const circumference = 201
+    const offset = circumference * (1 - score/100)
+    arc.style.strokeDashoffset = offset
+    const col = score>80?'#5cebac':score>50?'#ffc971':'#ff7d92'
+    arc.style.stroke = col
+    document.getElementById('health-score').style.color = col
+    document.getElementById('health-score').textContent = score
+}
+
+// Add session event
+let eventCount = 0
+function addEvent(type, freq, mag, msg){
+    eventCount++
+    document.getElementById('event-count').textContent = `${eventCount} events`
+
+    const list = document.getElementById('event-list')
+    const empty = list.querySelector('.empty-events')
+    if(empty) empty.remove()
+
+    const t = new Date().toLocaleTimeString()
+    const item = document.createElement('div')
+    item.className = 'event-item'
+
+    const dotClass = type==='CRITICAL'?'critical':type==='WARNING'?'warning':'sentinel'
+    const title = type==='CRITICAL'?'Critical Feedback Detected':
+                  type==='WARNING'?'Feedback Warning':
+                  'Sentinel Alert'
+    const detail = msg || `${Math.round(freq)} Hz at ${mag ? mag.toFixed(1) : '--'} dBFS`
+
+    item.innerHTML = `
+        <div class="event-dot ${dotClass}"></div>
+        <div class="event-info">
+            <div class="event-title">${title}</div>
+            <div class="event-detail">${detail}</div>
+        </div>
+        <div class="event-time">${t}</div>
+    `
+    list.prepend(item)
+    sessionEvents.push({type, freq, mag, msg, time: t})
+}
+
+// Generate text report
+function generateReport(){
+    const now = new Date().toLocaleString()
+    const uptime = document.getElementById('st-upt').textContent
+    const venue = document.getElementById('ps-venue').textContent
+    const speaker = document.getElementById('ps-speaker').textContent
+    const mic = document.getElementById('ps-mic').textContent
+    const mixer = document.getElementById('ps-mixer').textContent
+
+    let report = `
+AMALYN TECH — PRODUCER SESSION REPORT
+Generated: ${now}
+Uptime: ${uptime}
+═══════════════════════════════════════
+
+SESSION PROFILE
+  Venue    : ${venue}
+  Speaker  : ${speaker}
+  Mic      : ${mic}
+  Mixer    : ${mixer}
+
+SESSION SUMMARY
+  Total Warnings  : ${warnings}
+  Total Criticals : ${criticals}
+  Auto Corrections: ${corrections}
+  Signal Health   : ${document.getElementById('health-score').textContent}%
+
+EVENT LOG
+${'─'.repeat(40)}
+`
+    if(sessionEvents.length === 0){
+        report += '  No events recorded this session.\n'
+    } else {
+        sessionEvents.forEach(e=>{
+            const freq = e.freq ? `${Math.round(e.freq)} Hz` : '--'
+            const mag = e.mag ? `${e.mag.toFixed(1)} dBFS` : '--'
+            report += `  [${e.time}] ${e.type} — ${e.msg || `${freq} at ${mag}`}\n`
+        })
+    }
+
+    report += `
+${'═'.repeat(40)}
+AMALYN TECH — AI Audio Intelligence
+`
+    document.getElementById('report-box').textContent = report
+}
+
+function copyReport(){
+    const text = document.getElementById('report-box').textContent
+    navigator.clipboard.writeText(text).then(()=>{
+        document.querySelector('.btn.primary').textContent = 'Copied!'
+        setTimeout(()=>document.querySelector('.btn.primary').textContent='Generate Report', 2000)
+    })
+}
+
+function clearReport(){
+    document.getElementById('report-box').textContent =
+        '-- AMALYN TECH Producer Report --\nClick "Generate Report" to produce a full session analysis.'
+}
+
+// Uptime
+setInterval(()=>{
+    const s = Math.floor((Date.now()-startTime)/1000)
+    document.getElementById('st-upt').textContent =
+        `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
+}, 1000)
+
+// WebSocket
+function connect(){
+    const ws = new WebSocket(WS)
+
+    ws.onopen = () => {
+        document.getElementById('conn').textContent = 'CONNECTED'
+        document.getElementById('conn').className = 'conn ok'
+    }
+
+    ws.onmessage = (e) => {
+        try{
+            const d = JSON.parse(e.data)
+            currentData = d
+
+            // Status
+            const status = d.status || 'CLEAN'
+            const col = status==='CRITICAL'?'red':status==='WARNING'?'amber':'green'
+            const statusEl = document.getElementById('s-status')
+            statusEl.textContent = status
+            statusEl.className = `rv ${col}`
+
+            document.getElementById('spectrum-badge').textContent = status
+            document.getElementById('spectrum-badge').style.color =
+                status==='CRITICAL'?'#ff7d92':status==='WARNING'?'#ffc971':'#5cebac'
+
+            // Signal info
+            if(d.dominant_freq){
+                document.getElementById('s-dom').textContent = `${Math.round(d.dominant_freq)} Hz`
+                document.getElementById('s-mag').textContent = `${d.dominant_mag?.toFixed(1)} dBFS`
+            }
+            document.getElementById('s-danger').textContent =
+                d.danger_freq ? `${Math.round(d.danger_freq)} Hz` : '--'
+
+            // ML
+            if(d.ml_status){
+                document.getElementById('ml-status').textContent = d.ml_status
+                document.getElementById('ml-conf').textContent =
+                    d.ml_confidence ? `${d.ml_confidence}%` : '--'
+            }
+
+            // Sentinel
+            if(d.sentinel){
+                updateHealthRing(d.sentinel.health_score || 100)
+            }
+
+            // Perfect State
+            if(d.perfect_state){
+                document.getElementById('ps-venue').textContent = d.perfect_state.venue||'--'
+                document.getElementById('ps-speaker').textContent = d.perfect_state.speaker||'--'
+                document.getElementById('ps-mic').textContent = d.perfect_state.microphone||'--'
+                document.getElementById('ps-mixer').textContent = d.perfect_state.mixer||'--'
+            }
+
+            // Corrections
+            if(d.mixer_corrections){
+                corrections = d.mixer_corrections.total_corrections || 0
+                document.getElementById('st-corr').textContent = corrections
+            }
+
+            // Events
+            if(status==='CRITICAL' && lastStatus!=='CRITICAL'){
+                criticals++
+                document.getElementById('st-crit').textContent = criticals
+                addEvent('CRITICAL', d.danger_freq, d.danger_mag)
+            } else if(status==='WARNING' && lastStatus!=='WARNING'){
+                warnings++
+                document.getElementById('st-warn').textContent = warnings
+                addEvent('WARNING', d.danger_freq, d.danger_mag)
+            }
+            lastStatus = status
+
+            // Sentinel alerts
+            if(d.sentinel && d.sentinel.alerts && d.sentinel.alerts.length > 0){
+                const alert = d.sentinel.alerts[0]
+                addEvent('SENTINEL', 0, 0, `${alert.type}: ${alert.message}`)
+            }
+
+            // Draw
+            if(d.frequencies && d.magnitudes){
+                drawSpectrum(d.frequencies, d.magnitudes, status)
+                drawPhase(d.magnitudes)
+                updateFreqTable(d.frequencies, d.magnitudes, d.suggestion)
+            }
+            drawEQ(d.suggestion)
+
+        }catch(err){ console.error(err) }
+    }
+
+    ws.onclose = () => {
+        document.getElementById('conn').textContent = 'RECONNECTING'
+        document.getElementById('conn').className = 'conn'
+        setTimeout(connect, 1500)
+    }
+    ws.onerror = () => ws.close()
+}
+
+// Init
+drawSpectrum([], [], 'CLEAN')
+drawEQ(null)
+drawPhase(null)
+connect()
+</script>
+</body>
+</html>

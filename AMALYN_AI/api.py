@@ -6,6 +6,7 @@ import threading
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 import uvicorn
 from config import FORMAT, CHANNELS, RATE, CHUNK
 from audio_utils import get_frequency_map, get_dominant_frequency
@@ -25,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+# --- SHARED STATE ---
 latest_frame = {
     "status": "CLEAN",
     "dominant_freq": 0.0,
@@ -46,6 +48,7 @@ latest_frame = {
 }
 frame_lock = threading.Lock()
 
+# --- AUDIO ---
 p = pyaudio.PyAudio()
 stream = p.open(
     format=FORMAT,
@@ -55,23 +58,44 @@ stream = p.open(
     frames_per_buffer=CHUNK
 )
 
+# --- MIXER ---
 mixer = AmalynMixerBridge(mixer_type="simulator", channel=1)
 mixer.connect()
 
+# --- SENTINEL ---
 sentinel = AmalynSentinel()
 
+# --- SESSION STATE ---
 last_status = "CLEAN"
 last_correction_freq = 0
 current_perfect_state = None
 
+# --- MUSICIAN CHANNEL STATE ---
+musician_channels = [
+    {"id": 1, "name": "Vocals", "level": 75, "mute": False},
+    {"id": 2, "name": "Guitar", "level": 60, "mute": False},
+    {"id": 3, "name": "Bass",   "level": 55, "mute": False},
+    {"id": 4, "name": "Keys",   "level": 50, "mute": False},
+    {"id": 5, "name": "Drums",  "level": 65, "mute": False},
+    {"id": 6, "name": "Click",  "level": 40, "mute": False}
+]
 
+
+# --- PYDANTIC MODELS ---
 class SetupRequest(BaseModel):
     venue: str
-    speaker: str = None
-    mic: str = None
-    mixer_type: str = None
+    speaker: Optional[str] = None
+    mic: Optional[str] = None
+    mixer_type: Optional[str] = None
 
 
+class MixUpdate(BaseModel):
+    channel_id: int
+    level: Optional[int] = None
+    mute: Optional[bool] = None
+
+
+# --- AUDIO ENGINE ---
 def audio_engine():
     global last_status, last_correction_freq
 
@@ -87,16 +111,16 @@ def audio_engine():
             # Threshold detection
             status, danger_freq, danger_mag = check_for_feedback(frequencies, magnitudes_db)
 
-            # ML detection
+            # ML detection — runs alongside threshold
             ml_status, ml_confidence = ml_check(magnitudes_db)
             if ml_status and ml_status != "CLEAN" and status == "CLEAN":
                 status = ml_status
+                print(f"[ML] Caught early: {ml_status} ({ml_confidence}% confidence)")
 
             # Sentinel analysis
             sentinel_alerts, health_score = sentinel.analyze(audio_data, magnitudes_db)
             signal_stats = sentinel.get_signal_stats()
 
-            # Log sentinel critical alerts
             for alert in sentinel_alerts:
                 if alert["severity"] == "CRITICAL":
                     print(f"[SENTINEL] {alert['type']}: {alert['message']}")
@@ -150,6 +174,7 @@ audio_thread = threading.Thread(target=audio_engine, daemon=True)
 audio_thread.start()
 
 
+# --- WEBSOCKET ---
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -166,6 +191,7 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"[WS] Error: {e}")
 
 
+# --- SETUP ENDPOINT ---
 @app.post("/setup")
 def setup(request: SetupRequest):
     global current_perfect_state
@@ -176,14 +202,14 @@ def setup(request: SetupRequest):
         mixer_key=request.mixer_type
     )
     print(f"\n[SETUP] Perfect State loaded: {current_perfect_state['venue']}")
+    print(f"  Speaker : {current_perfect_state['speaker']}")
+    print(f"  Mic     : {current_perfect_state['microphone']}")
+    print(f"  Mixer   : {current_perfect_state['mixer']}")
+    print(f"  EQ Bands: {len(current_perfect_state['combined_eq'])}")
     return current_perfect_state
 
 
-@app.get("/sentinel/status")
-def sentinel_status():
-    return sentinel.get_status()
-
-
+# --- LIBRARY ENDPOINT ---
 @app.get("/library")
 def get_library():
     return {
@@ -194,6 +220,47 @@ def get_library():
     }
 
 
+# --- SENTINEL ENDPOINT ---
+@app.get("/sentinel/status")
+def sentinel_status():
+    return sentinel.get_status()
+
+
+# --- MUSICIAN PORTAL ENDPOINTS ---
+@app.get("/musician/channels")
+def get_channels():
+    return {"channels": musician_channels}
+
+
+@app.post("/musician/mix")
+def update_mix(update: MixUpdate):
+    channel = next((c for c in musician_channels if c["id"] == update.channel_id), None)
+    if not channel:
+        return {"status": "error", "message": f"Channel {update.channel_id} not found"}
+
+    if update.level is not None:
+        channel["level"] = max(0, min(100, update.level))
+        print(f"[MUSICIAN] Ch{update.channel_id} ({channel['name']}) level → {channel['level']}")
+
+    if update.mute is not None:
+        channel["mute"] = update.mute
+        print(f"[MUSICIAN] Ch{update.channel_id} ({channel['name']}) mute → {channel['mute']}")
+
+    return {
+        "status": "ok",
+        "channel_id": update.channel_id,
+        "channel": channel
+    }
+
+
+# --- MIXER SAFE PROFILE ENDPOINT ---
+@app.get("/mixer/safe")
+def trigger_safe():
+    mixer.send_safe_profile()
+    return {"status": "Safe profile applied"}
+
+
+# --- HEALTH ENDPOINT ---
 @app.get("/health")
 def health():
     return {"status": "AMALYN API Running"}

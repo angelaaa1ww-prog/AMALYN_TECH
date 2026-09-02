@@ -7,6 +7,7 @@
   <title>AMALYN TECH | Audio Intelligence</title>
   <style>
     :root{
+      color-scheme:dark;
       --ink:#f3faff;--muted:#9db6d1;--dim:#647f9e;
       --night:#050d18;
       --panel:rgba(11,29,51,.52);--panel2:rgba(21,49,82,.46);
@@ -178,6 +179,14 @@
     .info-value{max-width:58%;overflow:hidden;color:var(--ink);font-size:10px;font-weight:720;text-align:right;text-overflow:ellipsis;white-space:nowrap}
     .info-value.accent{color:var(--cyan)}
 
+    /* ---------- Alert panel (Sentinel) ---------- */
+    .panel.alert-panel{border-color:#ff7d9245;background:linear-gradient(155deg,#3a141fb0,#1c0a12b0);box-shadow:var(--shadow),0 1px 0 var(--glass-hi) inset,0 0 34px -12px #ff7d9240;animation:fade-up .4s var(--ease) both}
+    .panel.alert-panel:hover{border-color:#ff7d9270;box-shadow:var(--shadow),0 1px 0 var(--glass-hi) inset,0 0 40px -10px #ff7d9255}
+    .alert-panel .section-label{color:var(--red)}
+    .alert-panel .section-label:before{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);content:"";flex:0 0 auto;animation:pulse-dot 2s ease-in-out infinite}
+    .sentinel-msg{margin:2px 0 0;color:var(--ink);font-size:11px;font-weight:650;line-height:1.55}
+    .sentinel-action{margin:9px 0 0;padding-top:9px;border-top:1px solid #ff7d9224;color:var(--muted);font-size:10px;line-height:1.55}
+
     /* ---------- Spectrum panel ---------- */
     .workspace{gap:14px}
     .spectrum-panel{position:relative;min-height:525px;padding:17px;overflow:hidden}
@@ -208,6 +217,8 @@
     }
     .hud-state{color:var(--green);font-size:10px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}
     .hud-detail{overflow:hidden;max-width:300px;margin-top:3px;color:var(--muted);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+    .hud-ml{overflow:hidden;max-width:300px;margin-top:5px;padding-top:5px;border-top:1px solid #7be8ff1f;color:var(--cyan);font-size:9px;font-weight:750;letter-spacing:.03em;text-overflow:ellipsis;white-space:nowrap}
+    .hud-ml:empty{display:none;margin:0;padding:0;border:0}
     .scale{position:absolute;top:13px;right:10px;z-index:2;display:flex;height:calc(100% - 26px);flex-direction:column;justify-content:space-between;color:#a9cfec80;font-size:8px;font-variant-numeric:tabular-nums;text-align:right}
     .freq-axis{position:relative;z-index:1;display:flex;justify-content:space-between;padding:9px 8px 0;color:var(--dim);font-size:8px;font-variant-numeric:tabular-nums}
     .spectrum-footer{position:relative;z-index:1;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-top:16px}
@@ -275,6 +286,7 @@
     .activity-item:last-child{border:0}
     .pin{width:6px;height:6px;margin-top:4px;border-radius:50%;background:var(--amber);box-shadow:0 0 9px #ffc97180}
     .pin.critical{background:var(--red);box-shadow:0 0 9px #ff7d9280}
+    .pin.sentinel{background:var(--cyan);box-shadow:0 0 9px #7be8ff80}
     .event-text{color:var(--muted);font-size:9px;line-height:1.5}
     .event-text b{color:var(--ink);font-weight:750}
 
@@ -305,11 +317,13 @@
     .field label{display:block;margin-bottom:7px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase}
     .field select{
       width:100%;height:45px;padding:0 34px 0 13px;border:1px solid var(--line);border-radius:11px;outline:0;
-      color:var(--ink);background:linear-gradient(160deg,#0d2038,#081a2f);cursor:pointer;font-size:11px;
-      box-shadow:0 1px 0 #ffffff10 inset;transition:border-color .25s,box-shadow .25s,background .25s,transform .2s
+      color:var(--ink);background-color:#0d2038;background-image:linear-gradient(160deg,#0d2038,#081a2f);cursor:pointer;font-size:11px;
+      box-shadow:0 1px 0 #ffffff10 inset;transition:border-color .25s,box-shadow .25s,background .25s,transform .2s;
+      color-scheme:dark
     }
-    .field select:hover{border-color:var(--line2);background:linear-gradient(160deg,#122843,#0b2139)}
-    .field select:focus{border-color:var(--line2);background:linear-gradient(160deg,#122843,#0b2139);box-shadow:0 0 0 3px #5ec7ff20,0 1px 0 #ffffff10 inset}
+    .field select:hover{border-color:var(--line2);background-color:#122843;background-image:linear-gradient(160deg,#122843,#0b2139)}
+    .field select:focus{border-color:var(--line2);background-color:#122843;background-image:linear-gradient(160deg,#122843,#0b2139);box-shadow:0 0 0 3px #5ec7ff20,0 1px 0 #ffffff10 inset}
+    .field select option{background-color:#0d2038;color:var(--ink);padding:8px}
     .modal-actions{position:relative;display:grid;gap:11px;margin-top:23px}
     .modal-actions .button{width:100%;min-height:48px}
     .skip{border:0;color:var(--muted);background:transparent;cursor:pointer;font-size:10px;font-weight:720;transition:color .25s}
@@ -345,7 +359,7 @@
       .setup-label{display:none}
       .dashboard{display:flex;width:min(100% - 24px,620px);min-height:auto;flex-direction:column;gap:14px;padding:14px 0 24px}
       .side.left{display:grid;grid-template-columns:1fr 1fr}
-      .side.left .section-label,.side.left .setup-panel,.status-card{grid-column:1/-1}
+      .side.left .section-label,.side.left .setup-panel,.side.left .alert-panel,.status-card{grid-column:1/-1}
       .side.right{display:flex}
       .spectrum-panel{min-height:0;padding:14px}
       .spectrum-top{margin-bottom:12px}
@@ -362,7 +376,7 @@
       .modal-kicker{margin-bottom:18px}
       .modal-intro{margin-bottom:20px}
       .spectrum-title{font-size:22px}
-      .hud-detail{max-width:220px}
+      .hud-detail,.hud-ml{max-width:220px}
     }
     @media(max-width:430px){
       .side.left{display:flex}
@@ -420,6 +434,20 @@
           <div class="stat"><label>Uptime</label><strong id="upt">00:00</strong></div>
         </div>
       </section>
+      <section class="panel" aria-labelledby="health-heading">
+        <div class="section-label" id="health-heading">Signal health</div>
+        <div class="stat-grid">
+          <div class="stat"><label>Health score</label><strong id="health-score">--</strong></div>
+          <div class="stat"><label>Clip rate</label><strong id="clip-rate">--</strong></div>
+          <div class="stat"><label>Dropout</label><strong id="dropout-rate">--</strong></div>
+          <div class="stat"><label>Noise floor</label><strong id="noise-floor">--</strong></div>
+        </div>
+      </section>
+      <section class="panel alert-panel" id="sentinel-card" aria-labelledby="sentinel-heading" role="status" aria-live="polite" hidden>
+        <div class="section-label" id="sentinel-heading">Sentinel alert</div>
+        <p class="sentinel-msg" id="sentinel-msg">--</p>
+        <p class="sentinel-action" id="sentinel-action">--</p>
+      </section>
       <section class="panel setup-panel" aria-labelledby="profile-summary-heading">
         <div class="section-label" id="profile-summary-heading">Session profile</div>
         <ul class="info-list">
@@ -439,7 +467,7 @@
         </div>
         <div class="spectrum-shell">
           <canvas id="cv" aria-label="Real-time audio frequency spectrum"></canvas>
-          <div class="hud"><div class="hud-state" id="ovs">Clean signal</div><div class="hud-detail" id="ovf">Listening to your room…</div></div>
+          <div class="hud"><div class="hud-state" id="ovs">Clean signal</div><div class="hud-detail" id="ovf">Listening to your room…</div><div class="hud-ml" id="ovml"></div></div>
           <div class="scale" aria-hidden="true"><span>0</span><span>-10</span><span>-20</span><span>-30</span><span>-40</span><span>-50</span><span>-60</span><span>-70</span><span>-80</span></div>
         </div>
         <div class="freq-axis" aria-hidden="true"><span>20</span><span>63</span><span>125</span><span>250</span><span>500</span><span>1k</span><span>2k</span><span>4k</span><span>8k</span><span>16k</span><span>20k</span></div>
@@ -502,7 +530,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
-    const host=location.hostname||'localhost',api=`${location.protocol==='file:'?'http:':location.protocol}//${host}:8000`,wsUrl=`${location.protocol==='https:'?'wss:':'ws:'}//${host}:8000/ws`,cv=document.getElementById('cv'),ctx=cv.getContext('2d'),minLog=Math.log10(20),maxLog=Math.log10(20000),$=id=>document.getElementById(id),s={status:'CLEAN',last:'CLEAN',warnings:0,criticals:0,start:Date.now(),pending:null,mags:null,freqs:null,socket:null,timer:null,toast:null,profileKey:''};let w=1,h=1;
+    const host=location.hostname||'localhost',api=`${location.protocol==='file:'?'http:':location.protocol}//${host}:8000`,wsUrl=`${location.protocol==='https:'?'wss:':'ws:'}//${host}:8000/ws`,cv=document.getElementById('cv'),ctx=cv.getContext('2d'),minLog=Math.log10(20),maxLog=Math.log10(20000),$=id=>document.getElementById(id),s={status:'CLEAN',last:'CLEAN',warnings:0,criticals:0,start:Date.now(),pending:null,mags:null,freqs:null,socket:null,timer:null,toast:null,profileKey:'',sentinelKey:''};let w=1,h=1;
     const text=(id,v)=>{const e=$(id);if(e&&e.textContent!==String(v))e.textContent=v},color=status=>({CLEAN:'#5cebac',WARNING:'#ffc971',CRITICAL:'#ff7d92'}[status]||'#9db6d1'),name=status=>({CLEAN:'Clean',WARNING:'Warning',CRITICAL:'Critical'}[status]||'Listening'),number=v=>Number.isFinite(v)?v.toFixed(1):'--';
     function toast(message,error=false){const e=$('toast');e.textContent=message;e.className=`toast show${error?' error':''}`;clearTimeout(s.toast);s.toast=setTimeout(()=>e.classList.remove('show'),4200)}
     function connection(kind,label){const e=$('conn');e.className=`connection${kind?` ${kind}`:''}`;e.textContent=label}
@@ -510,11 +538,12 @@
     const y=db=>h-((Math.max(-80,Math.min(0,db))+80)/80)*h,x=f=>((Math.log10(f)-minLog)/(maxLog-minLog))*w;
     function draw(){ctx.clearRect(0,0,w,h);const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#0a2037');bg.addColorStop(.6,'#061627');bg.addColorStop(1,'#04101e');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);ctx.lineWidth=1;for(let db=-10;db>=-80;db-=10){ctx.beginPath();ctx.strokeStyle='rgba(102,157,204,.15)';ctx.moveTo(0,y(db));ctx.lineTo(w,y(db));ctx.stroke()}ctx.setLineDash([4,8]);for(const [db,shade]of[[-15,'rgba(255,125,146,.38)'],[-25,'rgba(255,201,113,.30)']]){ctx.beginPath();ctx.strokeStyle=shade;ctx.moveTo(0,y(db));ctx.lineTo(w,y(db));ctx.stroke()}ctx.setLineDash([]);if(!s.freqs||!s.mags||!s.freqs.length)return;const c=color(s.status);let started=false,lastX=0;ctx.beginPath();s.freqs.forEach((f,i)=>{if(f<20||f>20000)return;const px=x(f),py=y(s.mags[i]);started?ctx.lineTo(px,py):(ctx.moveTo(px,py),started=true);lastX=px});ctx.strokeStyle=c;ctx.lineWidth=1.6;ctx.shadowColor=c;ctx.shadowBlur=10;ctx.stroke();ctx.shadowBlur=0;if(started){ctx.lineTo(lastX,h);ctx.lineTo(0,h);ctx.closePath();const fill=ctx.createLinearGradient(0,0,0,h);fill.addColorStop(0,`${c}4d`);fill.addColorStop(.65,`${c}0d`);fill.addColorStop(1,`${c}00`);ctx.fillStyle=fill;ctx.fill()}}
     function animate(){if(s.pending){const{frequencies,magnitudes,status}=s.pending;s.pending=null;if(!s.mags||s.mags.length!==magnitudes.length){s.mags=[...magnitudes];s.freqs=[...frequencies]}else s.mags=s.mags.map((v,i)=>v*.48+magnitudes[i]*.52);s.status=status;draw()}requestAnimationFrame(animate)}
-    function addEvent(type,freq,mag){const list=$('log'),empty=$('log-empty');if(empty)empty.remove();const item=document.createElement('div'),pin=document.createElement('span'),detail=document.createElement('div'),time=new Intl.DateTimeFormat([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date());item.className='activity-item';pin.className=`pin${type==='CRITICAL'?' critical':''}`;detail.className='event-text';const label=type==='CRITICAL'?'Critical alert':'Feedback warning',strong=document.createElement('b');strong.textContent=label;detail.append(strong,document.createTextNode(` at ${Math.round(freq)} Hz (${number(mag)} dBFS) · ${time}`));item.append(pin,detail);list.prepend(item);while(list.children.length>80)list.lastElementChild.remove()}
+    function addEvent(type,freq,mag,msg){const list=$('log'),empty=$('log-empty');if(empty)empty.remove();const item=document.createElement('div'),pin=document.createElement('span'),detail=document.createElement('div'),time=new Intl.DateTimeFormat([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date());item.className='activity-item';pin.className=`pin${type==='CRITICAL'?' critical':type==='SENTINEL'?' sentinel':''}`;detail.className='event-text';const label=type==='CRITICAL'?'Critical alert':type==='SENTINEL'?'Sentinel':'Feedback warning',strong=document.createElement('b');strong.textContent=label;detail.append(strong,document.createTextNode(msg?` ${msg} · ${time}`:` at ${Math.round(freq)} Hz (${number(mag)} dBFS) · ${time}`));item.append(pin,detail);list.prepend(item);while(list.children.length>80)list.lastElementChild.remove()}
     function status(frame){const risk=frame.status||'CLEAN',freq=frame.danger_freq||0,mag=frame.danger_mag||0,c=color(risk),label=name(risk);$('dot').style.cssText=`background:${c};box-shadow:0 0 0 5px ${c}1f,0 0 18px ${c}`;text('slbl',label);$('slbl').style.color=c;text('status-note',risk==='CLEAN'?'Monitoring incoming room signal':`${label} feedback risk detected`);text('ovs',risk==='CLEAN'?'Clean signal':`${label} · ${Math.round(freq)} Hz`);$('ovs').style.color=c;text('assistant-badge',risk==='CLEAN'?'Clear':label);$('assistant-badge').style.cssText=`color:${c};border-color:${c}55;background:${c}12`;text('acquisition-state',risk==='CLEAN'?'Listening':label);text('protection-state',risk==='CRITICAL'?'Intervening':'Armed');if(risk==='WARNING'&&s.last!=='WARNING'){text('wc',++s.warnings);addEvent(risk,freq,mag)}if(risk==='CRITICAL'&&s.last!=='CRITICAL'){text('cc',++s.criticals);addEvent(risk,freq,mag)}s.last=risk}
     function suggestion(data,risk){const empty=$('eqn'),body=$('eqb');if(!data||risk==='CLEAN'){empty.hidden=false;body.classList.remove('show');return}empty.hidden=true;body.classList.add('show');text('eqhz',Number(data.frequency).toFixed(0));text('eqcut',`${data.cut_db} dB`);text('eqband',data.band_name);text('eqprob',data.problem);text('eqq',data.q_value);text('eqflt',data.filter_type)}
     function perfect(profile){if(!profile)return;text('ps-venue',profile.venue||'--');text('ps-speaker',profile.speaker||'--');text('ps-mic',profile.microphone||'--');text('ps-mixer',profile.mixer||'--');const entries=Array.isArray(profile.combined_eq)?profile.combined_eq:[],key=JSON.stringify(entries);text('profile-state',entries.length?'Loaded':'Not loaded');$('profile-pulse').style.background=entries.length?'var(--green)':'var(--dim)';if(key===s.profileKey)return;s.profileKey=key;const list=$('ps-list'),empty=$('ps-empty');list.replaceChildren();if(!entries.length){empty.hidden=false;text('profile-count','');return}empty.hidden=true;text('profile-count',`${entries.length} bands`);entries.forEach(entry=>{const item=document.createElement('div'),f=document.createElement('span'),cut=document.createElement('span'),reason=document.createElement('span');item.className='profile-item';f.className='profile-frequency';cut.className='profile-cut';reason.className='profile-reason';f.textContent=`${entry.frequency} Hz`;cut.textContent=`${entry.cut_db} dB`;reason.textContent=entry.reason||'Profile adjustment';item.append(f,cut,reason);list.append(item)})}
-    function frame(data){const fs=Array.isArray(data.frequencies)?data.frequencies:[],ms=Array.isArray(data.magnitudes)?data.magnitudes:[];s.pending={frequencies:fs,magnitudes:ms,status:data.status||'CLEAN'};status(data);suggestion(data.suggestion,data.status);perfect(data.perfect_state);if(Number.isFinite(data.dominant_freq)&&data.dominant_freq>0){text('domf',`${Math.round(data.dominant_freq)} Hz`);text('domm',`${number(data.dominant_mag)} dBFS`);text('peak-readout',`${Math.round(data.dominant_freq)} Hz`);text('ovf',`Dominant ${Math.round(data.dominant_freq)} Hz at ${number(data.dominant_mag)} dBFS`)}if(data.mixer_corrections)text('mc',data.mixer_corrections.total_corrections||0)}
+    function sentinel(data){if(!data)return;const score=Number(data.health_score);if(Number.isFinite(score)){text('health-score',`${Math.round(score)}%`);$('health-score').style.color=score>80?'var(--green)':score>50?'var(--amber)':'var(--red)'}const stats=data.signal_stats||{};text('clip-rate',stats.clip_rate!=null?`${stats.clip_rate}%`:'--');text('dropout-rate',stats.dropout_rate!=null?`${stats.dropout_rate}%`:'--');text('noise-floor',stats.noise_floor!=null?`${stats.noise_floor} dB`:'--');const card=$('sentinel-card'),alerts=Array.isArray(data.alerts)?data.alerts:[],top=alerts[0];if(top){card.hidden=false;text('sentinel-msg',top.message||'--');text('sentinel-action',top.action||'--');const key=`${top.type||''}:${top.message||''}`;if(key!==s.sentinelKey){s.sentinelKey=key;addEvent('SENTINEL',0,0,`${top.type?top.type+': ':''}${top.message||''}`)}}else{card.hidden=true;s.sentinelKey=''}}
+    function frame(data){const fs=Array.isArray(data.frequencies)?data.frequencies:[],ms=Array.isArray(data.magnitudes)?data.magnitudes:[];s.pending={frequencies:fs,magnitudes:ms,status:data.status||'CLEAN'};status(data);suggestion(data.suggestion,data.status);perfect(data.perfect_state);sentinel(data.sentinel);if(Number.isFinite(data.dominant_freq)&&data.dominant_freq>0){text('domf',`${Math.round(data.dominant_freq)} Hz`);text('domm',`${number(data.dominant_mag)} dBFS`);text('peak-readout',`${Math.round(data.dominant_freq)} Hz`);text('ovf',`Dominant ${Math.round(data.dominant_freq)} Hz at ${number(data.dominant_mag)} dBFS`)}if(data.mixer_corrections)text('mc',data.mixer_corrections.total_corrections||0);if(data.ml_status&&Number.isFinite(data.ml_confidence))text('ovml',`ML ${data.ml_status} · ${data.ml_confidence}% confidence`)}
     function reconnect(){clearTimeout(s.timer);s.timer=setTimeout(connect,1800)}function connect(){clearTimeout(s.timer);if(s.socket&&s.socket.readyState<WebSocket.CLOSING)s.socket.close();connection('','Connecting');try{s.socket=new WebSocket(wsUrl)}catch(e){reconnect();return}s.socket.onopen=()=>connection('ok','Live connection');s.socket.onmessage=e=>{try{frame(JSON.parse(e.data))}catch(err){console.error('Invalid AMALYN frame',err)}};s.socket.onclose=()=>{connection('err','Reconnecting');reconnect()};s.socket.onerror=()=>s.socket?.close()}
     const modal=$('modal');function openSetup(){modal.setAttribute('aria-hidden','false');setTimeout(()=>$('s-venue').focus(),20)}function closeSetup(){modal.setAttribute('aria-hidden','true');$('open-setup').focus()}$('open-setup').addEventListener('click',openSetup);$('setup-skip').addEventListener('click',closeSetup);modal.addEventListener('click',e=>{if(e.target===modal)closeSetup()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.getAttribute('aria-hidden')==='false')closeSetup()});$('setup-btn').addEventListener('click',async()=>{const venue=$('s-venue').value;if(!venue){toast('Select a venue before loading a Perfect State.',true);$('s-venue').focus();return}const button=$('setup-btn');button.disabled=true;button.textContent='Loading profile…';try{const response=await fetch(`${api}/setup`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({venue,speaker:$('s-speaker').value||null,mic:$('s-mic').value||null,mixer_type:$('s-mixer').value||null})});if(!response.ok)throw Error(`Setup request failed (${response.status})`);perfect(await response.json());closeSetup();toast('Perfect State profile loaded for this session.')}catch(error){console.error('Setup failed',error);toast('Could not load the profile. Confirm that the AMALYN API is running.',true)}finally{button.disabled=false;button.innerHTML='Load Perfect State <span aria-hidden="true">→</span>'}});
     document.querySelectorAll('.button,.system-chip,.stat').forEach(el=>{el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();el.style.setProperty('--mx',`${e.clientX-r.left}px`);el.style.setProperty('--my',`${e.clientY-r.top}px`)})});
