@@ -11,7 +11,7 @@ EQ_BANDS = [
 
 def get_eq_band(frequency):
     for band in EQ_BANDS:
-        if band["min"] <= frequency <= band["max"]:
+        if band["min"] <= frequency < band["max"]:
             return band
     return {"name": "Unknown", "problem": "Unknown"}
 

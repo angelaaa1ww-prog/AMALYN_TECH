@@ -31,6 +31,9 @@ class AudioDataCollector:
         self._label = "CLEAN"
         self._label_lock = threading.Lock()
         self._stop_event = threading.Event()
+        self._file = open(output_path, "a", newline="", encoding="utf-8")
+        self._writer = csv.writer(self._file)
+        self._frames_since_flush = 0
 
     @property
     def label(self):
@@ -53,10 +56,13 @@ class AudioDataCollector:
             magnitudes = magnitudes_db[:FRAME_SIZE].tolist()
             magnitudes.extend([-80.0] * (FRAME_SIZE - len(magnitudes)))
 
-            with open(self.output_path, "a", newline="", encoding="utf-8") as file:
-                csv.writer(file).writerow(
-                    [ML_FEATURE_SCALE, label, *[round(value, 2) for value in magnitudes]]
-                )
+            self._writer.writerow(
+                [ML_FEATURE_SCALE, label, *[round(value, 2) for value in magnitudes]]
+            )
+            self._frames_since_flush += 1
+            if self._frames_since_flush >= 20:
+                self._file.flush()
+                self._frames_since_flush = 0
             self.counts[label] += 1
         except Exception as error:
             print(f"[COLLECTOR] Frame skipped: {error}")
@@ -68,6 +74,11 @@ class AudioDataCollector:
 
     def stop(self):
         self._stop_event.set()
+        try:
+            self._file.flush()
+            self._file.close()
+        except Exception:
+            pass
 
 
 def main():

@@ -1,31 +1,17 @@
-import numpy as np
+"""ML inference for AMALYN feedback detection using PyTorch."""
+
 import os
+
+import numpy as np
 import torch
-import torch.nn as nn
+
+from ml_model import AmalynDetector, LABEL_NAMES, normalize_magnitudes
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), 'ml_models')
 MODEL_PATH = os.path.join(MODEL_DIR, 'amalyn_detector.pth')
 
-LABEL_NAMES = {0: "CLEAN", 1: "WARNING", 2: "CRITICAL"}
-
-
-class AmalynDetector(nn.Module):
-    def __init__(self):
-        super(AmalynDetector, self).__init__()
-        self.network = nn.Sequential(
-            nn.Linear(257, 512),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Linear(128, 3)
-        )
-
-    def forward(self, x):
-        return self.network(x)
+# Minimum confidence to promote an ML prediction over threshold detection.
+ML_CONFIDENCE_GATE = 75.0
 
 
 class MLInference:
@@ -41,7 +27,7 @@ class MLInference:
         try:
             self.model = AmalynDetector()
             self.model.load_state_dict(
-                torch.load(MODEL_PATH, map_location='cpu')
+                torch.load(MODEL_PATH, map_location='cpu', weights_only=True)
             )
             self.model.eval()
             self.model_loaded = True
@@ -53,17 +39,18 @@ class MLInference:
         if not self.model_loaded:
             return None, None
         try:
-            mags = list(magnitudes_db[:257])
-            if len(mags) < 257:
-                mags += [-80.0] * (257 - len(mags))
-            mags = [(m + 80) / 80 for m in mags]
-            x = torch.FloatTensor(mags).unsqueeze(0)
+            normalized = normalize_magnitudes(magnitudes_db)
+            x = torch.FloatTensor(normalized).unsqueeze(0)
             with torch.no_grad():
                 output = self.model(x)
                 probs = torch.softmax(output, dim=1)[0]
                 pred = torch.argmax(probs).item()
-                confidence = probs[pred].item()
-            return LABEL_NAMES[pred], round(confidence * 100, 1)
+                confidence = round(probs[pred].item() * 100, 1)
+            # Only report non-CLEAN status if confidence exceeds the gate
+            label = LABEL_NAMES[pred]
+            if label != "CLEAN" and confidence < ML_CONFIDENCE_GATE:
+                return "CLEAN", confidence
+            return label, confidence
         except Exception as e:
             print(f"[ML] Inference error: {e}")
             return None, None

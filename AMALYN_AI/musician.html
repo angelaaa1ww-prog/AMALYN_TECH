@@ -313,7 +313,7 @@ function renderChannels(){
                 <button class="mute-btn${ch.mute?' active':''}"
                     id="mute-${ch.id}"
                     onclick="toggleMute(${ch.id})">
-                    ${ch.mute?'MUTE':'MUTED'}
+                    ${ch.mute?'MUTED':'MUTE'}
                 </button>
             </div>
         `
@@ -352,11 +352,11 @@ async function toggleMute(id){
     if(ch.mute){
         el.classList.add('muted')
         btn.classList.add('active')
-        btn.textContent = 'MUTE'
+        btn.textContent = 'MUTED'
     } else {
         el.classList.remove('muted')
         btn.classList.remove('active')
-        btn.textContent = 'MUTED'
+        btn.textContent = 'MUTE'
     }
     try{
         await fetch(`${API}/musician/mix`,{
