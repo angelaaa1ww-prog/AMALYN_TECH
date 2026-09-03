@@ -325,7 +325,6 @@ function onSlider(id, el){
     const val = parseInt(el.value)
     el.style.setProperty('--val', val+'%')
     el.className = val > 85 ? 'warn' : ''
-    document.getElementById(`lv-${val}`);
     const lv = document.getElementById(`lv-${id}`)
     if(lv) lv.textContent = val
     // Update local state

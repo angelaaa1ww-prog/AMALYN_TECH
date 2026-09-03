@@ -1,12 +1,30 @@
-# Python bytecode and virtual environments
+# Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Virtual Environment
 amalyn_env/
+venv/
+env/
 
-# Runtime-generated audio and ML artifacts
-AMALYN_AI/logs/
+# ML Data & Models (too large for git)
 AMALYN_AI/ml_data/
-AMALYN_AI/ml_models/*.pth
+AMALYN_AI/ml_models/
 
-# Local tool state
-.pytest_cache/
+# Logs
+AMALYN_AI/logs/
+
+# Environment variables
+.env
+*.env
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+Desktop.ini

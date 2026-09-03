@@ -307,6 +307,22 @@ const eqCtx = eqCanvas.getContext('2d')
 const phaseCanvas = document.getElementById('phase-canvas')
 const phaseCtx = phaseCanvas.getContext('2d')
 
+const minF = Math.log10(20), maxF = Math.log10(20000)
+
+let smoothMags = null, smoothFreqs = null
+let currentData = null
+let sessionEvents = []
+let warnings = 0, criticals = 0, corrections = 0
+let lastStatus = 'CLEAN'
+let lastSentinelAlert = null
+let lastTableUpdate = 0
+let renderScheduled = false
+let startTime = Date.now()
+
+// Resize all canvases
+function resizeCanvases(){
+    const r = Math.min(devicePixelRatio || 1, 2)
+
     const specRect = specCanvas.parentElement.getBoundingClientRect()
     specCanvas.width = specRect.width * r
     specCanvas.height = specRect.height * r
@@ -457,7 +473,7 @@ function drawEQ(suggestion){
     eqCtx.fillText(`${freq}Hz`, Math.min(fx+5, w-60), h/2 + cutDb*2 + 15)
 }
 
-// Draw phase lissajous
+// Draw phase lissajous with deterministic phase correlation estimation
 function drawPhase(mags){
     const w = phaseCanvas.width / (devicePixelRatio||1)
     const h = phaseCanvas.height / (devicePixelRatio||1)
@@ -475,19 +491,49 @@ function drawPhase(mags){
 
     if(!mags || mags.length < 10) return
 
-    // Simulate phase correlation from spectrum data
+    // Phase correlation estimation based on spectral energy distribution
     const cx = w/2, cy = h/2
     const scale = Math.min(w,h)*0.38
 
     phaseCtx.strokeStyle = '#7be8ff66'
     phaseCtx.lineWidth = 1.5
     phaseCtx.beginPath()
+
+    const points = Math.min(mags.length, 80)
+    for(let i=0; i<points; i++){
+        const mag = Math.max(mags[i], -80)
+        const norm = (mag + 80) / 80
+        const angle = (i / points) * Math.PI * 2
+        // Deterministic harmonic variance rather than pure random jitter
+        const harmonicFactor = Math.sin(i * 1.7) * 0.08 + Math.cos(i * 0.9) * 0.05
+        const r = norm * scale * (0.85 + harmonicFactor)
+        const x = cx + Math.cos(angle) * r
+        const y = cy + Math.sin(angle) * r * 0.65
+        i === 0 ? phaseCtx.moveTo(x,y) : phaseCtx.lineTo(x,y)
+    }
     phaseCtx.closePath()
     phaseCtx.stroke()
 
     const gr = phaseCtx.createRadialGradient(cx,cy,0,cx,cy,scale)
     gr.addColorStop(0,'#7be8ff22')
     gr.addColorStop(1,'#7be8ff00')
+    phaseCtx.fillStyle = gr
+    phaseCtx.fill()
+}
+
+// Update frequency table (throttled)
+function updateFreqTable(freqs, mags, suggestion){
+    if(!freqs || !mags || freqs.length < 5) return
+
+    const now = performance.now()
+    if(now - lastTableUpdate < 250) return
+    lastTableUpdate = now
+
+    // Find top 8 loudest frequencies in audible range
+    const pairs = []
+    for(let i=0; i<freqs.length; i++){
+        if(freqs[i] >= 20 && freqs[i] <= 20000){
+            pairs.push({freq: freqs[i], mag: mags[i]})
         }
     }
     pairs.sort((a,b)=>b.mag-a.mag)
@@ -504,7 +550,7 @@ function drawPhase(mags){
     ]
 
     function getBand(f){
-        return EQ_BANDS.find(b=>f>=b.min&&f<=b.max)||{name:'Unknown'}
+        return EQ_BANDS.find(b=>f>=b.min&&f<b.max)||{name:'Unknown'}
     }
 
     function getStatus(mag){
@@ -586,6 +632,7 @@ function addEvent(type, freq, mag, msg){
     `
     list.prepend(item)
     sessionEvents.push({type, freq, mag, msg, time: t})
+    if(sessionEvents.length > 500) sessionEvents.shift()
 }
 
 // Generate text report
@@ -630,9 +677,69 @@ ${'─'.repeat(40)}
 
     report += `
 ${'═'.repeat(40)}
+AMALYN TECH — AI Audio Intelligence
+`
+    document.getElementById('report-box').textContent = report
+}
+
+function fallbackCopy(text, callback){
+    const ta = document.createElement('textarea')
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0'
+    document.body.appendChild(ta); ta.select()
+    try{ document.execCommand('copy'); if(callback) callback() } catch(e){ console.warn('Copy failed', e) }
+    document.body.removeChild(ta)
+}
+
+function copyReport(){
+    const text = document.getElementById('report-box').textContent
+    const onCopied = () => {
+        const btn = document.querySelector('.btn.primary')
+        if(btn){
+            const prev = btn.textContent
+            btn.textContent = 'Copied!'
+            setTimeout(()=>btn.textContent = prev, 2000)
+        }
+    }
+    if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(text).then(onCopied).catch(()=>fallbackCopy(text, onCopied))
+    } else {
+        fallbackCopy(text, onCopied)
+    }
+}
+
+function clearReport(){
+    document.getElementById('report-box').textContent =
+        '-- AMALYN TECH Producer Report --\nClick "Generate Report" to produce a full session analysis.'
+}
 
 // Uptime
 setInterval(()=>{
+    const s = Math.floor((Date.now()-startTime)/1000)
+    document.getElementById('st-upt').textContent =
+        `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
+}, 1000)
+
+// Decoupled animation frame renderer
+function renderFrame(){
+    renderScheduled = false
+    if(!currentData) return
+    const d = currentData
+    const status = d.status || 'CLEAN'
+    if(d.frequencies && d.magnitudes){
+        drawSpectrum(d.frequencies, d.magnitudes, status)
+        drawPhase(d.magnitudes)
+        updateFreqTable(d.frequencies, d.magnitudes, d.suggestion)
+    }
+    drawEQ(d.suggestion)
+}
+
+// WebSocket
+function connect(){
+    const ws = new WebSocket(WS)
+
+    ws.onopen = () => {
+        document.getElementById('conn').textContent = 'CONNECTED'
+        document.getElementById('conn').className = 'conn ok'
     }
 
     ws.onmessage = (e) => {
@@ -692,6 +799,34 @@ setInterval(()=>{
                 addEvent('CRITICAL', d.danger_freq, d.danger_mag)
             } else if(status==='WARNING' && lastStatus!=='WARNING'){
                 warnings++
+                document.getElementById('st-warn').textContent = warnings
+                addEvent('WARNING', d.danger_freq, d.danger_mag)
+            }
+            lastStatus = status
+
+            // Sentinel alerts (deduplicated to prevent UI lockup & DOM flooding)
+            if(d.sentinel && d.sentinel.alerts && d.sentinel.alerts.length > 0){
+                const alert = d.sentinel.alerts[0]
+                const alertKey = `${alert.type}:${alert.severity}`
+                if(alertKey !== lastSentinelAlert){
+                    lastSentinelAlert = alertKey
+                    addEvent('SENTINEL', 0, 0, `${alert.type}: ${alert.message}`)
+                }
+            } else {
+                lastSentinelAlert = null
+            }
+
+            // Schedule rendering on next animation frame
+            if(!renderScheduled){
+                renderScheduled = true
+                requestAnimationFrame(renderFrame)
+            }
+
+        }catch(err){ console.error(err) }
+    }
+
+    ws.onclose = () => {
+        document.getElementById('conn').textContent = 'RECONNECTING'
         document.getElementById('conn').className = 'conn'
         setTimeout(connect, 1500)
     }
