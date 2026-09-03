@@ -1,4 +1,3 @@
-# launcher.py — AMALYN TECH One-Click Launcher
 import subprocess
 import sys
 import os
@@ -6,22 +5,20 @@ import time
 import webbrowser
 import threading
 
-def open_dashboard():
+BASE = os.path.dirname(__file__)
+
+def open_login():
     time.sleep(3)
-    dashboard = os.path.join(os.path.dirname(__file__), 'dashboard.html')
-    webbrowser.open(f'file:///{dashboard}')
-    print("[LAUNCHER] Dashboard opened in browser")
+    login = os.path.join(BASE, 'login.html')
+    webbrowser.open(f'file:///{login}')
+    print("[LAUNCHER] AMALYN Login Portal opened")
 
 def main():
     print("\n" + "="*50)
     print("   AMALYN TECH — Starting...")
     print("="*50)
-
-    # Open dashboard after delay
-    threading.Thread(target=open_dashboard, daemon=True).start()
-
-    # Start the API
-    api_path = os.path.join(os.path.dirname(__file__), 'api.py')
+    threading.Thread(target=open_login, daemon=True).start()
+    api_path = os.path.join(BASE, 'api.py')
     subprocess.run([sys.executable, api_path])
 
 if __name__ == "__main__":

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMALYN TECH — Login</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+    background:#03030a;color:#fff;
+    font-family:'Segoe UI',sans-serif;
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+}
+
+/* Background */
+.bg{
+    position:fixed;inset:0;z-index:-1;
+    background:
+        radial-gradient(ellipse 60% 50% at 20% 20%,#1a3a6a33,transparent),
+        radial-gradient(ellipse 50% 40% at 80% 80%,#2a1a5a33,transparent),
+        linear-gradient(160deg,#060616,#03030a);
+}
+.grid{
+    position:fixed;inset:0;z-index:-1;
+    background-image:
+        linear-gradient(#ffffff04 1px,transparent 1px),
+        linear-gradient(90deg,#ffffff04 1px,transparent 1px);
+    background-size:40px 40px;
+}
+
+/* SCREENS */
+.screen{display:none;width:100%;max-width:460px;padding:20px}
+.screen.active{display:block}
+
+/* LOGIN CARD */
+.card{
+    background:rgba(12,12,28,.85);
+    border:1px solid #1a1a3a;border-radius:16px;
+    padding:40px;
+    backdrop-filter:blur(20px);
+    box-shadow:0 30px 80px -20px #000c,0 1px 0 #ffffff08 inset;
+}
+
+.logo-wrap{text-align:center;margin-bottom:32px}
+.logo-mark{
+    display:inline-flex;width:52px;height:52px;
+    align-items:center;justify-content:center;
+    border:1px solid #7be8ff66;border-radius:14px 20px 14px 20px;
+    background:linear-gradient(135deg,#7be8ff18,#4380ff0c);
+    box-shadow:0 0 30px #4aadff2a;
+    margin-bottom:14px;
+}
+.logo-mark svg{width:26px;fill:none;stroke:#7be8ff;stroke-width:1.8}
+.logo-name{
+    font-size:18px;font-weight:900;letter-spacing:5px;
+    color:#7be8ff;text-shadow:0 0 20px #79e5ff44;
+}
+.logo-sub{font-size:9px;color:#333;letter-spacing:2px;margin-top:4px}
+
+.form-title{
+    font-size:20px;font-weight:800;
+    letter-spacing:-.3px;margin-bottom:6px;
+}
+.form-sub{font-size:11px;color:#444;margin-bottom:28px}
+
+.field{margin-bottom:16px}
+.field label{
+    display:block;font-size:9px;color:#444;
+    letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;
+}
+.field input,.field select{
+    width:100%;height:46px;padding:0 14px;
+    background:#0a0a1a;border:1px solid #1a1a2a;
+    border-radius:10px;color:#fff;font-size:12px;
+    outline:none;transition:border-color .2s;
+    -webkit-appearance:none;appearance:none;color-scheme:dark;
+}
+.field input:focus,.field select:focus{border-color:#7be8ff44}
+.field input::placeholder{color:#333}
+
+.field select option{background:#0a0a1a;color:#fff}
+
+.btn-primary{
+    width:100%;height:48px;border:none;border-radius:10px;
+    background:linear-gradient(135deg,#7be8ff,#4ba8ff);
+    color:#020d18;font-size:12px;font-weight:800;
+    letter-spacing:1px;cursor:pointer;
+    transition:opacity .15s,transform .15s;
+    margin-top:8px;
+}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.5;cursor:wait}
+
+.error-msg{
+    background:#ff333318;border:1px solid #ff333344;
+    border-radius:8px;padding:10px 14px;
+    font-size:10px;color:#ff7d92;margin-bottom:14px;
+    display:none;
+}
+.error-msg.show{display:block}
+
+.switch-text{
+    text-align:center;font-size:10px;color:#333;
+    margin-top:20px;
+}
+.switch-text a{color:#7be8ff;cursor:pointer;text-decoration:none}
+.switch-text a:hover{text-decoration:underline}
+
+.divider{
+    display:flex;align-items:center;gap:12px;
+    margin:20px 0;color:#222;font-size:9px;
+}
+.divider:before,.divider:after{
+    content:"";flex:1;height:1px;background:#1a1a2a;
+}
+
+/* PORTAL SELECTION */
+.portals-grid{
+    display:grid;grid-template-columns:1fr;gap:12px;
+    margin-top:24px;
+}
+.portal-card{
+    background:#0a0a1a;border:1px solid #1a1a2a;
+    border-radius:12px;padding:20px;
+    display:flex;align-items:center;gap:16px;
+    cursor:pointer;transition:all .2s;text-decoration:none;
+    color:inherit;
+}
+.portal-card:hover{
+    border-color:#7be8ff33;
+    background:#0f0f22;
+    transform:translateX(4px);
+}
+.portal-icon{
+    width:44px;height:44px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;flex-shrink:0;
+}
+.portal-icon.engineer{background:#7be8ff18;border:1px solid #7be8ff33}
+.portal-icon.musician{background:#5cebac18;border:1px solid #5cebac33}
+.portal-icon.producer{background:#b48aff18;border:1px solid #b48aff33}
+.portal-info{flex:1}
+.portal-name{font-size:13px;font-weight:700;margin-bottom:3px}
+.portal-desc{font-size:10px;color:#444}
+.portal-arrow{color:#333;font-size:16px}
+
+.user-bar{
+    display:flex;align-items:center;gap:10px;
+    background:#0a0a1a;border:1px solid #1a1a2a;
+    border-radius:10px;padding:12px 16px;margin-bottom:20px;
+}
+.user-avatar{
+    width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,#7be8ff,#4ba8ff);
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:800;color:#020d18;flex-shrink:0;
+}
+.user-name{font-size:12px;font-weight:700}
+.user-role{font-size:9px;color:#444;letter-spacing:1px;text-transform:uppercase}
+.user-logout{
+    margin-left:auto;font-size:9px;color:#333;
+    cursor:pointer;padding:4px 10px;border-radius:6px;
+    border:1px solid #1a1a2a;background:transparent;
+    transition:all .15s;
+}
+.user-logout:hover{color:#ff7d92;border-color:#ff333344}
+
+.welcome-title{font-size:20px;font-weight:800;margin-bottom:4px}
+.welcome-sub{font-size:11px;color:#444;margin-bottom:6px}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="grid"></div>
+
+<!-- LOGIN SCREEN -->
+<div class="screen active" id="screen-login">
+    <div class="card">
+        <div class="logo-wrap">
+            <div class="logo-mark">
+                <svg viewBox="0 0 24 24"><path d="M3 14.5h3l2-7 4 12 3-8 1.5 3H21"/></svg>
+            </div>
+            <div class="logo-name">AMALYN TECH</div>
+            <div class="logo-sub">AI AUDIO INTELLIGENCE</div>
+        </div>
+
+        <div class="form-title">Welcome back</div>
+        <div class="form-sub">Sign in to access your portal</div>
+
+        <div class="error-msg" id="login-error">Invalid email or password</div>
+
+        <div class="field">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="you@amalyn.tech">
+        </div>
+        <div class="field">
+            <label>Password</label>
+            <input type="password" id="login-password" placeholder="••••••••">
+        </div>
+
+        <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+
+        <div class="switch-text">
+            Don't have an account? <a onclick="showScreen('screen-register')">Create one</a>
+        </div>
+
+        <div class="divider">DEFAULT ACCOUNTS</div>
+        <div style="font-size:9px;color:#333;line-height:2;text-align:center">
+            engineer@amalyn.tech / amalyn2024<br>
+            producer@amalyn.tech / producer2024<br>
+            musician@amalyn.tech / musician2024
+        </div>
+    </div>
+</div>
+
+<!-- REGISTER SCREEN -->
+<div class="screen" id="screen-register">
+    <div class="card">
+        <div class="logo-wrap">
+            <div class="logo-mark">
+                <svg viewBox="0 0 24 24"><path d="M3 14.5h3l2-7 4 12 3-8 1.5 3H21"/></svg>
+            </div>
+            <div class="logo-name">AMALYN TECH</div>
+            <div class="logo-sub">CREATE ACCOUNT</div>
+        </div>
+
+        <div class="form-title">Create account</div>
+        <div class="form-sub">Join AMALYN TECH</div>
+
+        <div class="error-msg" id="register-error"></div>
+
+        <div class="field">
+            <label>Full Name</label>
+            <input type="text" id="reg-name" placeholder="Your name">
+        </div>
+        <div class="field">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="you@email.com">
+        </div>
+        <div class="field">
+            <label>Password</label>
+            <input type="password" id="reg-password" placeholder="Choose a password">
+        </div>
+        <div class="field">
+            <label>Role</label>
+            <select id="reg-role">
+                <option value="engineer">Sound Engineer</option>
+                <option value="producer">Producer</option>
+                <option value="musician">Musician</option>
+            </select>
+        </div>
+
+        <button class="btn-primary" onclick="doRegister()">Create Account</button>
+
+        <div class="switch-text">
+            Already have an account? <a onclick="showScreen('screen-login')">Sign in</a>
+        </div>
+    </div>
+</div>
+
+<!-- PORTAL SELECTION SCREEN -->
+<div class="screen" id="screen-portals">
+    <div class="card">
+        <div class="user-bar">
+            <div class="user-avatar" id="user-avatar">A</div>
+            <div>
+                <div class="user-name" id="user-name">--</div>
+                <div class="user-role" id="user-role">--</div>
+            </div>
+            <button class="user-logout" onclick="doLogout()">Sign out</button>
+        </div>
+
+        <div class="welcome-title" id="welcome-title">Welcome back</div>
+        <div class="welcome-sub">Choose your portal to continue</div>
+
+        <div class="portals-grid">
+            <a class="portal-card" onclick="openPortal('dashboard.html')">
+                <div class="portal-icon engineer">🎛️</div>
+                <div class="portal-info">
+                    <div class="portal-name">Engineer Dashboard</div>
+                    <div class="portal-desc">Live spectrum, feedback detection, EQ suggestions, mixer control</div>
+                </div>
+                <div class="portal-arrow">›</div>
+            </a>
+            <a class="portal-card" onclick="openPortal('musician.html')">
+                <div class="portal-icon musician">🎸</div>
+                <div class="portal-info">
+                    <div class="portal-name">Musician Portal</div>
+                    <div class="portal-desc">Control your IEM monitor mix from your phone</div>
+                </div>
+                <div class="portal-arrow">›</div>
+            </a>
+            <a class="portal-card" onclick="openPortal('producer.html')">
+                <div class="portal-icon producer">🎚️</div>
+                <div class="portal-info">
+                    <div class="portal-name">Producer Portal</div>
+                    <div class="portal-desc">Deep analysis, phase correlation, session reports</div>
+                </div>
+                <div class="portal-arrow">›</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = `${location.protocol==='file:'?'http:':location.protocol}//${location.hostname||'localhost'}:8000`
+const BASE = location.href.substring(0, location.href.lastIndexOf('/')+1)
+
+let currentUser = null
+
+// Check if already logged in
+const saved = sessionStorage.getItem('amalyn_user')
+if(saved){
+    currentUser = JSON.parse(saved)
+    showPortals(currentUser)
+}
+
+function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'))
+    document.getElementById(id).classList.add('active')
+}
+
+async function doLogin(){
+    const email = document.getElementById('login-email').value.trim()
+    const password = document.getElementById('login-password').value
+    const btn = document.getElementById('login-btn')
+    const err = document.getElementById('login-error')
+
+    if(!email || !password){
+        err.textContent = 'Please enter your email and password'
+        err.classList.add('show')
+        return
+    }
+
+    btn.disabled = true
+    btn.textContent = 'Signing in...'
+    err.classList.remove('show')
+
+    try{
+        const res = await fetch(`${API}/auth/login`, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({email, password})
+        })
+        const data = await res.json()
+
+        if(data.status === 'ok'){
+            currentUser = data.user
+            sessionStorage.setItem('amalyn_user', JSON.stringify(currentUser))
+            showPortals(currentUser)
+        } else {
+            err.textContent = data.message || 'Invalid email or password'
+            err.classList.add('show')
+        }
+    } catch(e){
+        err.textContent = 'Cannot connect to AMALYN API. Make sure api.py is running.'
+        err.classList.add('show')
+    } finally {
+        btn.disabled = false
+        btn.textContent = 'Sign In'
+    }
+}
+
+async function doRegister(){
+    const name = document.getElementById('reg-name').value.trim()
+    const email = document.getElementById('reg-email').value.trim()
+    const password = document.getElementById('reg-password').value
+    const role = document.getElementById('reg-role').value
+    const err = document.getElementById('register-error')
+
+    if(!name || !email || !password){
+        err.textContent = 'Please fill in all fields'
+        err.classList.add('show')
+        return
+    }
+
+    err.classList.remove('show')
+
+    try{
+        const res = await fetch(`${API}/auth/register`, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({name, email, password, role})
+        })
+        const data = await res.json()
+
+        if(data.status === 'ok'){
+            currentUser = data.user
+            sessionStorage.setItem('amalyn_user', JSON.stringify(currentUser))
+            showPortals(currentUser)
+        } else {
+            err.textContent = data.message || 'Registration failed'
+            err.classList.add('show')
+        }
+    } catch(e){
+        err.textContent = 'Cannot connect to AMALYN API'
+        err.classList.add('show')
+    }
+}
+
+function showPortals(user){
+    document.getElementById('user-avatar').textContent = user.avatar || user.name[0].toUpperCase()
+    document.getElementById('user-name').textContent = user.name
+    document.getElementById('user-role').textContent = user.role
+    document.getElementById('welcome-title').textContent = `Welcome, ${user.name.split(' ')[0]}`
+    showScreen('screen-portals')
+}
+
+function doLogout(){
+    currentUser = null
+    sessionStorage.removeItem('amalyn_user')
+    showScreen('screen-login')
+}
+
+function openPortal(portal){
+    window.open(BASE + portal, '_blank')
+}
+
+// Allow Enter key on login
+document.getElementById('login-password').addEventListener('keydown', e=>{
+    if(e.key === 'Enter') doLogin()
+})
+document.addEventListener('DOMContentLoaded', ()=>{
+    document.getElementById('login-email').addEventListener('keydown', e=>{
+        if(e.key === 'Enter') document.getElementById('login-password').focus()
+    })
+})
+</script>
+</body>
+</html>
