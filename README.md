@@ -1,100 +1,160 @@
-# AMALYN_TECH
-Since you are preparing to present this to professionals and use it as your engineering roadmap, we need a **Technical Requirements Document (TRD)**. 
+# AMALYN TECH
+### AI-Driven Audio Intelligence & Predictive Monitoring Ecosystem
 
-This isn't just a list of features; it is a formal specification. When a professional engineer or investor asks, *"How does it handle phase alignment?"* or *"How does it interface with a Yamaha CL5?"*, you can point to this document.
-
-I have structured this as the **AMALYN TECH Master Specification**.
-
-***
-
-#  AMALYN TECH: Technical Requirements Document (TRD)
-**Project Version:** 1.0  
-**Project Name:** AMALYN TECH  
-**System Classification:** AI-Driven Audio Intelligence & Predictive Monitoring Ecosystem  
+AMALYN TECH is a modular audio intelligence system that eliminates human error and technical failure in live sound reinforcement and studio production. It acts as a Digital Co-Pilot — analyzing audio signals in real time, predicting feedback before it happens, and pushing corrections directly to the mixer automatically.
 
 ---
 
-## 1. EXECUTIVE SUMMARY
-**AMALYN TECH** is a modular audio intelligence system designed to eliminate human error and technical failure in live sound reinforcement and studio production. It acts as a "Digital Co-Pilot" that analyzes audio signals in real-time, compares them to "Perfect State" reference models, and provides predictive alerts and automated corrections across hardware (Mixers, Speakers, Mics) and software (DAWs).
+## What It Does
+
+- **Real-time FFT Analysis** — listens to your room and maps every frequency live
+- **AI Feedback Detection** — detects feedback building before it explodes
+- **ML Anomaly Detection** — trained neural network catches problems threshold systems miss
+- **Auto-EQ Suggestions** — tells you exactly which frequency to cut and by how much
+- **Perfect State System** — loads ideal settings for your exact venue and gear combination
+- **Mixer Integration** — pushes corrections directly to Yamaha, Behringer, Allen & Heath via OSC
+- **AMALYN Sentinel** — monitors signal health and predicts hardware failure before it happens
+- **Three Portals** — Engineer Dashboard, Musician IEM Portal, Producer Analysis Suite
 
 ---
 
-## 2. SYSTEM ARCHITECTURE (The Modular Approach)
-To ensure stability and scalability, the system is divided into four distinct layers:
+## System Architecture
 
-### 2.1 AMALYN Core (The Brain)
-*   **AI Engine:** Spectral analysis using Fast Fourier Transform (FFT) and Machine Learning (ML) to identify acoustic anomalies.
-*   **The Library:** A comprehensive database of frequency response curves for top-tier brands (JBL, Sony, Yamaha, etc.).
-*   **Logic Engine:** The "Perfect State" calculator that determines ideal settings based on venue size, occasion, and equipment.
+AMALYN Core (Brain)
+├── FFT Spectral Analysis
+├── ML Anomaly Detection
+├── Brand Frequency Library
+└── Perfect State Calculator
 
-### 2.2 AMALYN Connect (The Bridge)
-*   **Digital Integration:** Native support for **Dante, AES64, and AVB** networking.
-*   **Control Protocols:** Integration via **OSC (Open Sound Control)** and **MIDI over Ethernet** to remotely adjust mixer parameters.
-*   **Analog Interface:** A proprietary hardware bridge to convert analog signals into data for AI analysis.
+AMALYN Connect (Bridge)
+├── OSC Mixer Integration
+├── Dante / AES64 / AVB Support
+└── MIDI over Ethernet
 
-### 2.3 AMALYN Interface (The Face)
-*   **Engineer’s Portal:** Real-time health map of the PA system, feedback warnings, and room tuning.
-*   **Producer’s Portal:** VST/AU Plugin integration for DAWs (Cubase, FL Studio) and phase alignment tools.
-*   **Musician’s Portal:** IEM (In-Ear Monitor) management and personal tone profiles.
+AMALYN Interface (Face)
+├── Engineer Dashboard (dashboard.html)
+├── Musician Portal (musician.html)
+└── Producer Portal (producer.html)
 
-### 2.4 AMALYN Sentinel (The Shield)
-*   **Predictive Healing:** Monitoring voltage and signal stability to predict cable or hardware failure.
-*   **Emergency Fail-Safe:** Automated signal rerouting to a "Safe Profile" in the event of a hardware crash to prevent audio silence.
+AMALYN Sentinel (Shield)
+├── Predictive Hardware Failure Detection
+├── Signal Stability Monitoring
+└── Emergency Safe State
 
----
-
-## 3. TECHNICAL SPECIFICATIONS & FEATURES
-
-### 3.1 Hardware Compatibility Matrix
-| Category | Supported Brands | Integration Method |
-| :--- | :--- | :--- |
-| **Mixers** | Yamaha, Behringer, A&H, Digico, Midas, SSL, PreSonus | OSC / Dante / MIDI |
-| **Speakers** | JBL, Sony, L-Acoustics, d&b, Meyer, RCF, EV, QSC | DSP Analysis / Network |
-| **Microphones** | Shure, Sennheiser, Neumann, AKG, Audio-Technica | Spectral Fingerprinting |
-| **DAWs** | Cubase, FL Studio, Ableton, Pro Tools, Logic | VST3 / AU / AAX Plugins |
-
-### 3.2 Acoustic Intelligence Modules
-*   **Auto-EQ & Crossover:**
-    *   Automatic detection of "mud" (200-500Hz) and "harshness" (2kHz-4kHz).
-    *   Dynamic Crossover management (Slope/Frequency) based on speaker model.
-*   **Speaker Placement AI:** 
-    *   Calculation of optimal splay angles for line arrays.
-    *   Subwoofer array alignment (Cardioid/End-fire) based on venue dimensions.
-*   **Time-Alignment:** 
-    *   Calculation of millisecond delays for fill-speakers to ensure coherent wavefronts.
-
-### 3.3 Protection & Error Handling
-*   **The "Safe-State" Mechanism:** If the AI detects a "clipping" event or a hardware failure, it applies an emergency limiter and switches to a neutral EQ profile to save the speakers and the audience's ears.
-*   **Mic-Sync:** Recognition of mic capsules; automatic application of complementary preamp gain and high-pass filters (Low-Cut).
 
 ---
 
-## 4. HARDWARE REQUIREMENTS (Bill of Materials)
-To implement AMALYN TECH, the following physical infrastructure is required:
+## Supported Hardware
 
-1.  **Central Processing Unit:** High-performance server/PC (Minimum i7/Ryzen 7, 32GB RAM, dedicated GPU for AI processing).
-2.  **Network Infrastructure:** Layer 3 Managed Network Switches (Dante-compatible).
-3.  **Sensing Array:** 4x to 8x Omnidirectional Calibration Microphones (placed strategically in the venue).
-4.  **AMALYN Bridge Box (Optional):** For analog-to-digital conversion of legacy gear.
-
----
-
-## 5. WORKFLOW: "THE PERFECT STATE"
-**The process AMALYN TECH follows to ensure an error-free show:**
-1.  **Input:** Engineer enters *Venue Type* $\rightarrow$ *Occasion* $\rightarrow$ *Gear List*.
-2.  **Analysis:** AI scans the room via calibration mics and identifies acoustic resonances.
-3.  **Calibration:** System pushes "Suggested Settings" to the Mixer (Gain $\rightarrow$ EQ $\rightarrow$ Crossover).
-4.  **Monitoring:** Sentinel tracks every channel for phase issues or signal drops.
-5.  **Adjustment:** Engineer makes manual tweaks; AI validates if the tweak introduces risk.
-6.  **Execution:** System maintains the "Perfect State" throughout the event, adjusting for crowd density and temperature shifts.
+| Category | Brands |
+|---|---|
+| Mixers | Yamaha CL/QL, Behringer X32/M32, Allen & Heath SQ/dLive |
+| Speakers | JBL, QSC, RCF, Electro-Voice |
+| Microphones | Shure SM58/SM7B, Sennheiser e835, AKG C414, Neumann U87 |
+| DAWs | Ableton, FL Studio, Logic, Pro Tools, Cubase |
 
 ---
 
-## 6. SUCCESS METRICS (The Professional Answer)
-When asked why AMALYN TECH is superior, the answers are:
-*   **Reduction in Setup Time:** Soundchecks are reduced from hours to minutes via AI presets.
-*   **Zero-Crash Guarantee:** Emergency rerouting ensures the audio never stops.
-*   **Consistency:** The sound is identical in the front row and the back row via AI Time-Alignment.
-*   **Hardware Longevity:** Predictive limiting prevents speaker blowouts and preamp distortion.
+## Installation
 
-***
+### Requirements
+- Python 3.11
+- Windows / macOS / Linux
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/amalyn-tech.git
+cd amalyn-tech/AMALYN_TECH
+
+# Create virtual environment
+python -m venv amalyn_env
+
+# Activate (Windows)
+amalyn_env\Scripts\activate
+
+# Activate (Mac/Linux)
+source amalyn_env/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start AMALYN
+cd AMALYN_AI
+python api.py
+```
+
+### Open Dashboard
+Open `AMALYN_AI/dashboard.html` in Chrome or Edge.
+
+---
+
+## Portals
+
+| Portal | File | Purpose |
+|---|---|---|
+| Engineer | `dashboard.html` | Live spectrum, feedback alerts, EQ suggestions |
+| Musician | `musician.html` | IEM monitor mix control from phone |
+| Producer | `producer.html` | Deep analysis, phase correlation, session reports |
+
+---
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/ws` | WebSocket | Real-time audio stream |
+| `/setup` | POST | Load Perfect State for session |
+| `/library` | GET | Get available gear library |
+| `/musician/channels` | GET | Get IEM channel mix |
+| `/musician/mix` | POST | Update channel level or mute |
+| `/sentinel/status` | GET | Get signal health report |
+| `/health` | GET | API health check |
+
+---
+
+## ML Training
+
+```bash
+# Collect training data
+python ml_collector.py
+
+# Train the model
+python ml_trainer.py
+```
+
+---
+
+## Project Structure
+
+AMALYN_TECH/
+AMALYN_AI/
+api.py # FastAPI backend + WebSocket
+config.py # Audio settings
+audio_utils.py # FFT engine
+alerts.py # Threshold detection
+eq_engine.py # Auto EQ suggestions
+logger.py # Session logger
+mixer.py # OSC mixer integration
+simulator.py # Mixer simulator
+sentinel.py # Predictive health monitor
+library.py # Brand frequency library
+library.json # Gear database
+ml_collector.py # Training data collector
+ml_trainer.py # Neural network trainer
+ml_inference.py # Model inference engine
+dashboard.html # Engineer portal
+musician.html # Musician portal
+producer.html # Producer portal
+README.md
+requirements.txt
+.gitignore
+
+
+---
+
+## Built By
+
+**Angela** — Software Engineer & Sound Engineer, Nairobi, Kenya  
+*AMALYN TECH — Because sound should never fail.*
