@@ -67,20 +67,23 @@ body{
 .auth-title{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:6px}
 .auth-sub{font-size:11px;color:#444;margin-bottom:28px}
 
-/* OAuth buttons */
-.oauth-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
-.oauth-btn{
-    height:42px;border:1px solid #1a1a2a;border-radius:10px;
-    background:#0a0a1a;color:#888;
-    display:flex;align-items:center;justify-content:center;gap:8px;
-    cursor:pointer;font-size:10px;font-weight:700;
-    transition:all .15s;
+/* Google OAuth Button */
+.oauth-btn-google-primary{
+    width:100%;height:46px;
+    border:1px solid #2a2a44;border-radius:12px;
+    background:#0e0e1f;color:#e8f0fe;
+    display:flex;align-items:center;justify-content:center;gap:12px;
+    cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.3px;
+    transition:all .2s ease;
+    margin-bottom:18px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.4);
 }
-.oauth-btn:hover{border-color:#333;color:#ccc;background:#0f0f22}
-.oauth-btn svg{width:16px;height:16px;flex-shrink:0}
-.oauth-btn.google:hover{border-color:#ea433544;color:#ea4335}
-.oauth-btn.microsoft:hover{border-color:#00a4ef44;color:#00a4ef}
-.oauth-btn.apple:hover{border-color:#ffffff33;color:#fff}
+.oauth-btn-google-primary:hover{
+    border-color:#4285f4;background:#151530;color:#fff;
+    box-shadow:0 6px 20px rgba(66,133,244,0.25);
+    transform:translateY(-1px);
+}
+.oauth-btn-google-primary svg{width:20px;height:20px;flex-shrink:0}
 
 .divider{
     display:flex;align-items:center;gap:12px;
@@ -434,21 +437,11 @@ body{
         <div class="auth-title">Welcome back</div>
         <div class="auth-sub">Sign in to access your portal</div>
 
-        <!-- OAuth -->
-        <div class="oauth-row">
-            <button class="oauth-btn google" onclick="oauthLogin('google')">
-                <svg viewBox="0 0 24 24"><path fill="#ea4335" d="M5.27 9.76A7.08 7.08 0 0 1 12 4.9c1.76 0 3.35.63 4.59 1.67L19.9 3.3A11.8 11.8 0 0 0 12 .5 11.9 11.9 0 0 0 .9 7.6l4.37 2.16Z"/><path fill="#34a853" d="M16.04 18.01A7 7 0 0 1 12 19.1a7.08 7.08 0 0 1-6.72-4.86L.9 16.4A11.9 11.9 0 0 0 12 23.5c2.9 0 5.67-1.04 7.76-2.93l-3.72-2.56Z"/><path fill="#4a90e2" d="M19.76 20.57A11.85 11.85 0 0 0 23.5 12c0-.7-.07-1.43-.2-2.12H12v4.5h6.48a5.57 5.57 0 0 1-2.44 3.62l3.72 2.57Z"/><path fill="#fbbc05" d="M5.28 14.24a7.13 7.13 0 0 1 0-4.48L.91 7.6A11.9 11.9 0 0 0 .5 12c0 1.55.28 3.04.79 4.4l4.0-2.16Z"/></svg>
-                Google
-            </button>
-            <button class="oauth-btn microsoft" onclick="oauthLogin('microsoft')">
-                <svg viewBox="0 0 24 24"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M13 1h10v10H13z"/><path fill="#00a4ef" d="M1 13h10v10H1z"/><path fill="#ffb900" d="M13 13h10v10H13z"/></svg>
-                Microsoft
-            </button>
-            <button class="oauth-btn apple" onclick="oauthLogin('apple')">
-                <svg viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11Z"/></svg>
-                Apple
-            </button>
-        </div>
+        <!-- Google OAuth -->
+        <button class="oauth-btn-google-primary" onclick="oauthLogin('google')">
+            <svg viewBox="0 0 24 24"><path fill="#ea4335" d="M5.27 9.76A7.08 7.08 0 0 1 12 4.9c1.76 0 3.35.63 4.59 1.67L19.9 3.3A11.8 11.8 0 0 0 12 .5 11.9 11.9 0 0 0 .9 7.6l4.37 2.16Z"/><path fill="#34a853" d="M16.04 18.01A7 7 0 0 1 12 19.1a7.08 7.08 0 0 1-6.72-4.86L.9 16.4A11.9 11.9 0 0 0 12 23.5c2.9 0 5.67-1.04 7.76-2.93l-3.72-2.56Z"/><path fill="#4a90e2" d="M19.76 20.57A11.85 11.85 0 0 0 23.5 12c0-.7-.07-1.43-.2-2.12H12v4.5h6.48a5.57 5.57 0 0 1-2.44 3.62l3.72 2.57Z"/><path fill="#fbbc05" d="M5.28 14.24a7.13 7.13 0 0 1 0-4.48L.91 7.6A11.9 11.9 0 0 0 .5 12c0 1.55.28 3.04.79 4.4l4.0-2.16Z"/></svg>
+            Continue with Google
+        </button>
 
         <div class="divider">OR SIGN IN WITH EMAIL</div>
 
@@ -494,20 +487,11 @@ body{
         <div class="auth-title">Join AMALYN TECH</div>
         <div class="auth-sub">Create your free account</div>
 
-        <div class="oauth-row">
-            <button class="oauth-btn google" onclick="oauthLogin('google')">
-                <svg viewBox="0 0 24 24"><path fill="#ea4335" d="M5.27 9.76A7.08 7.08 0 0 1 12 4.9c1.76 0 3.35.63 4.59 1.67L19.9 3.3A11.8 11.8 0 0 0 12 .5 11.9 11.9 0 0 0 .9 7.6l4.37 2.16Z"/><path fill="#34a853" d="M16.04 18.01A7 7 0 0 1 12 19.1a7.08 7.08 0 0 1-6.72-4.86L.9 16.4A11.9 11.9 0 0 0 12 23.5c2.9 0 5.67-1.04 7.76-2.93l-3.72-2.56Z"/><path fill="#4a90e2" d="M19.76 20.57A11.85 11.85 0 0 0 23.5 12c0-.7-.07-1.43-.2-2.12H12v4.5h6.48a5.57 5.57 0 0 1-2.44 3.62l3.72 2.57Z"/><path fill="#fbbc05" d="M5.28 14.24a7.13 7.13 0 0 1 0-4.48L.91 7.6A11.9 11.9 0 0 0 .5 12c0 1.55.28 3.04.79 4.4l4.0-2.16Z"/></svg>
-                Google
-            </button>
-            <button class="oauth-btn microsoft" onclick="oauthLogin('microsoft')">
-                <svg viewBox="0 0 24 24"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M13 1h10v10H13z"/><path fill="#00a4ef" d="M1 13h10v10H1z"/><path fill="#ffb900" d="M13 13h10v10H13z"/></svg>
-                Microsoft
-            </button>
-            <button class="oauth-btn apple" onclick="oauthLogin('apple')">
-                <svg viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11Z"/></svg>
-                Apple
-            </button>
-        </div>
+        <!-- Google OAuth -->
+        <button class="oauth-btn-google-primary" onclick="oauthLogin('google')">
+            <svg viewBox="0 0 24 24"><path fill="#ea4335" d="M5.27 9.76A7.08 7.08 0 0 1 12 4.9c1.76 0 3.35.63 4.59 1.67L19.9 3.3A11.8 11.8 0 0 0 12 .5 11.9 11.9 0 0 0 .9 7.6l4.37 2.16Z"/><path fill="#34a853" d="M16.04 18.01A7 7 0 0 1 12 19.1a7.08 7.08 0 0 1-6.72-4.86L.9 16.4A11.9 11.9 0 0 0 12 23.5c2.9 0 5.67-1.04 7.76-2.93l-3.72-2.56Z"/><path fill="#4a90e2" d="M19.76 20.57A11.85 11.85 0 0 0 23.5 12c0-.7-.07-1.43-.2-2.12H12v4.5h6.48a5.57 5.57 0 0 1-2.44 3.62l3.72 2.57Z"/><path fill="#fbbc05" d="M5.28 14.24a7.13 7.13 0 0 1 0-4.48L.91 7.6A11.9 11.9 0 0 0 .5 12c0 1.55.28 3.04.79 4.4l4.0-2.16Z"/></svg>
+            Sign up with Google
+        </button>
 
         <div class="divider">OR REGISTER WITH EMAIL</div>
 
@@ -1137,18 +1121,23 @@ function openPortal(portal){
 
 async function oauthLogin(provider){
     const errorElement = document.getElementById('login-error')
+    const regErrorElement = document.getElementById('register-error')
     if(!supabaseClient){
-        errorElement.textContent = 'OAuth is not configured yet. Add Supabase settings to the Render service.'
-        errorElement.classList.add('show')
+        const msg = 'OAuth is not configured yet. Add SUPABASE_URL and SUPABASE_ANON_KEY to your Render environment variables.'
+        if(errorElement) { errorElement.textContent = msg; errorElement.classList.add('show') }
+        if(regErrorElement) { regErrorElement.textContent = msg; regErrorElement.classList.add('show') }
         return
     }
+    // Supabase Auth uses 'azure' for Microsoft accounts
+    const targetProvider = provider === 'microsoft' ? 'azure' : provider
     const {error} = await supabaseClient.auth.signInWithOAuth({
-        provider,
+        provider: targetProvider,
         options: {redirectTo: `${location.origin}${location.pathname}`}
     })
     if(error){
-        errorElement.textContent = error.message || `Unable to sign in with ${provider}.`
-        errorElement.classList.add('show')
+        const msg = error.message || `Unable to sign in with ${provider}.`
+        if(errorElement) { errorElement.textContent = msg; errorElement.classList.add('show') }
+        if(regErrorElement) { regErrorElement.textContent = msg; regErrorElement.classList.add('show') }
     }
 }
 
