@@ -22,6 +22,27 @@ from sentinel import AmalynSentinel
 from auth import authenticate, get_all_users, add_user
 
 BASE_DIR = os.path.dirname(__file__)
+
+def load_env_file():
+    for env_path in [
+        os.path.join(BASE_DIR, ".env"),
+        os.path.join(os.path.dirname(BASE_DIR), ".env"),
+    ]:
+        if os.path.exists(env_path):
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            k, v = k.strip(), v.strip().strip("'").strip('"')
+                            if k and k not in os.environ:
+                                os.environ[k] = v
+            except Exception:
+                pass
+
+load_env_file()
+
 app = FastAPI(title="AMALYN TECH API")
 app.add_middleware(
     CORSMiddleware,
@@ -307,9 +328,12 @@ def health():
 @app.get("/config")
 def public_config():
     """Expose only browser-safe configuration needed by Supabase Auth."""
+    load_env_file()
+    url = os.getenv("SUPABASE_URL", "").strip().rstrip("/")
+    key = os.getenv("SUPABASE_ANON_KEY", "").strip()
     return {
-        "supabase_url": os.getenv("SUPABASE_URL", ""),
-        "supabase_anon_key": os.getenv("SUPABASE_ANON_KEY", ""),
+        "supabase_url": url,
+        "supabase_anon_key": key,
     }
 
 

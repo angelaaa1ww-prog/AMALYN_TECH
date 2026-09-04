@@ -989,18 +989,29 @@ if(saved){
 }
 
 async function initializeSupabase(){
+    if(supabaseClient) return supabaseClient
     try{
+        if(!window.supabase){
+            console.warn('Supabase JS library not loaded from CDN')
+            return null
+        }
         const res = await fetch(`${API}/config`)
+        if(!res.ok) throw new Error(`HTTP ${res.status}`)
         const config = await res.json()
-        if(!config.supabase_url || !config.supabase_anon_key || !window.supabase) return
+        if(!config.supabase_url || !config.supabase_anon_key){
+            console.info('Supabase credentials not configured in /config endpoint yet')
+            return null
+        }
         supabaseClient = window.supabase.createClient(config.supabase_url, config.supabase_anon_key)
         const {data:{session}} = await supabaseClient.auth.getSession()
         if(session && session.user) applyOAuthUser(session.user)
         supabaseClient.auth.onAuthStateChange((_event, sessionState)=>{
             if(sessionState && sessionState.user) applyOAuthUser(sessionState.user)
         })
+        return supabaseClient
     }catch(error){
-        console.warn('Supabase Auth unavailable', error)
+        console.warn('Supabase Auth initialization failed:', error)
+        return null
     }
 }
 
@@ -1122,17 +1133,32 @@ function openPortal(portal){
 async function oauthLogin(provider){
     const errorElement = document.getElementById('login-error')
     const regErrorElement = document.getElementById('register-error')
+    if(errorElement) errorElement.classList.remove('show')
+    if(regErrorElement) regErrorElement.classList.remove('show')
+
     if(!supabaseClient){
-        const msg = 'OAuth is not configured yet. Add SUPABASE_URL and SUPABASE_ANON_KEY to your Render environment variables.'
+        await initializeSupabase()
+    }
+
+    if(!supabaseClient){
+        let msg = 'OAuth is not ready yet.'
+        if(location.protocol === 'file:'){
+            msg = 'Please open AMALYN in your browser via http://localhost:8000 (run "py -3.11 api.py") or your live Render URL, rather than opening the HTML file directly.'
+        } else {
+            msg = 'Supabase credentials are not detected. Make sure SUPABASE_URL and SUPABASE_ANON_KEY are added to your Render Environment settings.'
+        }
         if(errorElement) { errorElement.textContent = msg; errorElement.classList.add('show') }
         if(regErrorElement) { regErrorElement.textContent = msg; regErrorElement.classList.add('show') }
         return
     }
+
     // Supabase Auth uses 'azure' for Microsoft accounts
     const targetProvider = provider === 'microsoft' ? 'azure' : provider
+    const redirectUrl = `${location.origin}${location.pathname}`
+    
     const {error} = await supabaseClient.auth.signInWithOAuth({
         provider: targetProvider,
-        options: {redirectTo: `${location.origin}${location.pathname}`}
+        options: { redirectTo: redirectUrl }
     })
     if(error){
         const msg = error.message || `Unable to sign in with ${provider}.`
