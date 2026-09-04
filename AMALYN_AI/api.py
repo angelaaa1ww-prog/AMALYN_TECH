@@ -344,12 +344,27 @@ def login_page():
 
 @app.get("/{file_name:path}")
 def static_file(file_name: str):
-    """Serve the portal HTML and other static assets from the same Render service."""
-    allowed_files = {"login.html", "dashboard.html", "musician.html", "producer.html"}
-    if file_name not in allowed_files:
+    """Serve portal HTML and static PWA assets from the same Render service."""
+    allowed_extensions = {".html", ".json", ".js", ".png", ".jpg", ".jpeg", ".ico", ".svg", ".webp"}
+    _, ext = os.path.splitext(file_name)
+    if ext.lower() not in allowed_extensions:
         return {"status": "error", "message": "File not found"}
     requested = os.path.join(BASE_DIR, file_name)
-    return FileResponse(requested)
+    if not os.path.isfile(requested):
+        return {"status": "error", "message": "File not found"}
+    # Set correct content types for PWA-critical files
+    media_types = {
+        ".json": "application/json",
+        ".js": "application/javascript",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".ico": "image/x-icon",
+        ".svg": "image/svg+xml",
+        ".webp": "image/webp",
+    }
+    media_type = media_types.get(ext.lower())
+    return FileResponse(requested, media_type=media_type)
 
 
 if __name__ == "__main__":
