@@ -1,10 +1,12 @@
-import pyaudio
 import numpy as np
 import asyncio
 import json
 import threading
+import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 import uvicorn
@@ -19,13 +21,15 @@ from ml_inference import ml_check
 from sentinel import AmalynSentinel
 from auth import authenticate, get_all_users, add_user
 
-app = FastAPI()
+BASE_DIR = os.path.dirname(__file__)
+app = FastAPI(title="AMALYN TECH API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"]
 )
+app.mount("/static", StaticFiles(directory=BASE_DIR), name="static")
 
 # --- SHARED STATE ---
 latest_frame = {
@@ -50,14 +54,10 @@ latest_frame = {
 frame_lock = threading.Lock()
 
 # --- AUDIO ---
-p = pyaudio.PyAudio()
-stream = p.open(
-    format=FORMAT,
-    channels=CHANNELS,
-    rate=RATE,
-    input=True,
-    frames_per_buffer=CHUNK
-)
+# Capture is opened only when this module is run as the server entrypoint.
+# Importing the API must remain safe for tests, tooling, and non-audio clients.
+p = None
+stream = None
 
 # --- MIXER ---
 mixer = AmalynMixerBridge(mixer_type="simulator", channel=1)
@@ -111,6 +111,10 @@ class RegisterRequest(BaseModel):
 # --- AUDIO ENGINE ---
 def audio_engine():
     global last_status, last_correction_freq
+
+    if stream is None:
+        print("[ENGINE] Audio capture is unavailable")
+        return
 
     print("[ENGINE] Audio engine started")
 
@@ -183,8 +187,7 @@ def audio_engine():
             continue
 
 
-audio_thread = threading.Thread(target=audio_engine, daemon=True)
-audio_thread.start()
+audio_thread = None
 
 
 # --- WEBSOCKET ---
@@ -294,8 +297,53 @@ def trigger_safe():
 # --- HEALTH ENDPOINT ---
 @app.get("/health")
 def health():
-    return {"status": "AMALYN API Running"}
+    return {
+        "status": "ok",
+        "service": "AMALYN API",
+        "audio_capture": stream is not None,
+    }
+
+
+@app.get("/config")
+def public_config():
+    """Expose only browser-safe configuration needed by Supabase Auth."""
+    return {
+        "supabase_url": os.getenv("SUPABASE_URL", ""),
+        "supabase_anon_key": os.getenv("SUPABASE_ANON_KEY", ""),
+    }
+
+
+@app.get("/")
+def login_page():
+    return FileResponse(os.path.join(BASE_DIR, "login.html"))
+
+
+@app.get("/{file_name:path}")
+def static_file(file_name: str):
+    """Serve the portal HTML and other static assets from the same Render service."""
+    allowed_files = {"login.html", "dashboard.html", "musician.html", "producer.html"}
+    if file_name not in allowed_files:
+        return {"status": "error", "message": "File not found"}
+    requested = os.path.join(BASE_DIR, file_name)
+    return FileResponse(requested)
 
 
 if __name__ == "__main__":
+    import pyaudio
+
+    p = pyaudio.PyAudio()
+    try:
+        stream = p.open(
+            format=FORMAT,
+            channels=CHANNELS,
+            rate=RATE,
+            input=True,
+            frames_per_buffer=CHUNK
+        )
+    except Exception as error:
+        p.terminate()
+        raise RuntimeError(f"Unable to open an audio input device: {error}") from error
+
+    audio_thread = threading.Thread(target=audio_engine, daemon=True)
+    audio_thread.start()
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")

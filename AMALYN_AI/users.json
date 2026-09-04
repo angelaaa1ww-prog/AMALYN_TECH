@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Angela",
+    "email": "angela@amalyn.tech",
+    "password": "3f821734e7e2086176b872a9a97d5b6b43b864bb24007a80f720118532474097",
+    "role": "engineer",
+    "avatar": "A"
+  },
+  {
+    "id": 2,
+    "name": "Producer",
+    "email": "producer@amalyn.tech",
+    "password": "aaddaae3265411e36d791e4a6c046cb909e6759bcb2a68763270aa768fbc2f37",
+    "role": "producer",
+    "avatar": "P"
+  },
+  {
+    "id": 3,
+    "name": "Musician",
+    "email": "musician@amalyn.tech",
+    "password": "4e4f8c1e8e19b0e6032d4609496846eefca4ee1264506ca312cad24d50b43341",
+    "role": "musician",
+    "avatar": "M"
+  }
+]

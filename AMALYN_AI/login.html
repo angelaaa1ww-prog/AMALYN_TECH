@@ -3,61 +3,416 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AMALYN TECH — Login</title>
+<title>AMALYN TECH — AI Audio Intelligence</title>
 <style>
-:root{
-    color-scheme:dark;
-    --ink:#f3faff;--muted:#9db6d1;--dim:#647f9e;--night:#050d18;
-    --panel:rgba(11,29,51,.62);--panel2:rgba(21,49,82,.52);
-    --glass-hi:rgba(255,255,255,.06);--glass-edge:rgba(180,222,255,.16);
-    --line:rgba(148,205,247,.14);--cyan:#7be8ff;--blue:#4ba8ff;
-    --green:#5cebac;--red:#ff7d92;--shadow:0 25px 70px -12px #000a,0 8px 24px -8px #000c;
-}
 *{margin:0;padding:0;box-sizing:border-box}
-html{background:#020610}
 body{
-    min-height:100vh;display:flex;align-items:center;justify-content:center;overflow-x:hidden;
-    color:var(--ink);background:
-        radial-gradient(ellipse 60% 42% at 10% -8%,#2481d84a,transparent 74%),
-        radial-gradient(ellipse 46% 38% at 100% 10%,#2c66c336,transparent 72%),
-        radial-gradient(ellipse 50% 46% at 50% 118%,#1c9a8f26,transparent 70%),
-        linear-gradient(160deg,#081a30 0%,var(--night) 46%,#02060d 100%);
-    font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-    -webkit-font-smoothing:antialiased;
+    background:#03030a;color:#fff;
+    font-family:'Segoe UI',sans-serif;
+    min-height:100vh;overflow-x:hidden;
 }
-body:before,body:after{position:fixed;z-index:-1;pointer-events:none;border-radius:50%;content:"";filter:blur(86px);opacity:.18}
-body:before{width:min(54vw,760px);height:min(54vw,760px);top:12vh;left:-20vw;background:#1c7fdd;animation:breathe 18s ease-in-out infinite alternate}
-body:after{width:min(40vw,600px);height:min(40vw,600px);right:-11vw;bottom:-22vh;background:#3b74e0;animation:breathe 23s ease-in-out -10s infinite alternate}
-@keyframes breathe{to{transform:translate3d(4vw,-3vh,0) scale(1.13);opacity:.28}}
-.bg{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(circle at 50% 40%,#7be8ff08,transparent 45%)}
-.grid{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.45;background-image:linear-gradient(#bce4ff08 1px,transparent 1px),linear-gradient(90deg,#bce4ff08 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,#0008,transparent 82%)}
-button{font:inherit;cursor:pointer}
-button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
-.screen{display:none;width:100%;max-width:500px;padding:22px}
-.screen.active{display:block;animation:rise .45s cubic-bezier(.22,.85,.32,1)}
-@keyframes rise{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
-.card{position:relative;overflow:hidden;padding:38px;border:1px solid var(--glass-edge);border-radius:18px;background:linear-gradient(155deg,var(--panel2),var(--panel));box-shadow:var(--shadow),0 1px 0 var(--glass-hi) inset,0 0 0 1px #ffffff05 inset;backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%)}
-.card:before{position:absolute;inset:0;pointer-events:none;background:linear-gradient(145deg,#78d9ff0d,transparent 42%);content:""}
-.logo-wrap,.form-title,.form-sub,.field,.btn-primary,.error-msg,.switch-text,.divider,.portals-grid,.user-bar,.welcome-title,.welcome-sub{position:relative;z-index:1}
-.logo-wrap{text-align:center;margin-bottom:30px}
-.logo-mark{display:inline-flex;width:54px;height:54px;align-items:center;justify-content:center;border:1px solid #8ceaffcc;border-radius:14px 20px 14px 20px;background:linear-gradient(135deg,#78e6ff42,#4380ff1c);box-shadow:inset 0 0 18px #7ee4ff33,inset 0 1px 0 #ffffff40,0 0 24px #4aadff3d;margin-bottom:14px}
-.logo-mark svg{width:27px;fill:none;stroke:var(--cyan);stroke-width:1.8}
-.logo-name{font-size:18px;font-weight:900;letter-spacing:.28em;color:var(--cyan);text-shadow:0 0 20px #79e5ff70}
-.logo-sub{font-size:9px;color:var(--dim);font-weight:700;letter-spacing:.18em;margin-top:6px}
-.form-title{font-size:22px;font-weight:800;letter-spacing:-.03em;margin-bottom:5px}
-.form-sub{font-size:11px;color:var(--dim);margin-bottom:26px}
-.field{margin-bottom:16px}.field label{display:block;font-size:9px;color:var(--muted);font-weight:800;letter-spacing:.14em;text-transform:uppercase;margin-bottom:7px}
-.field input,.field select{width:100%;height:46px;padding:0 14px;background:#061526;border:1px solid #8fcdf82b;border-radius:10px;color:var(--ink);font-size:12px;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none;color-scheme:dark}
-.field input:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #7be8ff12}.field input::placeholder{color:#55708e}.field select option{background:#061526;color:var(--ink)}
-.btn-primary{width:100%;height:48px;border:0;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--blue));color:#020d18;font-size:12px;font-weight:850;letter-spacing:.1em;transition:opacity .15s,transform .15s,box-shadow .2s;margin-top:8px;box-shadow:0 10px 24px -12px var(--blue)}
-.btn-primary:hover{opacity:.9;transform:translateY(-2px);box-shadow:0 14px 28px -12px var(--cyan)}.btn-primary:active{transform:translateY(0)}.btn-primary:disabled{opacity:.5;cursor:wait}
-.error-msg{background:#ff7d9212;border:1px solid #ff7d9248;border-radius:9px;padding:10px 14px;font-size:10px;color:var(--red);margin-bottom:14px;display:none}.error-msg.show{display:block}
-.switch-text{text-align:center;font-size:10px;color:var(--dim);margin-top:20px}.switch-text a{color:var(--cyan);cursor:pointer;text-decoration:none}.switch-text a:hover{text-decoration:underline}
-.divider{display:flex;align-items:center;gap:12px;margin:22px 0 14px;color:var(--dim);font-size:9px;font-weight:800;letter-spacing:.12em}.divider:before,.divider:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line))}
-.divider:after{background:linear-gradient(90deg,var(--line),transparent)}
-.portals-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:24px}.portal-card{background:#061526aa;border:1px solid #8fcdf82b;border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .25s,border-color .25s,background .25s;text-decoration:none;color:inherit}.portal-card:hover{border-color:#7be8ff66;background:#0b2036;transform:translateY(-2px)}.portal-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}.portal-icon.engineer{background:#7be8ff18;border:1px solid #7be8ff33}.portal-icon.musician{background:#5cebac18;border:1px solid #5cebac33}.portal-icon.producer{background:#ffc97118;border:1px solid #ffc97133}.portal-info{flex:1}.portal-name{font-size:13px;font-weight:750;margin-bottom:3px}.portal-desc{font-size:10px;color:var(--dim)}.portal-arrow{color:var(--cyan);font-size:20px;transition:transform .2s}.portal-card:hover .portal-arrow{transform:translateX(3px)}
-.user-bar{display:flex;align-items:center;gap:10px;background:#061526aa;border:1px solid #8fcdf82b;border-radius:11px;padding:12px 14px;margin-bottom:22px}.user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#020d18;flex-shrink:0}.user-name{font-size:12px;font-weight:750}.user-role{font-size:9px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase}.user-logout{margin-left:auto;font-size:9px;color:var(--dim);cursor:pointer;padding:5px 10px;border-radius:7px;border:1px solid var(--line);background:transparent;transition:all .15s}.user-logout:hover{color:var(--red);border-color:#ff7d9255}.welcome-title{font-size:21px;font-weight:800;margin-bottom:4px}.welcome-sub{font-size:11px;color:var(--dim);margin-bottom:6px}
-@media(max-width:520px){.screen{padding:14px}.card{padding:28px 22px}.logo-wrap{margin-bottom:25px}}
+
+/* BG */
+.bg{
+    position:fixed;inset:0;z-index:-1;
+    background:
+        radial-gradient(ellipse 70% 50% at 15% 15%,#1a3a6a2a,transparent),
+        radial-gradient(ellipse 50% 40% at 85% 85%,#2a1a5a2a,transparent),
+        radial-gradient(ellipse 40% 40% at 50% 50%,#0a1a3a18,transparent),
+        linear-gradient(160deg,#060616,#03030a);
+}
+.grid{
+    position:fixed;inset:0;z-index:-1;
+    background-image:
+        linear-gradient(#ffffff03 1px,transparent 1px),
+        linear-gradient(90deg,#ffffff03 1px,transparent 1px);
+    background-size:50px 50px;
+}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+
+/* ═══════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════ */
+#screen-login,#screen-register{
+    display:none;
+    align-items:center;justify-content:center;
+    min-height:100vh;padding:20px;
+}
+#screen-login.active,#screen-register.active{display:flex}
+
+.auth-card{
+    width:100%;max-width:440px;
+    background:rgba(10,10,24,.9);
+    border:1px solid #1a1a3a;border-radius:20px;
+    padding:44px 40px;
+    backdrop-filter:blur(24px);
+    box-shadow:0 40px 100px -20px #000e,0 1px 0 #ffffff08 inset;
+}
+
+.brand-center{text-align:center;margin-bottom:36px}
+.brand-mark{
+    display:inline-flex;width:56px;height:56px;
+    align-items:center;justify-content:center;
+    border:1px solid #7be8ff55;border-radius:16px 22px 16px 22px;
+    background:linear-gradient(135deg,#7be8ff14,#4380ff0a);
+    box-shadow:0 0 40px #4aadff22;margin-bottom:16px;
+}
+.brand-mark svg{width:28px;fill:none;stroke:#7be8ff;stroke-width:1.8}
+.brand-name{font-size:20px;font-weight:900;letter-spacing:5px;color:#7be8ff;text-shadow:0 0 24px #79e5ff44}
+.brand-sub{font-size:9px;color:#333;letter-spacing:3px;margin-top:5px}
+
+.auth-title{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:6px}
+.auth-sub{font-size:11px;color:#444;margin-bottom:28px}
+
+/* OAuth buttons */
+.oauth-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px}
+.oauth-btn{
+    height:42px;border:1px solid #1a1a2a;border-radius:10px;
+    background:#0a0a1a;color:#888;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    cursor:pointer;font-size:10px;font-weight:700;
+    transition:all .15s;
+}
+.oauth-btn:hover{border-color:#333;color:#ccc;background:#0f0f22}
+.oauth-btn svg{width:16px;height:16px;flex-shrink:0}
+.oauth-btn.google:hover{border-color:#ea433544;color:#ea4335}
+.oauth-btn.microsoft:hover{border-color:#00a4ef44;color:#00a4ef}
+.oauth-btn.apple:hover{border-color:#ffffff33;color:#fff}
+
+.divider{
+    display:flex;align-items:center;gap:12px;
+    margin:16px 0;color:#222;font-size:9px;letter-spacing:1px;
+}
+.divider:before,.divider:after{content:"";flex:1;height:1px;background:#151528}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:9px;color:#444;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.field input,.field select{
+    width:100%;height:44px;padding:0 14px;
+    background:#080814;border:1px solid #151528;
+    border-radius:10px;color:#fff;font-size:12px;outline:none;
+    transition:border-color .2s;
+    -webkit-appearance:none;appearance:none;color-scheme:dark;
+}
+.field input:focus,.field select:focus{border-color:#7be8ff33}
+.field input::placeholder{color:#2a2a3a}
+.field select option{background:#080814;color:#fff}
+
+.btn-primary{
+    width:100%;height:46px;border:none;border-radius:10px;
+    background:linear-gradient(135deg,#7be8ff,#4ba8ff);
+    color:#020d18;font-size:11px;font-weight:800;letter-spacing:1px;
+    cursor:pointer;transition:opacity .15s,transform .15s;margin-top:6px;
+}
+.btn-primary:hover{opacity:.88;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.5;cursor:wait;transform:none}
+
+.error-msg{
+    background:#ff333314;border:1px solid #ff333333;
+    border-radius:8px;padding:10px 14px;
+    font-size:10px;color:#ff7d92;margin-bottom:14px;display:none;
+}
+.error-msg.show{display:block}
+
+.switch-text{text-align:center;font-size:10px;color:#333;margin-top:18px}
+.switch-text a{color:#7be8ff;cursor:pointer}
+
+.hint-row{
+    margin-top:16px;padding:12px;
+    background:#0a0a1a;border:1px solid #111122;border-radius:8px;
+}
+.hint-title{font-size:8px;color:#333;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.hint-item{font-size:9px;color:#2a2a3a;line-height:1.8}
+
+/* ═══════════════════════════════
+   HOME SCREEN
+═══════════════════════════════ */
+#screen-home{display:none;flex-direction:column}
+#screen-home.active{display:flex}
+
+/* Top bar */
+.topbar{
+    height:56px;background:#06060f;
+    border-bottom:1px solid #0f0f1a;
+    display:flex;align-items:center;
+    justify-content:space-between;
+    padding:0 28px;position:sticky;top:0;z-index:20;
+}
+.topbar-brand{display:flex;align-items:center;gap:10px}
+.topbar-mark{
+    width:28px;height:28px;border-radius:8px 12px 8px 12px;
+    border:1px solid #7be8ff44;
+    background:linear-gradient(135deg,#7be8ff12,#4380ff08);
+    display:flex;align-items:center;justify-content:center;
+}
+.topbar-mark svg{width:14px;fill:none;stroke:#7be8ff;stroke-width:1.8}
+.topbar-name{font-size:12px;font-weight:900;letter-spacing:4px;color:#7be8ff}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.user-pill{
+    display:flex;align-items:center;gap:8px;
+    background:#0c0c1a;border:1px solid #151528;
+    border-radius:99px;padding:5px 12px 5px 6px;
+}
+.user-av{
+    width:26px;height:26px;border-radius:50%;
+    background:linear-gradient(135deg,#7be8ff,#4ba8ff);
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;color:#020d18;
+}
+.user-nm{font-size:10px;font-weight:700;color:#888}
+.user-role-badge{
+    font-size:8px;padding:2px 7px;border-radius:99px;
+    background:#7be8ff14;color:#7be8ff;border:1px solid #7be8ff22;
+    letter-spacing:1px;text-transform:uppercase;
+}
+.logout-btn{
+    padding:6px 14px;border-radius:8px;
+    border:1px solid #151528;background:transparent;
+    color:#444;font-size:9px;font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;cursor:pointer;transition:all .15s;
+}
+.logout-btn:hover{color:#ff7d92;border-color:#ff333344}
+
+/* Nav tabs */
+.nav{
+    background:#06060f;border-bottom:1px solid #0f0f1a;
+    display:flex;align-items:center;gap:2px;padding:0 28px;
+    overflow-x:auto;
+}
+.nav-tab{
+    padding:12px 18px;font-size:10px;font-weight:700;
+    letter-spacing:1px;text-transform:uppercase;color:#333;
+    cursor:pointer;border-bottom:2px solid transparent;
+    transition:all .15s;white-space:nowrap;
+}
+.nav-tab:hover{color:#666}
+.nav-tab.active{color:#7be8ff;border-bottom-color:#7be8ff}
+
+/* Tab content */
+.home-content{display:none;flex:1}
+.home-content.active{display:block}
+
+/* ── HOME TAB ── */
+.hero-section{
+    padding:50px 40px;
+    display:grid;grid-template-columns:1fr 1fr;
+    gap:40px;align-items:center;
+    border-bottom:1px solid #0f0f1a;
+    max-width:1200px;margin:0 auto;width:100%;
+}
+.hero-tag{
+    font-size:9px;color:#7be8ff;letter-spacing:3px;
+    text-transform:uppercase;margin-bottom:14px;
+    display:flex;align-items:center;gap:8px;
+}
+.hero-tag:before{
+    content:"";width:6px;height:6px;border-radius:50%;
+    background:#7be8ff;box-shadow:0 0 10px #7be8ff;
+    animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero-title{
+    font-size:42px;font-weight:900;letter-spacing:-1.5px;
+    line-height:1.1;margin-bottom:16px;
+}
+.hero-title span{
+    background:linear-gradient(135deg,#7be8ff,#b48aff);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero-desc{font-size:13px;color:#555;line-height:1.7;margin-bottom:28px}
+.hero-stats{display:flex;gap:28px}
+.hero-stat strong{display:block;font-size:24px;font-weight:800;color:#7be8ff}
+.hero-stat span{font-size:10px;color:#333;letter-spacing:1px}
+
+.hero-visual{
+    background:#0a0a1a;border:1px solid #151528;
+    border-radius:16px;padding:24px;
+    display:flex;flex-direction:column;gap:12px;
+}
+.vis-bar{display:flex;align-items:center;gap:12px}
+.vis-label{font-size:9px;color:#444;width:80px;letter-spacing:.5px}
+.vis-track{flex:1;height:4px;background:#111122;border-radius:4px;overflow:hidden}
+.vis-fill{height:100%;border-radius:4px;animation:fill-in 1.5s ease both}
+@keyframes fill-in{from{width:0}to{width:var(--w)}}
+.vis-val{font-size:9px;color:#555;width:36px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* Quick launch portals */
+.portals-section{
+    max-width:1200px;margin:0 auto;width:100%;
+    padding:40px;border-bottom:1px solid #0f0f1a;
+}
+.section-title{
+    font-size:11px;font-weight:700;color:#444;
+    letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;
+    display:flex;align-items:center;gap:10px;
+}
+.section-title:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,#151528,transparent)}
+.portals-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.portal-launch{
+    background:#0a0a1a;border:1px solid #151528;
+    border-radius:14px;padding:24px;cursor:pointer;
+    transition:all .2s;text-decoration:none;color:inherit;
+    display:block;
+}
+.portal-launch:hover{border-color:#7be8ff22;background:#0d0d20;transform:translateY(-2px)}
+.portal-launch:hover.musician-card{border-color:#5cebac22}
+.portal-launch:hover.producer-card{border-color:#b48aff22}
+.portal-icon-wrap{
+    width:48px;height:48px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;margin-bottom:14px;
+}
+.engineer-card .portal-icon-wrap{background:#7be8ff0a;border:1px solid #7be8ff22}
+.musician-card .portal-icon-wrap{background:#5cebac0a;border:1px solid #5cebac22}
+.producer-card .portal-icon-wrap{background:#b48aff0a;border:1px solid #b48aff22}
+.portal-launch-name{font-size:14px;font-weight:800;margin-bottom:4px}
+.engineer-card .portal-launch-name{color:#7be8ff}
+.musician-card .portal-launch-name{color:#5cebac}
+.producer-card .portal-launch-name{color:#b48aff}
+.portal-launch-desc{font-size:10px;color:#444;line-height:1.6;margin-bottom:16px}
+.portal-tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{
+    font-size:8px;padding:3px 8px;border-radius:99px;
+    background:#151528;color:#444;letter-spacing:.5px;
+}
+
+/* ── ABOUT TAB ── */
+.about-section{
+    max-width:900px;margin:0 auto;width:100%;padding:40px;
+}
+.about-lead{
+    font-size:18px;color:#888;line-height:1.7;
+    border-left:2px solid #7be8ff33;padding-left:20px;
+    margin-bottom:36px;
+}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:36px}
+.about-card{
+    background:#0a0a1a;border:1px solid #151528;
+    border-radius:12px;padding:20px;
+}
+.about-card-icon{font-size:24px;margin-bottom:10px}
+.about-card-title{font-size:12px;font-weight:700;color:#ccc;margin-bottom:6px}
+.about-card-text{font-size:10px;color:#444;line-height:1.7}
+
+.how-steps{display:flex;flex-direction:column;gap:0}
+.how-step{
+    display:flex;gap:16px;padding:20px 0;
+    border-bottom:1px solid #0f0f1a;
+}
+.how-step:last-child{border-bottom:none}
+.step-num{
+    width:32px;height:32px;border-radius:50%;
+    background:linear-gradient(135deg,#7be8ff18,#4ba8ff0a);
+    border:1px solid #7be8ff33;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;color:#7be8ff;
+    flex-shrink:0;
+}
+.step-content{}
+.step-title{font-size:12px;font-weight:700;color:#ccc;margin-bottom:4px}
+.step-desc{font-size:10px;color:#444;line-height:1.6}
+
+/* ── HARDWARE TAB ── */
+.hardware-section{
+    max-width:1100px;margin:0 auto;width:100%;padding:40px;
+}
+.hw-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+.hw-card{
+    background:#0a0a1a;border:1px solid #151528;border-radius:12px;padding:20px;
+}
+.hw-card-title{
+    font-size:10px;font-weight:700;color:#444;
+    letter-spacing:1px;text-transform:uppercase;
+    margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.hw-card-title:before{
+    content:"";width:4px;height:14px;border-radius:2px;
+}
+.mixers-card .hw-card-title:before{background:#7be8ff}
+.speakers-card .hw-card-title:before{background:#5cebac}
+.mics-card .hw-card-title:before{background:#ffc971}
+.daws-card .hw-card-title:before{background:#b48aff}
+.hw-item{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:8px 0;border-bottom:1px solid #0d0d18;
+}
+.hw-item:last-child{border-bottom:none}
+.hw-name{font-size:11px;color:#888}
+.hw-badge{
+    font-size:8px;padding:2px 8px;border-radius:99px;
+    letter-spacing:.5px;
+}
+.badge-osc{background:#7be8ff14;color:#7be8ff;border:1px solid #7be8ff22}
+.badge-dante{background:#5cebac14;color:#5cebac;border:1px solid #5cebac22}
+.badge-dsp{background:#ffc97114;color:#ffc971;border:1px solid #ffc97122}
+.badge-vst{background:#b48aff14;color:#b48aff;border:1px solid #b48aff22}
+.badge-spec{background:#ff7d9214;color:#ff7d92;border:1px solid #ff7d9222}
+
+.protocols-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px}
+.protocol-chip{
+    background:#0a0a1a;border:1px solid #151528;
+    border-radius:10px;padding:16px 12px;text-align:center;
+}
+.protocol-name{font-size:11px;font-weight:700;color:#888;margin-bottom:4px}
+.protocol-desc{font-size:9px;color:#333}
+
+/* ── GUIDE TAB ── */
+.guide-section{
+    max-width:900px;margin:0 auto;width:100%;padding:40px;
+}
+.guide-block{margin-bottom:36px}
+.guide-block-title{
+    font-size:14px;font-weight:800;color:#ccc;
+    margin-bottom:16px;padding-bottom:10px;
+    border-bottom:1px solid #0f0f1a;
+}
+.guide-steps{display:flex;flex-direction:column;gap:10px}
+.guide-step{
+    display:flex;gap:14px;
+    background:#0a0a1a;border:1px solid #151528;
+    border-radius:10px;padding:14px;
+    align-items:flex-start;
+}
+.guide-step-num{
+    width:24px;height:24px;border-radius:6px;
+    background:#7be8ff14;border:1px solid #7be8ff22;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:800;color:#7be8ff;flex-shrink:0;
+}
+.guide-step-text{font-size:11px;color:#666;line-height:1.6}
+.guide-step-text strong{color:#999;display:block;margin-bottom:2px}
+
+.tip-box{
+    background:#7be8ff08;border:1px solid #7be8ff18;
+    border-radius:10px;padding:14px 16px;
+    font-size:10px;color:#555;line-height:1.7;
+    margin-top:10px;
+}
+.tip-box strong{color:#7be8ff}
+
+/* Responsive */
+@media(max-width:900px){
+    .hero-section{grid-template-columns:1fr;gap:24px}
+    .hero-visual{display:none}
+    .portals-row{grid-template-columns:1fr}
+    .about-grid{grid-template-columns:1fr}
+    .hw-grid{grid-template-columns:1fr}
+    .protocols-row{grid-template-columns:1fr 1fr}
+    .hero-title{font-size:30px}
+}
+@media(max-width:500px){
+    .auth-card{padding:28px 20px}
+    .oauth-row{grid-template-columns:1fr}
+    .topbar{padding:0 16px}
+    .nav{padding:0 16px}
+    .hero-section,.portals-section,.about-section,.hardware-section,.guide-section{padding:24px 16px}
+}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1a1a2a;border-radius:2px}
 </style>
 </head>
 <body>
@@ -65,24 +420,42 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 <div class="bg"></div>
 <div class="grid"></div>
 
-<!-- LOGIN SCREEN -->
+<!-- ═══ LOGIN SCREEN ═══ -->
 <div class="screen active" id="screen-login">
-    <div class="card">
-        <div class="logo-wrap">
-            <div class="logo-mark">
+    <div class="auth-card">
+        <div class="brand-center">
+            <div class="brand-mark">
                 <svg viewBox="0 0 24 24"><path d="M3 14.5h3l2-7 4 12 3-8 1.5 3H21"/></svg>
             </div>
-            <div class="logo-name">AMALYN TECH</div>
-            <div class="logo-sub">AI AUDIO INTELLIGENCE</div>
+            <div class="brand-name">AMALYN TECH</div>
+            <div class="brand-sub">AI AUDIO INTELLIGENCE</div>
         </div>
 
-        <div class="form-title">Welcome back</div>
-        <div class="form-sub">Sign in to access your portal</div>
+        <div class="auth-title">Welcome back</div>
+        <div class="auth-sub">Sign in to access your portal</div>
 
-        <div class="error-msg" id="login-error">Invalid email or password</div>
+        <!-- OAuth -->
+        <div class="oauth-row">
+            <button class="oauth-btn google" onclick="oauthLogin('google')">
+                <svg viewBox="0 0 24 24"><path fill="#ea4335" d="M5.27 9.76A7.08 7.08 0 0 1 12 4.9c1.76 0 3.35.63 4.59 1.67L19.9 3.3A11.8 11.8 0 0 0 12 .5 11.9 11.9 0 0 0 .9 7.6l4.37 2.16Z"/><path fill="#34a853" d="M16.04 18.01A7 7 0 0 1 12 19.1a7.08 7.08 0 0 1-6.72-4.86L.9 16.4A11.9 11.9 0 0 0 12 23.5c2.9 0 5.67-1.04 7.76-2.93l-3.72-2.56Z"/><path fill="#4a90e2" d="M19.76 20.57A11.85 11.85 0 0 0 23.5 12c0-.7-.07-1.43-.2-2.12H12v4.5h6.48a5.57 5.57 0 0 1-2.44 3.62l3.72 2.57Z"/><path fill="#fbbc05" d="M5.28 14.24a7.13 7.13 0 0 1 0-4.48L.91 7.6A11.9 11.9 0 0 0 .5 12c0 1.55.28 3.04.79 4.4l4.0-2.16Z"/></svg>
+                Google
+            </button>
+            <button class="oauth-btn microsoft" onclick="oauthLogin('microsoft')">
+                <svg viewBox="0 0 24 24"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M13 1h10v10H13z"/><path fill="#00a4ef" d="M1 13h10v10H1z"/><path fill="#ffb900" d="M13 13h10v10H13z"/></svg>
+                Microsoft
+            </button>
+            <button class="oauth-btn apple" onclick="oauthLogin('apple')">
+                <svg viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11Z"/></svg>
+                Apple
+            </button>
+        </div>
+
+        <div class="divider">OR SIGN IN WITH EMAIL</div>
+
+        <div class="error-msg" id="login-error"></div>
 
         <div class="field">
-            <label>Email</label>
+            <label>Email address</label>
             <input type="email" id="login-email" placeholder="you@amalyn.tech">
         </div>
         <div class="field">
@@ -90,34 +463,53 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
             <input type="password" id="login-password" placeholder="••••••••">
         </div>
 
-        <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In</button>
+        <button class="btn-primary" id="login-btn" onclick="doLogin()">Sign In →</button>
 
         <div class="switch-text">
-            Don't have an account? <a onclick="showScreen('screen-register')">Create one</a>
+            No account? <a onclick="showScreen('register')">Create one free</a>
         </div>
 
-        <div class="divider">DEFAULT ACCOUNTS</div>
-        <div style="font-size:9px;color:#333;line-height:2;text-align:center">
-            engineer@amalyn.tech / amalyn2024<br>
-            producer@amalyn.tech / producer2024<br>
-            musician@amalyn.tech / musician2024
+        <div class="hint-row">
+            <div class="hint-title">Demo Accounts</div>
+            <div class="hint-item">
+                engineer@amalyn.tech / amalyn2024<br>
+                producer@amalyn.tech / producer2024<br>
+                musician@amalyn.tech / musician2024
+            </div>
         </div>
     </div>
 </div>
 
-<!-- REGISTER SCREEN -->
+<!-- ═══ REGISTER SCREEN ═══ -->
 <div class="screen" id="screen-register">
-    <div class="card">
-        <div class="logo-wrap">
-            <div class="logo-mark">
+    <div class="auth-card">
+        <div class="brand-center">
+            <div class="brand-mark">
                 <svg viewBox="0 0 24 24"><path d="M3 14.5h3l2-7 4 12 3-8 1.5 3H21"/></svg>
             </div>
-            <div class="logo-name">AMALYN TECH</div>
-            <div class="logo-sub">CREATE ACCOUNT</div>
+            <div class="brand-name">AMALYN TECH</div>
+            <div class="brand-sub">CREATE ACCOUNT</div>
         </div>
 
-        <div class="form-title">Create account</div>
-        <div class="form-sub">Join AMALYN TECH</div>
+        <div class="auth-title">Join AMALYN TECH</div>
+        <div class="auth-sub">Create your free account</div>
+
+        <div class="oauth-row">
+            <button class="oauth-btn google" onclick="oauthLogin('google')">
+                <svg viewBox="0 0 24 24"><path fill="#ea4335" d="M5.27 9.76A7.08 7.08 0 0 1 12 4.9c1.76 0 3.35.63 4.59 1.67L19.9 3.3A11.8 11.8 0 0 0 12 .5 11.9 11.9 0 0 0 .9 7.6l4.37 2.16Z"/><path fill="#34a853" d="M16.04 18.01A7 7 0 0 1 12 19.1a7.08 7.08 0 0 1-6.72-4.86L.9 16.4A11.9 11.9 0 0 0 12 23.5c2.9 0 5.67-1.04 7.76-2.93l-3.72-2.56Z"/><path fill="#4a90e2" d="M19.76 20.57A11.85 11.85 0 0 0 23.5 12c0-.7-.07-1.43-.2-2.12H12v4.5h6.48a5.57 5.57 0 0 1-2.44 3.62l3.72 2.57Z"/><path fill="#fbbc05" d="M5.28 14.24a7.13 7.13 0 0 1 0-4.48L.91 7.6A11.9 11.9 0 0 0 .5 12c0 1.55.28 3.04.79 4.4l4.0-2.16Z"/></svg>
+                Google
+            </button>
+            <button class="oauth-btn microsoft" onclick="oauthLogin('microsoft')">
+                <svg viewBox="0 0 24 24"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M13 1h10v10H13z"/><path fill="#00a4ef" d="M1 13h10v10H1z"/><path fill="#ffb900" d="M13 13h10v10H13z"/></svg>
+                Microsoft
+            </button>
+            <button class="oauth-btn apple" onclick="oauthLogin('apple')">
+                <svg viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11Z"/></svg>
+                Apple
+            </button>
+        </div>
+
+        <div class="divider">OR REGISTER WITH EMAIL</div>
 
         <div class="error-msg" id="register-error"></div>
 
@@ -134,82 +526,531 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
             <input type="password" id="reg-password" placeholder="Choose a password">
         </div>
         <div class="field">
-            <label>Role</label>
+            <label>Your Role</label>
             <select id="reg-role">
                 <option value="engineer">Sound Engineer</option>
-                <option value="producer">Producer</option>
-                <option value="musician">Musician</option>
+                <option value="producer">Producer / Studio</option>
+                <option value="musician">Musician / Performer</option>
             </select>
         </div>
 
-        <button class="btn-primary" onclick="doRegister()">Create Account</button>
-
-        <div class="switch-text">
-            Already have an account? <a onclick="showScreen('screen-login')">Sign in</a>
-        </div>
+        <button class="btn-primary" onclick="doRegister()">Create Account →</button>
+        <div class="switch-text">Already have an account? <a onclick="showScreen('login')">Sign in</a></div>
     </div>
 </div>
 
-<!-- PORTAL SELECTION SCREEN -->
-<div class="screen" id="screen-portals">
-    <div class="card">
-        <div class="user-bar">
-            <div class="user-avatar" id="user-avatar">A</div>
-            <div>
-                <div class="user-name" id="user-name">--</div>
-                <div class="user-role" id="user-role">--</div>
+<!-- ═══ HOME SCREEN ═══ -->
+<div class="screen" id="screen-home">
+
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="topbar-brand">
+            <div class="topbar-mark">
+                <svg viewBox="0 0 24 24"><path d="M3 14.5h3l2-7 4 12 3-8 1.5 3H21"/></svg>
             </div>
-            <button class="user-logout" onclick="doLogout()">Sign out</button>
+            <span class="topbar-name">AMALYN TECH</span>
         </div>
-
-        <div class="welcome-title" id="welcome-title">Welcome back</div>
-        <div class="welcome-sub">Choose your portal to continue</div>
-
-        <div class="portals-grid">
-            <a class="portal-card" onclick="openPortal('dashboard.html')">
-                <div class="portal-icon engineer">🎛️</div>
-                <div class="portal-info">
-                    <div class="portal-name">Engineer Dashboard</div>
-                    <div class="portal-desc">Live spectrum, feedback detection, EQ suggestions, mixer control</div>
-                </div>
-                <div class="portal-arrow">›</div>
-            </a>
-            <a class="portal-card" onclick="openPortal('musician.html')">
-                <div class="portal-icon musician">🎸</div>
-                <div class="portal-info">
-                    <div class="portal-name">Musician Portal</div>
-                    <div class="portal-desc">Control your IEM monitor mix from your phone</div>
-                </div>
-                <div class="portal-arrow">›</div>
-            </a>
-            <a class="portal-card" onclick="openPortal('producer.html')">
-                <div class="portal-icon producer">🎚️</div>
-                <div class="portal-info">
-                    <div class="portal-name">Producer Portal</div>
-                    <div class="portal-desc">Deep analysis, phase correlation, session reports</div>
-                </div>
-                <div class="portal-arrow">›</div>
-            </a>
+        <div class="topbar-right">
+            <div class="user-pill">
+                <div class="user-av" id="home-av">A</div>
+                <span class="user-nm" id="home-name">--</span>
+                <span class="user-role-badge" id="home-role">--</span>
+            </div>
+            <button class="logout-btn" onclick="doLogout()">Sign out</button>
         </div>
     </div>
+
+    <!-- Nav tabs -->
+    <div class="nav">
+        <div class="nav-tab active" onclick="switchHomeTab('home')">Home</div>
+        <div class="nav-tab" onclick="switchHomeTab('portals')">Portals</div>
+        <div class="nav-tab" onclick="switchHomeTab('about')">About AMALYN</div>
+        <div class="nav-tab" onclick="switchHomeTab('hardware')">Supported Hardware</div>
+        <div class="nav-tab" onclick="switchHomeTab('guide')">How To Use</div>
+    </div>
+
+    <!-- HOME TAB -->
+    <div class="home-content active" id="htab-home">
+
+        <div class="hero-section">
+            <div>
+                <div class="hero-tag">AI Audio Intelligence — Live</div>
+                <div class="hero-title">
+                    Sound that<br><span>never fails.</span>
+                </div>
+                <div class="hero-desc">
+                    AMALYN TECH is your AI co-pilot for live sound and studio production.
+                    It listens, predicts, corrects and protects — so you can focus on the music.
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <strong>&lt;25ms</strong>
+                        <span>Response Time</span>
+                    </div>
+                    <div class="hero-stat">
+                        <strong>3</strong>
+                        <span>Portals</span>
+                    </div>
+                    <div class="hero-stat">
+                        <strong>100%</strong>
+                        <span>Real-time</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div style="font-size:9px;color:#333;letter-spacing:1px;margin-bottom:8px">LIVE SIGNAL ANALYSIS</div>
+                <div class="vis-bar">
+                    <div class="vis-label">Sub Bass</div>
+                    <div class="vis-track"><div class="vis-fill" style="--w:45%;background:#7be8ff;width:45%"></div></div>
+                    <div class="vis-val">-35dB</div>
+                </div>
+                <div class="vis-bar">
+                    <div class="vis-label">Low Mid</div>
+                    <div class="vis-track"><div class="vis-fill" style="--w:72%;background:#5cebac;width:72%"></div></div>
+                    <div class="vis-val">-22dB</div>
+                </div>
+                <div class="vis-bar">
+                    <div class="vis-label">Mid</div>
+                    <div class="vis-track"><div class="vis-fill" style="--w:88%;background:#ffc971;width:88%"></div></div>
+                    <div class="vis-val">-14dB</div>
+                </div>
+                <div class="vis-bar">
+                    <div class="vis-label">High Mid</div>
+                    <div class="vis-track"><div class="vis-fill" style="--w:95%;background:#ff7d92;width:95%"></div></div>
+                    <div class="vis-val">-8dB ⚠</div>
+                </div>
+                <div class="vis-bar">
+                    <div class="vis-label">Presence</div>
+                    <div class="vis-track"><div class="vis-fill" style="--w:60%;background:#b48aff;width:60%"></div></div>
+                    <div class="vis-val">-28dB</div>
+                </div>
+                <div style="margin-top:12px;font-size:9px;color:#ff7d9266;letter-spacing:.5px">
+                    ⚠ High Mid feedback risk detected — 2.4kHz — Cut -6dB recommended
+                </div>
+            </div>
+        </div>
+
+        <div class="portals-section">
+            <div class="section-title">Launch a Portal</div>
+            <div class="portals-row">
+                <a class="portal-launch engineer-card" onclick="openPortal('dashboard.html')">
+                    <div class="portal-icon-wrap">🎛️</div>
+                    <div class="portal-launch-name">Engineer Dashboard</div>
+                    <div class="portal-launch-desc">Real-time spectrum analysis, AI feedback detection, auto EQ corrections and mixer control. Built for the sound engineer at FOH.</div>
+                    <div class="portal-tags">
+                        <span class="tag">Live Spectrum</span>
+                        <span class="tag">Auto EQ</span>
+                        <span class="tag">OSC Control</span>
+                        <span class="tag">ML Detection</span>
+                    </div>
+                </a>
+                <a class="portal-launch musician-card" onclick="openPortal('musician.html')">
+                    <div class="portal-icon-wrap">🎸</div>
+                    <div class="portal-launch-name">Musician Portal</div>
+                    <div class="portal-launch-desc">Control your personal IEM monitor mix from your phone. Adjust levels, mute channels and see room signal status from the stage.</div>
+                    <div class="portal-tags">
+                        <span class="tag">IEM Control</span>
+                        <span class="tag">Mobile</span>
+                        <span class="tag">Live Mix</span>
+                    </div>
+                </a>
+                <a class="portal-launch producer-card" onclick="openPortal('producer.html')">
+                    <div class="portal-icon-wrap">🎚️</div>
+                    <div class="portal-launch-name">Producer Portal</div>
+                    <div class="portal-launch-desc">Deep spectral analysis, phase correlation, EQ curve visualization and session reporting. Designed for studio and production work.</div>
+                    <div class="portal-tags">
+                        <span class="tag">Phase Analysis</span>
+                        <span class="tag">EQ Curve</span>
+                        <span class="tag">Reports</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PORTALS TAB -->
+    <div class="home-content" id="htab-portals">
+        <div class="portals-section" style="padding-top:32px">
+            <div class="section-title">All Portals</div>
+            <div style="display:grid;gap:14px">
+
+                <div style="background:#0a0a1a;border:1px solid #7be8ff18;border-radius:14px;padding:24px;display:flex;gap:20px;align-items:flex-start">
+                    <div style="font-size:32px">🎛️</div>
+                    <div style="flex:1">
+                        <div style="font-size:15px;font-weight:800;color:#7be8ff;margin-bottom:6px">Engineer Dashboard</div>
+                        <div style="font-size:11px;color:#555;line-height:1.7;margin-bottom:14px">
+                            The primary AMALYN interface for live sound engineers. Displays a real-time frequency spectrum updated via WebSocket at 40 frames per second. The AI engine continuously scans for feedback building — warning at -25dBFS and triggering critical alerts at -15dBFS. When danger is detected, AMALYN calculates the exact frequency, recommended cut in dB, Q value and filter type, then pushes the correction directly to the connected mixer via OSC protocol without any manual intervention.
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <span class="tag">Real-time FFT Spectrum</span>
+                            <span class="tag">ML + Threshold Detection</span>
+                            <span class="tag">Auto EQ Suggestions</span>
+                            <span class="tag">OSC Mixer Push</span>
+                            <span class="tag">Perfect State Loader</span>
+                            <span class="tag">Session Logger</span>
+                            <span class="tag">Signal Health Monitor</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width:120px;flex-shrink:0" onclick="openPortal('dashboard.html')">Open →</button>
+                </div>
+
+                <div style="background:#0a0a1a;border:1px solid #5cebac18;border-radius:14px;padding:24px;display:flex;gap:20px;align-items:flex-start">
+                    <div style="font-size:32px">🎸</div>
+                    <div style="flex:1">
+                        <div style="font-size:15px;font-weight:800;color:#5cebac;margin-bottom:6px">Musician Portal</div>
+                        <div style="font-size:11px;color:#555;line-height:1.7;margin-bottom:14px">
+                            A mobile-optimized interface designed for performers on stage. Opens in any phone browser on the same network as the AMALYN system. Musicians can adjust their individual IEM channel levels with large touch-friendly sliders, mute specific channels and see the current room signal status in real time. Changes are sent directly to the mixer via the AMALYN API.
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <span class="tag">IEM Mix Control</span>
+                            <span class="tag">Mobile Optimized</span>
+                            <span class="tag">6 Channel Mixer</span>
+                            <span class="tag">Mute Control</span>
+                            <span class="tag">Room Status Display</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width:120px;flex-shrink:0;background:linear-gradient(135deg,#5cebac,#3cb88a);color:#020d18" onclick="openPortal('musician.html')">Open →</button>
+                </div>
+
+                <div style="background:#0a0a1a;border:1px solid #b48aff18;border-radius:14px;padding:24px;display:flex;gap:20px;align-items:flex-start">
+                    <div style="font-size:32px">🎚️</div>
+                    <div style="flex:1">
+                        <div style="font-size:15px;font-weight:800;color:#b48aff;margin-bottom:6px">Producer Portal</div>
+                        <div style="font-size:11px;color:#555;line-height:1.7;margin-bottom:14px">
+                            A deep analysis suite for studio producers and recording engineers. Displays the live frequency spectrum alongside an EQ correction curve showing exactly where AMALYN recommends cuts. The phase correlation view shows signal coherence. The frequency table lists the top 8 loudest bands with magnitude, status and recommended action. Session events are logged and exportable as a formatted text report for documentation.
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <span class="tag">Spectrum + EQ Curve</span>
+                            <span class="tag">Phase Correlation</span>
+                            <span class="tag">Frequency Table</span>
+                            <span class="tag">Session Log</span>
+                            <span class="tag">Export Reports</span>
+                            <span class="tag">ML Status</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width:120px;flex-shrink:0;background:linear-gradient(135deg,#b48aff,#8a5aff);color:#fff" onclick="openPortal('producer.html')">Open →</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ABOUT TAB -->
+    <div class="home-content" id="htab-about">
+        <div class="about-section">
+            <div class="section-title" style="margin-bottom:20px">About AMALYN TECH</div>
+
+            <div class="about-lead">
+                AMALYN TECH is an AI-driven audio intelligence system designed to eliminate human error and technical failure in live sound reinforcement and studio production. It acts as a Digital Co-Pilot — analyzing audio signals in real time, predicting problems before they happen, and automatically pushing corrections to the mixer.
+            </div>
+
+            <div class="section-title">Core Capabilities</div>
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="about-card-icon">🧠</div>
+                    <div class="about-card-title">AI Feedback Detection</div>
+                    <div class="about-card-text">AMALYN uses Fast Fourier Transform to analyze every frequency in real time. Two detection layers — a threshold system and a trained neural network — work simultaneously to catch feedback before it reaches damaging levels.</div>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon">📚</div>
+                    <div class="about-card-title">Brand Frequency Library</div>
+                    <div class="about-card-text">A built-in database of known frequency response curves for industry-leading speaker, microphone and mixer brands. AMALYN uses this to give more precise corrections tailored to your exact equipment.</div>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon">⭐</div>
+                    <div class="about-card-title">Perfect State System</div>
+                    <div class="about-card-text">Before the show starts, tell AMALYN your venue type, speaker model, microphone and mixer. It calculates the ideal EQ settings for that exact combination and loads them as a starting point.</div>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon">🛡️</div>
+                    <div class="about-card-title">AMALYN Sentinel</div>
+                    <div class="about-card-text">A hardware health monitor that watches signal stability, clipping rates, dropout patterns and noise floor. If a cable is about to fail, Sentinel predicts it and alerts you before the audio cuts out.</div>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon">🎛️</div>
+                    <div class="about-card-title">OSC Mixer Integration</div>
+                    <div class="about-card-text">When AMALYN detects a problem, it doesn't just warn you. It sends the EQ correction directly to the mixer via OSC protocol — cutting the problem frequency automatically in real time.</div>
+                </div>
+                <div class="about-card">
+                    <div class="about-card-icon">🤖</div>
+                    <div class="about-card-title">Machine Learning</div>
+                    <div class="about-card-text">AMALYN trains a neural network on your own real audio data. The more you use it, the smarter it gets — learning the acoustic patterns of your specific environments and equipment.</div>
+                </div>
+            </div>
+
+            <div class="section-title">How It Works</div>
+            <div class="how-steps">
+                <div class="how-step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Signal Capture</div>
+                        <div class="step-desc">AMALYN opens an audio stream from your microphone or audio interface at 44.1kHz, 16-bit. Every 512 samples (~11ms) it captures a new frame of audio.</div>
+                    </div>
+                </div>
+                <div class="how-step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <div class="step-title">FFT Analysis</div>
+                        <div class="step-desc">Fast Fourier Transform converts the time-domain audio into a frequency map — showing the magnitude of every frequency from 20Hz to 20kHz in real time.</div>
+                    </div>
+                </div>
+                <div class="how-step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Dual Detection</div>
+                        <div class="step-desc">Two systems run simultaneously — a threshold detector that watches for frequencies exceeding -25dBFS, and a trained neural network that recognizes the pattern of feedback building earlier.</div>
+                    </div>
+                </div>
+                <div class="how-step">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <div class="step-title">EQ Calculation</div>
+                        <div class="step-desc">When danger is detected, AMALYN calculates the exact correction — frequency, cut depth in dB, Q value and filter type — based on the specific equipment in the library.</div>
+                    </div>
+                </div>
+                <div class="how-step">
+                    <div class="step-num">5</div>
+                    <div class="step-content">
+                        <div class="step-title">Mixer Push</div>
+                        <div class="step-desc">The correction is sent to the connected mixer via OSC over the local network. The mixer applies the EQ cut automatically — no manual intervention required.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HARDWARE TAB -->
+    <div class="home-content" id="htab-hardware">
+        <div class="hardware-section">
+            <div class="section-title" style="margin-bottom:20px">Supported Hardware & Drivers</div>
+
+            <div class="hw-grid">
+                <div class="hw-card mixers-card">
+                    <div class="hw-card-title">Digital Mixers</div>
+                    <div class="hw-item"><span class="hw-name">Yamaha CL5 / CL3 / CL1</span><span class="hw-badge badge-osc">OSC</span></div>
+                    <div class="hw-item"><span class="hw-name">Yamaha QL5 / QL1</span><span class="hw-badge badge-osc">OSC</span></div>
+                    <div class="hw-item"><span class="hw-name">Behringer X32 / M32</span><span class="hw-badge badge-osc">OSC</span></div>
+                    <div class="hw-item"><span class="hw-name">Allen & Heath SQ-6 / SQ-5</span><span class="hw-badge badge-osc">OSC</span></div>
+                    <div class="hw-item"><span class="hw-name">Allen & Heath dLive S7000</span><span class="hw-badge badge-osc">OSC</span></div>
+                    <div class="hw-item"><span class="hw-name">DiGiCo SD Series</span><span class="hw-badge badge-osc">OSC</span></div>
+                    <div class="hw-item"><span class="hw-name">Midas M32 / Pro Series</span><span class="hw-badge badge-osc">OSC</span></div>
+                    <div class="hw-item"><span class="hw-name">PreSonus StudioLive</span><span class="hw-badge badge-osc">OSC</span></div>
+                </div>
+
+                <div class="hw-card speakers-card">
+                    <div class="hw-card-title">Speaker Systems</div>
+                    <div class="hw-item"><span class="hw-name">JBL SRX835P / SRX828SP</span><span class="hw-badge badge-dsp">DSP Library</span></div>
+                    <div class="hw-item"><span class="hw-name">JBL EON615 / EON618S</span><span class="hw-badge badge-dsp">DSP Library</span></div>
+                    <div class="hw-item"><span class="hw-name">QSC K12.2 / K8.2</span><span class="hw-badge badge-dsp">DSP Library</span></div>
+                    <div class="hw-item"><span class="hw-name">RCF ART 735-A / 745-A</span><span class="hw-badge badge-dsp">DSP Library</span></div>
+                    <div class="hw-item"><span class="hw-name">Electro-Voice ELX200</span><span class="hw-badge badge-dsp">DSP Library</span></div>
+                    <div class="hw-item"><span class="hw-name">L-Acoustics K Series</span><span class="hw-badge badge-dsp">DSP Library</span></div>
+                    <div class="hw-item"><span class="hw-name">d&b audiotechnik V Series</span><span class="hw-badge badge-dsp">DSP Library</span></div>
+                    <div class="hw-item"><span class="hw-name">Meyer Sound LYON</span><span class="hw-badge badge-dsp">DSP Library</span></div>
+                </div>
+
+                <div class="hw-card mics-card">
+                    <div class="hw-card-title">Microphones</div>
+                    <div class="hw-item"><span class="hw-name">Shure SM58 / SM57</span><span class="hw-badge badge-spec">Spectral Profile</span></div>
+                    <div class="hw-item"><span class="hw-name">Shure SM7B</span><span class="hw-badge badge-spec">Spectral Profile</span></div>
+                    <div class="hw-item"><span class="hw-name">Sennheiser e835 / e945</span><span class="hw-badge badge-spec">Spectral Profile</span></div>
+                    <div class="hw-item"><span class="hw-name">AKG C414 XLII</span><span class="hw-badge badge-spec">Spectral Profile</span></div>
+                    <div class="hw-item"><span class="hw-name">Neumann U87 Ai</span><span class="hw-badge badge-spec">Spectral Profile</span></div>
+                    <div class="hw-item"><span class="hw-name">Audio-Technica AT2020</span><span class="hw-badge badge-spec">Spectral Profile</span></div>
+                    <div class="hw-item"><span class="hw-name">Rode NT1-A</span><span class="hw-badge badge-spec">Spectral Profile</span></div>
+                    <div class="hw-item"><span class="hw-name">Generic Dynamic / Condenser</span><span class="hw-badge badge-spec">Auto Detect</span></div>
+                </div>
+
+                <div class="hw-card daws-card">
+                    <div class="hw-card-title">DAWs & Software</div>
+                    <div class="hw-item"><span class="hw-name">Ableton Live 11 / 12</span><span class="hw-badge badge-vst">VST3 / AU</span></div>
+                    <div class="hw-item"><span class="hw-name">FL Studio 21+</span><span class="hw-badge badge-vst">VST3</span></div>
+                    <div class="hw-item"><span class="hw-name">Logic Pro X / Logic Pro</span><span class="hw-badge badge-vst">AU</span></div>
+                    <div class="hw-item"><span class="hw-name">Pro Tools 2023+</span><span class="hw-badge badge-vst">AAX</span></div>
+                    <div class="hw-item"><span class="hw-name">Cubase 12 / 13</span><span class="hw-badge badge-vst">VST3</span></div>
+                    <div class="hw-item"><span class="hw-name">Reaper 6+</span><span class="hw-badge badge-vst">VST3</span></div>
+                    <div class="hw-item"><span class="hw-name">Studio One 6+</span><span class="hw-badge badge-vst">VST3</span></div>
+                    <div class="hw-item"><span class="hw-name">Any WebSocket-compatible app</span><span class="hw-badge badge-osc">API</span></div>
+                </div>
+            </div>
+
+            <div class="section-title">Network Protocols</div>
+            <div class="protocols-row">
+                <div class="protocol-chip">
+                    <div class="protocol-name" style="color:#7be8ff">OSC</div>
+                    <div class="protocol-desc">Open Sound Control — primary mixer communication protocol</div>
+                </div>
+                <div class="protocol-chip">
+                    <div class="protocol-name" style="color:#5cebac">Dante</div>
+                    <div class="protocol-desc">Audio over IP networking for studio and live environments</div>
+                </div>
+                <div class="protocol-chip">
+                    <div class="protocol-name" style="color:#ffc971">AES67</div>
+                    <div class="protocol-desc">Professional audio over IP interoperability standard</div>
+                </div>
+                <div class="protocol-chip">
+                    <div class="protocol-name" style="color:#b48aff">AVB</div>
+                    <div class="protocol-desc">Audio Video Bridging for low-latency network audio</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GUIDE TAB -->
+    <div class="home-content" id="htab-guide">
+        <div class="guide-section">
+            <div class="section-title" style="margin-bottom:24px">How To Use AMALYN TECH</div>
+
+            <div class="guide-block">
+                <div class="guide-block-title">🚀 Getting Started</div>
+                <div class="guide-steps">
+                    <div class="guide-step">
+                        <div class="guide-step-num">1</div>
+                        <div class="guide-step-text"><strong>Start the API</strong>Open PowerShell, activate your environment and run <code style="color:#7be8ff;background:#0a0a1a;padding:2px 6px;border-radius:4px">py -3.11 api.py</code> from the AMALYN_AI folder. Wait for [ENGINE] Audio engine started.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-step-num">2</div>
+                        <div class="guide-step-text"><strong>Sign In</strong>Open login.html in Chrome or Edge. Sign in with your credentials or use a demo account. Never use Go Live or Live Server — open the file directly.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-step-num">3</div>
+                        <div class="guide-step-text"><strong>Choose Your Portal</strong>Select the portal that matches your role — Engineer Dashboard for live sound, Musician Portal for IEM control, Producer Portal for studio analysis.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="guide-block">
+                <div class="guide-block-title">🎛️ Engineer — Live Event Workflow</div>
+                <div class="guide-steps">
+                    <div class="guide-step">
+                        <div class="guide-step-num">1</div>
+                        <div class="guide-step-text"><strong>Load Perfect State</strong>Click Setup in the dashboard. Select your venue type, speaker system, microphone and mixer. Click Load Perfect State — AMALYN pre-loads the ideal EQ corrections for your exact setup.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-step-num">2</div>
+                        <div class="guide-step-text"><strong>Monitor the Spectrum</strong>Watch the live spectrum during soundcheck. The display updates 40 times per second. Green means clean. Orange means warning. Red means critical.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-step-num">3</div>
+                        <div class="guide-step-text"><strong>Let AMALYN Work</strong>When feedback is detected, AMALYN shows the exact frequency and recommended cut — and pushes the correction to your mixer automatically via OSC. You can also apply it manually on your desk.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-step-num">4</div>
+                        <div class="guide-step-text"><strong>Watch Sentinel</strong>The Signal Health score shows 0-100. If it drops, Sentinel has detected instability — check the alert for the specific issue (clipping, dropout, cable failure prediction).</div>
+                    </div>
+                </div>
+                <div class="tip-box"><strong>Pro tip:</strong> Run the Mixer Simulator (py -3.11 simulator.py) in a second terminal to see every OSC message AMALYN sends to the mixer in real time. This is useful for testing before connecting to a real desk.</div>
+            </div>
+
+            <div class="guide-block">
+                <div class="guide-block-title">🎸 Musician — IEM Monitor Workflow</div>
+                <div class="guide-steps">
+                    <div class="guide-step">
+                        <div class="guide-step-num">1</div>
+                        <div class="guide-step-text"><strong>Connect to WiFi</strong>Make sure your phone is on the same WiFi network as the AMALYN system.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-step-num">2</div>
+                        <div class="guide-step-text"><strong>Open Musician Portal</strong>From the login screen select Musician Portal or ask your engineer for the direct link.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-step-num">3</div>
+                        <div class="guide-step-text"><strong>Adjust Your Mix</strong>Use the sliders to set your personal IEM mix. Drag right for more, left for less. Tap MUT to mute a channel. Changes go to the mixer instantly.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="guide-block">
+                <div class="guide-block-title">🤖 ML Training — Make AMALYN Smarter</div>
+                <div class="guide-steps">
+                    <div class="guide-step">
+                        <div class="guide-step-num">1</div>
+                        <div class="guide-step-text"><strong>Collect Data</strong>Run <code style="color:#7be8ff;background:#0a0a1a;padding:2px 6px;border-radius:4px">py -3.11 ml_collector.py</code>. Label audio as CLEAN (Enter), WARNING (w) or CRITICAL (c) while making different sounds. Collect at least 500 frames of each.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-step-num">2</div>
+                        <div class="guide-step-text"><strong>Train the Model</strong>Run <code style="color:#7be8ff;background:#0a0a1a;padding:2px 6px;border-radius:4px">py -3.11 ml_trainer.py</code>. It trains for 50 epochs and saves the best model automatically.</div>
+                    </div>
+                    <div class="guide-step">
+                        <div class="guide-step-num">3</div>
+                        <div class="guide-step-text"><strong>It Loads Automatically</strong>Next time you start api.py, the ML model loads automatically and runs alongside the threshold detector — catching problems earlier.</div>
+                    </div>
+                </div>
+                <div class="tip-box"><strong>Important:</strong> The more data you collect in your specific venue with your specific equipment, the more accurate AMALYN becomes. Re-train regularly for best results.</div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const API = `${location.protocol==='file:'?'http:':location.protocol}//${location.hostname||'localhost'}:8000`
-const BASE = location.href.substring(0, location.href.lastIndexOf('/')+1)
-
+const API = location.protocol === 'file:'
+    ? `http://${location.hostname||'localhost'}:8000`
+    : location.origin
 let currentUser = null
+let supabaseClient = null
 
-// Check if already logged in
+// Check saved session
 const saved = sessionStorage.getItem('amalyn_user')
 if(saved){
-    currentUser = JSON.parse(saved)
-    showPortals(currentUser)
+    try{
+        currentUser = JSON.parse(saved)
+        if(currentUser && currentUser.email) showHome(currentUser)
+    }catch{
+        sessionStorage.removeItem('amalyn_user')
+    }
 }
 
-function showScreen(id){
+async function initializeSupabase(){
+    try{
+        const res = await fetch(`${API}/config`)
+        const config = await res.json()
+        if(!config.supabase_url || !config.supabase_anon_key || !window.supabase) return
+        supabaseClient = window.supabase.createClient(config.supabase_url, config.supabase_anon_key)
+        const {data:{session}} = await supabaseClient.auth.getSession()
+        if(session && session.user) applyOAuthUser(session.user)
+        supabaseClient.auth.onAuthStateChange((_event, sessionState)=>{
+            if(sessionState && sessionState.user) applyOAuthUser(sessionState.user)
+        })
+    }catch(error){
+        console.warn('Supabase Auth unavailable', error)
+    }
+}
+
+function applyOAuthUser(user){
+    const metadata = user.user_metadata || {}
+    const displayName = metadata.full_name || metadata.name || user.email.split('@')[0]
+    currentUser = {
+        id: user.id,
+        name: displayName,
+        email: user.email,
+        role: metadata.role || 'musician',
+        avatar: displayName[0].toUpperCase()
+    }
+    sessionStorage.setItem('amalyn_user', JSON.stringify(currentUser))
+    showHome(currentUser)
+}
+
+function showScreen(name){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'))
-    document.getElementById(id).classList.add('active')
+    document.getElementById(`screen-${name}`).classList.add('active')
+}
+
+function showHome(user){
+    document.getElementById('home-av').textContent = user.avatar || user.name[0].toUpperCase()
+    document.getElementById('home-name').textContent = user.name
+    document.getElementById('home-role').textContent = user.role
+    showScreen('home')
+}
+
+function switchHomeTab(name){
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'))
+    document.querySelectorAll('.home-content').forEach(t=>t.classList.remove('active'))
+    document.querySelector(`.nav-tab[onclick*="${name}"]`).classList.add('active')
+    document.getElementById(`htab-${name}`).classList.add('active')
 }
 
 async function doLogin(){
@@ -220,36 +1061,32 @@ async function doLogin(){
 
     if(!email || !password){
         err.textContent = 'Please enter your email and password'
-        err.classList.add('show')
-        return
+        err.classList.add('show'); return
     }
 
-    btn.disabled = true
-    btn.textContent = 'Signing in...'
+    btn.disabled = true; btn.textContent = 'Signing in...'
     err.classList.remove('show')
 
     try{
-        const res = await fetch(`${API}/auth/login`, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({email, password})
+        const res = await fetch(`${API}/auth/login`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({email,password})
         })
         const data = await res.json()
-
-        if(data.status === 'ok'){
+        if(data.status==='ok'){
             currentUser = data.user
-            sessionStorage.setItem('amalyn_user', JSON.stringify(currentUser))
-            showPortals(currentUser)
+            sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
+            showHome(currentUser)
         } else {
-            err.textContent = data.message || 'Invalid email or password'
+            err.textContent = data.message||'Invalid email or password'
             err.classList.add('show')
         }
-    } catch(e){
+    }catch(e){
         err.textContent = 'Cannot connect to AMALYN API. Make sure api.py is running.'
         err.classList.add('show')
-    } finally {
-        btn.disabled = false
-        btn.textContent = 'Sign In'
+    }finally{
+        btn.disabled=false; btn.textContent='Sign In →'
     }
 }
 
@@ -260,63 +1097,66 @@ async function doRegister(){
     const role = document.getElementById('reg-role').value
     const err = document.getElementById('register-error')
 
-    if(!name || !email || !password){
-        err.textContent = 'Please fill in all fields'
-        err.classList.add('show')
-        return
+    if(!name||!email||!password){
+        err.textContent='Please fill in all fields'
+        err.classList.add('show'); return
     }
-
     err.classList.remove('show')
 
     try{
-        const res = await fetch(`${API}/auth/register`, {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({name, email, password, role})
+        const res = await fetch(`${API}/auth/register`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({name,email,password,role})
         })
         const data = await res.json()
-
-        if(data.status === 'ok'){
+        if(data.status==='ok'){
             currentUser = data.user
-            sessionStorage.setItem('amalyn_user', JSON.stringify(currentUser))
-            showPortals(currentUser)
+            sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
+            showHome(currentUser)
         } else {
-            err.textContent = data.message || 'Registration failed'
+            err.textContent = data.message||'Registration failed'
             err.classList.add('show')
         }
-    } catch(e){
-        err.textContent = 'Cannot connect to AMALYN API'
+    }catch(e){
+        err.textContent='Cannot connect to AMALYN API'
         err.classList.add('show')
     }
 }
 
-function showPortals(user){
-    document.getElementById('user-avatar').textContent = user.avatar || user.name[0].toUpperCase()
-    document.getElementById('user-name').textContent = user.name
-    document.getElementById('user-role').textContent = user.role
-    document.getElementById('welcome-title').textContent = `Welcome, ${user.name.split(' ')[0]}`
-    showScreen('screen-portals')
-}
-
 function doLogout(){
+    if(supabaseClient) supabaseClient.auth.signOut()
     currentUser = null
     sessionStorage.removeItem('amalyn_user')
-    showScreen('screen-login')
+    showScreen('login')
 }
 
 function openPortal(portal){
-    window.open(BASE + portal, '_blank')
+    window.open(portal,'_blank')
 }
 
-// Allow Enter key on login
-document.getElementById('login-password').addEventListener('keydown', e=>{
-    if(e.key === 'Enter') doLogin()
-})
-document.addEventListener('DOMContentLoaded', ()=>{
-    document.getElementById('login-email').addEventListener('keydown', e=>{
-        if(e.key === 'Enter') document.getElementById('login-password').focus()
+async function oauthLogin(provider){
+    const errorElement = document.getElementById('login-error')
+    if(!supabaseClient){
+        errorElement.textContent = 'OAuth is not configured yet. Add Supabase settings to the Render service.'
+        errorElement.classList.add('show')
+        return
+    }
+    const {error} = await supabaseClient.auth.signInWithOAuth({
+        provider,
+        options: {redirectTo: `${location.origin}${location.pathname}`}
     })
+    if(error){
+        errorElement.textContent = error.message || `Unable to sign in with ${provider}.`
+        errorElement.classList.add('show')
+    }
+}
+
+// Enter key on login
+document.getElementById('login-password').addEventListener('keydown',e=>{
+    if(e.key==='Enter') doLogin()
 })
+initializeSupabase()
 </script>
 </body>
 </html>

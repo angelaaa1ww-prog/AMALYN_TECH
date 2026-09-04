@@ -88,6 +88,27 @@ python api.py
 ### Open Dashboard
 Open `AMALYN_AI/dashboard.html` in Chrome or Edge.
 
+### Deploy to Render
+
+The included `render.yaml` deploys the FastAPI server and serves all portal HTML
+files from the same service. In Render, create the service from this repository
+and add the `SUPABASE_URL` and `SUPABASE_ANON_KEY` environment variables.
+Render provides the `PORT` variable automatically. Audio capture is disabled on
+Render because hosted web services do not have access to a microphone; the
+offline analysis and API remain available.
+
+After deployment, add the Render URL to Supabase Authentication → URL
+Configuration → Redirect URLs, using:
+
+```
+https://YOUR-SERVICE.onrender.com/login.html
+```
+
+Enable Google, Microsoft, and Apple under Supabase Authentication → Providers,
+then enter each provider's OAuth client credentials and callback URL from
+Supabase. The login page reads only `SUPABASE_URL` and `SUPABASE_ANON_KEY` from
+the server's public `/config` endpoint; never expose a Supabase service-role key.
+
 ---
 
 ## Portals

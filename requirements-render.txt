@@ -1,12 +1,10 @@
-pyaudio
 numpy
 scipy
 librosa
-sounddevice
 torch
 torchaudio
 fastapi
-uvicorn
+uvicorn[standard]
 websockets
 python-dotenv
 python-osc
