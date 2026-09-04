@@ -2,7 +2,7 @@
   "name": "AMALYN TECH AI",
   "short_name": "AMALYN",
   "description": "AMALYN TECH AI System",
-  "start_url": "/login.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#070c17",
   "theme_color": "#070c17",
