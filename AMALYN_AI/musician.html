@@ -261,8 +261,8 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <script>
-const API = `${location.protocol==='file:'?'http:':location.protocol}//${location.hostname||'localhost'}:8000`
-const WS  = `${location.protocol==='https:'?'wss:':'ws:'}//${location.hostname||'localhost'}:8000/ws`
+const API = AMALYN_CONFIG.apiUrl
+const WS = AMALYN_CONFIG.wsUrl
 
 let channels = []
 let ws = null

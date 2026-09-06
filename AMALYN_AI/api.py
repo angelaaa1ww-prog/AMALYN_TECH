@@ -328,6 +328,9 @@ def trigger_safe():
     mixer.send_safe_profile()
     return {"status": "Safe profile applied"}
 
+@app.get("/config.js")
+def serve_config():
+    return FileResponse(os.path.join(os.path.dirname(__file__), "config.js"))
 
 # --- HEALTH ENDPOINT ---
 @app.get("/health")

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="config.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#020610">
@@ -307,8 +308,8 @@ Click "Generate Report" to produce a full session analysis.
 </div>
 
 <script>
-const API = `${location.protocol==='file:'?'http:':location.protocol}//${location.hostname||'localhost'}:8000`
-const WS  = `${location.protocol==='https:'?'wss:':'ws:'}//${location.hostname||'localhost'}:8000/ws`
+const API = AMALYN_CONFIG.apiUrl
+const WS = AMALYN_CONFIG.wsUrl
 
 // Canvas setup
 const specCanvas = document.getElementById('producer-canvas')
