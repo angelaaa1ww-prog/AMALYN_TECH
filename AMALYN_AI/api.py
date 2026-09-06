@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import asyncio
 import json
@@ -42,6 +43,8 @@ def load_env_file():
                 pass
 
 load_env_file()
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="AMALYN TECH API")
 app.add_middleware(
@@ -159,9 +162,10 @@ def audio_engine():
             sentinel_alerts, health_score = sentinel.analyze(audio_data, magnitudes_db)
             signal_stats = sentinel.get_signal_stats()
 
+            # Only log CRITICAL alerts to avoid console spam
             for alert in sentinel_alerts:
                 if alert["severity"] == "CRITICAL":
-                    print(f"[SENTINEL] {alert['type']}: {alert['message']}")
+                    logger.warning("[SENTINEL] %s: %s", alert['type'], alert['message'])
 
             suggestion = suggest_eq(danger_freq, danger_mag, status)
 
@@ -215,17 +219,27 @@ audio_thread = None
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    print("[WS] Client connected")
+    last_sent_status = None
+    last_sent_frame_hash = None
     try:
         while True:
             with frame_lock:
                 frame = dict(latest_frame)
-            await websocket.send_text(json.dumps(frame))
-            await asyncio.sleep(0.025)
+            # Only serialize and send when something meaningful has changed
+            frame_sig = (
+                frame.get("status"),
+                frame.get("dominant_freq"),
+                frame.get("danger_freq"),
+                frame.get("sentinel", {}).get("health_score"),
+            )
+            if frame_sig != last_sent_frame_hash:
+                last_sent_frame_hash = frame_sig
+                await websocket.send_text(json.dumps(frame))
+            await asyncio.sleep(0.05)   # max 20fps — was 40fps, reduces browser lag
     except WebSocketDisconnect:
-        print("[WS] Client disconnected")
+        pass
     except Exception as e:
-        print(f"[WS] Error: {e}")
+        logger.warning("[WS] Error: %s", e)
 
 
 # --- AUTH ENDPOINTS ---

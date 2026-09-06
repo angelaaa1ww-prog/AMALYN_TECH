@@ -23,12 +23,13 @@ class AmalynSentinel:
         self.noise_history = deque(maxlen=history_size)
         self.dropout_history = deque(maxlen=history_size)
 
-        # Thresholds
+        # Thresholds — tuned to avoid false positives on quiet/idle input
         self.CLIP_THRESHOLD = 0.95        # 95% of max amplitude = clipping
-        self.DROPOUT_THRESHOLD = 0.001    # RMS below this = signal dropout
+        self.DROPOUT_THRESHOLD = 0.0001   # RMS below this = signal dropout (raised from 0.001)
         self.NOISE_FLOOR_BASELINE = None  # Set on first run
         self.NOISE_FLOOR_RISE_DB = 6      # 6dB rise = interference detected
         self.VARIANCE_THRESHOLD = 15.0    # High variance = unstable signal
+        self.MIN_FRAMES_BEFORE_DROPOUT = 100  # Ignore dropouts during startup warmup
 
         # Event tracking
         self.events = []
@@ -59,10 +60,8 @@ class AmalynSentinel:
         clip_ratio = float(np.mean(np.abs(audio_float) > self.CLIP_THRESHOLD))
         self.clip_history.append(clip_ratio)
 
-        # 3. Check noise floor.  dBFS values are negative, so taking ``abs``
-        # reverses their meaning (a quieter -100 dBFS bin would look louder
-        # than a -50 dBFS bin).  The quiet lower percentile is the stable
-        # spectral-floor estimate we need for interference detection.
+        # 3. Check noise floor. dBFS values are negative — the quiet lower
+        # percentile is the stable spectral-floor estimate for interference detection.
         noise_floor = float(np.percentile(np.asarray(magnitudes_db), 20))
         self.noise_history.append(noise_floor)
 
@@ -75,7 +74,7 @@ class AmalynSentinel:
             self.NOISE_FLOOR_BASELINE = float(np.mean(list(self.noise_history)))
             logger.info("Sentinel noise-floor baseline set: %.1f dBFS", self.NOISE_FLOOR_BASELINE)
 
-        # Only start alerting after baseline is set
+        # Only start alerting after enough history is collected
         if len(self.rms_history) < 20:
             return alerts, self._get_health_score()
 
@@ -93,17 +92,18 @@ class AmalynSentinel:
                 "value": round(avg_clip * 100, 1)
             })
 
-        # B. Signal Dropout Alert
-        recent_dropouts = list(self.dropout_history)[-20:]
-        dropout_rate = float(np.mean(recent_dropouts))
-        if dropout_rate > 0.1:  # 10% dropout rate
-            alerts.append({
-                "type": "DROPOUT",
-                "severity": "CRITICAL" if dropout_rate > 0.3 else "WARNING",
-                "message": f"Signal dropout detected — {dropout_rate*100:.0f}% signal loss",
-                "action": "Check cable connections and mic",
-                "value": round(dropout_rate * 100, 1)
-            })
+        # B. Signal Dropout Alert — only after warmup to avoid false alarms
+        if self.frame_count >= self.MIN_FRAMES_BEFORE_DROPOUT:
+            recent_dropouts = list(self.dropout_history)[-20:]
+            dropout_rate = float(np.mean(recent_dropouts))
+            if dropout_rate > 0.3:  # 30% dropout rate (raised from 10% to reduce spam)
+                alerts.append({
+                    "type": "DROPOUT",
+                    "severity": "CRITICAL" if dropout_rate > 0.6 else "WARNING",
+                    "message": f"Signal dropout detected — {dropout_rate*100:.0f}% signal loss",
+                    "action": "Check cable connections and mic",
+                    "value": round(dropout_rate * 100, 1)
+                })
 
         # C. Noise Floor Rise Alert
         if self.NOISE_FLOOR_BASELINE is not None:
@@ -171,8 +171,8 @@ class AmalynSentinel:
             avg_clip = float(np.mean(list(self.clip_history)[-20:]))
             score -= min(40, avg_clip * 200)
 
-        # Penalize dropouts
-        if self.dropout_history:
+        # Penalize dropouts (only after warmup)
+        if self.dropout_history and self.frame_count >= self.MIN_FRAMES_BEFORE_DROPOUT:
             dropout_rate = float(np.mean(list(self.dropout_history)[-20:]))
             score -= min(40, dropout_rate * 150)
 
