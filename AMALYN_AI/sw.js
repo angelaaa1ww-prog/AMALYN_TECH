@@ -5,6 +5,7 @@ const urlsToCache = [
   '/dashboard.html',
   '/producer.html',
   '/musician.html',
+  '/config.js',
   '/manifest.json'
 ];
 

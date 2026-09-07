@@ -81,13 +81,16 @@ def add_user(name, email, password, role):
     users = load_users()
     if any(u['email'].lower() == email.lower() for u in users):
         return None, "Email already exists"
+    next_id = max((u['id'] for u in users), default=0) + 1
+    clean_name = name.strip() if name else ""
+    avatar = clean_name[0].upper() if clean_name else "U"
     new_user = {
-        "id": max(u['id'] for u in users) + 1,
+        "id": next_id,
         "name": name,
         "email": email,
         "password": hash_password(password),
         "role": role,
-        "avatar": name[0].upper()
+        "avatar": avatar
     }
     users.append(new_user)
     save_users(users)

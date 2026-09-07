@@ -19,25 +19,53 @@ if ('serviceWorker' in navigator) {
   :root{
     color-scheme:dark;
     --ink:#f3faff;--muted:#9db6d1;--dim:#647f9e;
-    --night:#050d18;--panel:rgba(11,29,51,.52);--panel2:rgba(21,49,82,.46);
-    --glass-hi:rgba(255,255,255,.06);--glass-edge:rgba(180,222,255,.16);
+    --night:#050d18;--bg-base:#020610;
+    --panel:rgba(11,29,51,.55);--panel2:rgba(21,49,82,.48);
+    --glass-hi:rgba(255,255,255,.07);--glass-edge:rgba(180,222,255,.16);
     --line:rgba(148,205,247,.14);--line2:rgba(121,213,255,.5);
     --blue:#4ba8ff;--cyan:#7be8ff;--green:#5cebac;--amber:#ffc971;--red:#ff7d92;
+    --canvas-bg:#061526;
     --shadow:0 25px 70px -12px #000a,0 8px 24px -8px #000c;
     --shadow-sm:0 10px 30px -8px #0008;
-    --ease:cubic-bezier(.22,.85,.32,1);--ease-spring:cubic-bezier(.34,1.4,.4,1)
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  html{background:#020610}
-  body{
-    min-height:100vh;overflow-x:hidden;color:var(--ink);isolation:isolate;
-    background:
+    --ease:cubic-bezier(.22,.85,.32,1);--ease-spring:cubic-bezier(.34,1.4,.4,1);
+    --header-bg:linear-gradient(90deg,#050f1cd9,#08192eb0);
+    --card-bg:linear-gradient(160deg,#0e2540a3,#071322a3);
+    --card-hover-bg:linear-gradient(160deg,#12304fb8,#0a1c30b8);
+    --body-bg:
       radial-gradient(ellipse 60% 42% at 10% -8%,#2481d84a,transparent 74%),
       radial-gradient(ellipse 46% 38% at 100% 10%,#2c66c336,transparent 72%),
       radial-gradient(ellipse 50% 46% at 50% 118%,#1c9a8f26,transparent 70%),
       linear-gradient(160deg,#081a30 0%,var(--night) 46%,#02060d 100%);
+  }
+
+  [data-theme="light"]{
+    color-scheme:light;
+    --ink:#0f172a;--muted:#475569;--dim:#64748b;
+    --night:#f8fafc;--bg-base:#edf2f7;
+    --panel:rgba(255,255,255,.88);--panel2:rgba(241,245,249,.92);
+    --glass-hi:rgba(255,255,255,.95);--glass-edge:rgba(148,163,184,.35);
+    --line:rgba(148,163,184,.26);--line2:rgba(2,132,199,.6);
+    --blue:#0284c7;--cyan:#0284c7;--green:#059669;--amber:#d97706;--red:#e11d48;
+    --canvas-bg:#091524;
+    --shadow:0 20px 50px -12px rgba(15,23,42,.12),0 4px 12px -2px rgba(15,23,42,.08);
+    --shadow-sm:0 4px 16px -4px rgba(15,23,42,.1);
+    --header-bg:linear-gradient(90deg,#fffffffa,#f8fafcfa);
+    --card-bg:linear-gradient(160deg,#ffffff,#f1f5f9);
+    --card-hover-bg:linear-gradient(160deg,#ffffff,#e2e8f0);
+    --body-bg:
+      radial-gradient(ellipse 60% 42% at 10% -8%,#bae6fd45,transparent 74%),
+      radial-gradient(ellipse 46% 38% at 100% 10%,#bfdbfe45,transparent 72%),
+      radial-gradient(ellipse 50% 46% at 50% 118%,#99f6e435,transparent 70%),
+      linear-gradient(160deg,#f8fafc 0%,#f1f5f9 46%,#e2e8f0 100%);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{background:var(--bg-base);transition:background .3s}
+  body{
+    min-height:100vh;overflow-x:hidden;color:var(--ink);isolation:isolate;
+    background:var(--body-bg);
     font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
-    -webkit-font-smoothing:antialiased
+    -webkit-font-smoothing:antialiased;transition:color .3s,background .3s
   }
   body:before,body:after{position:fixed;z-index:-1;pointer-events:none;border-radius:50%;content:"";filter:blur(86px);opacity:.18}
   body:before{width:min(54vw,760px);height:min(54vw,760px);top:12vh;left:-20vw;background:#1c7fdd;animation:breathe 18s ease-in-out infinite alternate}
@@ -121,11 +149,19 @@ if ('serviceWorker' in navigator) {
 </style>
 </head>
 <body>
+<canvas id="ambient-particles" style="position:fixed;inset:0;pointer-events:none;z-index:-1;width:100%;height:100%"></canvas>
 
 <div class="header">
-    <div style="display:flex;align-items:center;gap:12px">
-        <img src="logo.png" style="height:40px;width:40px;object-fit:contain;">
-        <span class="logo">AMALYN <span>PRODUCER</span></span>
+    <div style="display:flex;align-items:center;gap:14px;min-width:0">
+        <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+            <img src="logo.png" style="height:36px;width:36px;object-fit:contain;" alt="logo">
+            <span class="logo">AMALYN <span>PRODUCER</span></span>
+        </a>
+        <div style="display:flex;align-items:center;gap:4px;background:rgba(125,175,225,.1);padding:3px 6px;border-radius:10px;border:1px solid var(--line)">
+            <a href="dashboard.html" style="padding:5px 10px;border-radius:7px;color:var(--dim);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Engineer</a>
+            <a href="producer.html" style="padding:5px 10px;border-radius:7px;color:var(--cyan);background:var(--panel2);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Producer</a>
+            <a href="musician.html" style="padding:5px 10px;border-radius:7px;color:var(--dim);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Musician</a>
+        </div>
         <div class="tab-bar">
             <div class="tab active" onclick="switchTab('analysis')">Analysis</div>
             <div class="tab" onclick="switchTab('session')">Session Log</div>
@@ -134,6 +170,8 @@ if ('serviceWorker' in navigator) {
     </div>
     <div class="header-right">
         <span class="conn" id="conn">CONNECTING</span>
+        <button class="theme-toggle-btn" type="button" aria-label="Toggle Light and Dark mode" onclick="AMALYN_CONFIG.toggleTheme()" style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;transition:.2s">
+        </button>
     </div>
 </div>
 
@@ -308,8 +346,8 @@ Click "Generate Report" to produce a full session analysis.
 </div>
 
 <script>
-const API = AMALYN_CONFIG.apiUrl
-const WS = AMALYN_CONFIG.wsUrl
+const API = typeof AMALYN_CONFIG !== 'undefined' ? AMALYN_CONFIG.apiUrl : `${location.protocol==='file:'?'http:':location.protocol}//${location.hostname||'localhost'}:8000`
+const WS = typeof AMALYN_CONFIG !== 'undefined' ? AMALYN_CONFIG.wsUrl : `${location.protocol==='https:'?'wss:':'ws:'}//${location.hostname||'localhost'}:8000/ws`
 
 // Canvas setup
 const specCanvas = document.getElementById('producer-canvas')
@@ -363,8 +401,9 @@ function switchTab(name){
 
 // Draw spectrum
 function drawSpectrum(freqs, mags, status){
-    const w = specCanvas.width / (devicePixelRatio||1)
-    const h = specCanvas.height / (devicePixelRatio||1)
+    const r = Math.min(devicePixelRatio || 1, 2)
+    const w = specCanvas.width / r
+    const h = specCanvas.height / r
 
     specCtx.fillStyle = '#061526'
     specCtx.fillRect(0,0,w,h)
@@ -422,8 +461,9 @@ function drawSpectrum(freqs, mags, status){
 
 // Draw EQ curve
 function drawEQ(suggestion){
-    const w = eqCanvas.width / (devicePixelRatio||1)
-    const h = eqCanvas.height / (devicePixelRatio||1)
+    const r = Math.min(devicePixelRatio || 1, 2)
+    const w = eqCanvas.width / r
+    const h = eqCanvas.height / r
 
     eqCtx.fillStyle = '#061526'
     eqCtx.fillRect(0,0,w,h)
@@ -487,8 +527,9 @@ function drawEQ(suggestion){
 
 // Draw phase lissajous with deterministic phase correlation estimation
 function drawPhase(mags){
-    const w = phaseCanvas.width / (devicePixelRatio||1)
-    const h = phaseCanvas.height / (devicePixelRatio||1)
+    const r = Math.min(devicePixelRatio || 1, 2)
+    const w = phaseCanvas.width / r
+    const h = phaseCanvas.height / r
 
     phaseCtx.fillStyle = '#061526'
     phaseCtx.fillRect(0,0,w,h)
@@ -846,6 +887,12 @@ function connect(){
 }
 
 // Init
+AMALYN_CONFIG.initParticleCanvas('ambient-particles')
+window.addEventListener('amalyn-theme-change', () => {
+    drawSpectrum(smoothFreqs || [], smoothMags || [], lastStatus)
+    if(currentData) drawEQ(currentData.suggestion)
+    drawPhase(smoothMags)
+})
 drawSpectrum([], [], 'CLEAN')
 drawEQ(null)
 drawPhase(null)

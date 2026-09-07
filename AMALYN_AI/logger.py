@@ -23,7 +23,7 @@ _session_lock = threading.RLock()
 
 def log_event(status, danger_freq, danger_mag, suggestion=None):
     global _last_save_time
-    if status == "CLEAN":
+    if status == "CLEAN" or danger_freq is None or danger_mag is None:
         return
 
     event = {

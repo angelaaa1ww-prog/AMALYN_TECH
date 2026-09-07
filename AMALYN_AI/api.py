@@ -219,23 +219,12 @@ audio_thread = None
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    last_sent_status = None
-    last_sent_frame_hash = None
     try:
         while True:
             with frame_lock:
                 frame = dict(latest_frame)
-            # Only serialize and send when something meaningful has changed
-            frame_sig = (
-                frame.get("status"),
-                frame.get("dominant_freq"),
-                frame.get("danger_freq"),
-                frame.get("sentinel", {}).get("health_score"),
-            )
-            if frame_sig != last_sent_frame_hash:
-                last_sent_frame_hash = frame_sig
-                await websocket.send_text(json.dumps(frame))
-            await asyncio.sleep(0.05)   # max 20fps — was 40fps, reduces browser lag
+            await websocket.send_text(json.dumps(frame))
+            await asyncio.sleep(0.05)   # max 20fps — smooth spectrum, minimal CPU
     except WebSocketDisconnect:
         pass
     except Exception as e:

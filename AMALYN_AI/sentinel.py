@@ -16,7 +16,7 @@ class AmalynSentinel:
     Predicts hardware failures before they cause audio blackouts.
     """
 
-    def __init__(self, history_size=100):
+    def __init__(self, history_size=100, min_frames_before_dropout=20):
         # Rolling history buffers
         self.rms_history = deque(maxlen=history_size)
         self.clip_history = deque(maxlen=history_size)
@@ -25,11 +25,11 @@ class AmalynSentinel:
 
         # Thresholds — tuned to avoid false positives on quiet/idle input
         self.CLIP_THRESHOLD = 0.95        # 95% of max amplitude = clipping
-        self.DROPOUT_THRESHOLD = 0.0001   # RMS below this = signal dropout (raised from 0.001)
+        self.DROPOUT_THRESHOLD = 0.0001   # RMS below this = signal dropout
         self.NOISE_FLOOR_BASELINE = None  # Set on first run
         self.NOISE_FLOOR_RISE_DB = 6      # 6dB rise = interference detected
         self.VARIANCE_THRESHOLD = 15.0    # High variance = unstable signal
-        self.MIN_FRAMES_BEFORE_DROPOUT = 100  # Ignore dropouts during startup warmup
+        self.MIN_FRAMES_BEFORE_DROPOUT = min_frames_before_dropout  # Warmup before dropout alerts
 
         # Event tracking
         self.events = []
