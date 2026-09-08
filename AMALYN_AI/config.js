@@ -25,7 +25,7 @@ const AMALYN_CONFIG = (() => {
         wsUrl = `ws://${hostname}:${LOCAL_PORT}/ws`;
     } else {
         apiUrl = RENDER_API;
-        wsUrl = `ws://localhost:${LOCAL_PORT}/ws`;
+        wsUrl = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${new URL(RENDER_API).host}/ws`;
     }
 
     // --- THEME MANAGEMENT ---
@@ -61,6 +61,55 @@ const AMALYN_CONFIG = (() => {
         } else {
             setTheme(theme);
         }
+
+        function initFullscreen() {
+            const addButton = () => {
+                if (document.getElementById('amalyn-fullscreen-btn')) return;
+                const button = document.createElement('button');
+                button.id = 'amalyn-fullscreen-btn';
+                button.type = 'button';
+                button.title = 'Enter fullscreen';
+                button.setAttribute('aria-label', 'Enter fullscreen');
+                button.textContent = 'FULL';
+                Object.assign(button.style, {
+                    position: 'fixed',
+                    right: '16px',
+                    bottom: '16px',
+                    zIndex: '1000',
+                    minWidth: '48px',
+                    height: '36px',
+                    padding: '0 10px',
+                    border: '1px solid rgba(121, 213, 255, .5)',
+                    borderRadius: '9px',
+                    background: 'rgba(5, 20, 38, .88)',
+                    color: '#7be8ff',
+                    font: '800 10px/1 system-ui, sans-serif',
+                    letterSpacing: '.08em',
+                    cursor: 'pointer'
+                });
+                button.addEventListener('click', async () => {
+                    if (document.fullscreenElement) {
+                        await document.exitFullscreen();
+                    } else {
+                        await document.documentElement.requestFullscreen();
+                    }
+                });
+                document.body.appendChild(button);
+                document.addEventListener('fullscreenchange', () => {
+                    const active = Boolean(document.fullscreenElement);
+                    button.textContent = active ? 'EXIT' : 'FULL';
+                    button.title = active ? 'Exit fullscreen' : 'Enter fullscreen';
+                    button.setAttribute('aria-label', button.title);
+                });
+            };
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', addButton, { once: true });
+            } else {
+                addButton();
+            }
+        }
+
+        initFullscreen();
     }
 
     // Initialize theme immediately to prevent flash of wrong theme

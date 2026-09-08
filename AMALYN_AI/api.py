@@ -4,6 +4,7 @@ import asyncio
 import json
 import threading
 import os
+import smtplib
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -20,7 +21,7 @@ from mixer import AmalynMixerBridge
 from library import get_perfect_state, list_all_speakers, list_all_microphones, list_all_mixers, list_all_venues
 from ml_inference import ml_check
 from sentinel import AmalynSentinel
-from auth import authenticate, get_all_users, add_user
+from auth import authenticate, get_all_users, add_user, send_verification_code, verify_user
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -130,6 +131,11 @@ class RegisterRequest(BaseModel):
     email: str
     password: str
     role: str
+
+
+class VerifyRequest(BaseModel):
+    email: str
+    code: str
 
 
 # --- AUDIO ENGINE ---
@@ -253,7 +259,35 @@ def register(request: RegisterRequest):
     )
     if error:
         return {"status": "error", "message": error}
-    return {"status": "ok", "user": user}
+    try:
+        delivered = send_verification_code(user)
+    except (OSError, ValueError, smtplib.SMTPException) as error:
+        logger.error("[AUTH] Verification email failed: %s", error)
+        return {"status": "error", "message": "Could not send verification code"}
+    response = {
+        "status": "verification_required",
+        "message": "Enter the verification code sent to your email."
+    }
+    if not delivered and os.getenv("AMALYN_ENV", "development").lower() != "production":
+        response["verification_code"] = user["verification_code"]
+    return response
+
+
+@app.post("/auth/verify")
+def verify(request: VerifyRequest):
+    user, error = verify_user(request.email, request.code)
+    if error:
+        return {"status": "error", "message": error}
+    return {
+        "status": "ok",
+        "user": {
+            "id": user["id"],
+            "name": user["name"],
+            "email": user["email"],
+            "role": user["role"],
+            "avatar": user["avatar"]
+        }
+    }
 
 
 # --- SETUP ENDPOINT ---

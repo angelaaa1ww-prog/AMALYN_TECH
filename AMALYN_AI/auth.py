@@ -2,7 +2,10 @@
 import hashlib
 import json
 import os
-from datetime import datetime
+import secrets
+import smtplib
+from datetime import datetime, timedelta, timezone
+from email.message import EmailMessage
 
 USERS_FILE = os.path.join(os.path.dirname(__file__), 'users.json')
 
@@ -57,7 +60,8 @@ def authenticate(email, password):
     hashed = hash_password(password)
     user = next((u for u in users if
                  u['email'].lower() == email.lower() and
-                 u['password'] == hashed), None)
+                 u['password'] == hashed and
+                 u.get('verified', True)), None)
     if user:
         return {
             "id": user['id'],
@@ -90,8 +94,55 @@ def add_user(name, email, password, role):
         "email": email,
         "password": hash_password(password),
         "role": role,
-        "avatar": avatar
+        "avatar": avatar,
+        "verified": False,
+        "verification_code": secrets.token_hex(3).upper(),
+        "verification_expires_at": (datetime.now(timezone.utc) + timedelta(minutes=15)).isoformat()
     }
     users.append(new_user)
     save_users(users)
     return new_user, None
+
+
+def send_verification_code(user):
+    """Send the pending account code when SMTP is configured."""
+    code = user["verification_code"]
+    host = os.getenv("SMTP_HOST", "").strip()
+    sender = os.getenv("SMTP_FROM", "").strip()
+    if not host or not sender:
+        return False
+    message = EmailMessage()
+    message["Subject"] = "Your AMALYN TECH verification code"
+    message["From"] = sender
+    message["To"] = user["email"]
+    message.set_content(
+        f"Your AMALYN TECH verification code is {code}.\n\n"
+        "It expires in 15 minutes."
+    )
+    with smtplib.SMTP(host, int(os.getenv("SMTP_PORT", "587")), timeout=10) as smtp:
+        smtp.starttls()
+        smtp.login(sender, os.getenv("SMTP_PASSWORD", ""))
+        smtp.send_message(message)
+    return True
+
+
+def verify_user(email, code):
+    users = load_users()
+    now = datetime.now(timezone.utc)
+    for user in users:
+        if user["email"].lower() != email.lower():
+            continue
+        if user.get("verified", True):
+            return None, "Account is already verified"
+        try:
+            expires = datetime.fromisoformat(user["verification_expires_at"])
+        except (KeyError, ValueError) as error:
+            raise ValueError("Invalid verification record") from error
+        if expires < now or not secrets.compare_digest(user.get("verification_code", ""), code.strip().upper()):
+            return None, "Invalid or expired verification code"
+        user["verified"] = True
+        user.pop("verification_code", None)
+        user.pop("verification_expires_at", None)
+        save_users(users)
+        return user, None
+    return None, "Account not found"

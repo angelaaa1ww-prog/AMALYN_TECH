@@ -630,6 +630,25 @@ body{
     </div>
 </div>
 
+<!-- VERIFICATION SCREEN -->
+<div class="screen" id="screen-verify">
+    <div class="auth-card">
+        <div class="brand-center">
+            <div class="brand-name">VERIFY YOUR EMAIL</div>
+            <div class="brand-sub">ACCOUNT ACCESS</div>
+        </div>
+        <div class="auth-title">Check your inbox</div>
+        <div class="auth-sub" id="verification-hint">Enter the code sent to your email address.</div>
+        <div class="error-msg" id="verification-error"></div>
+        <div class="field">
+            <label>Verification code</label>
+            <input type="text" id="verification-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
+        </div>
+        <button class="btn-primary" id="verify-btn" onclick="doVerify()">Verify account →</button>
+        <div class="switch-text"><a onclick="showScreen('register')">Use a different email</a></div>
+    </div>
+</div>
+
 <!-- ═══ HOME SCREEN ═══ -->
 <div class="screen" id="screen-home">
 
@@ -1086,6 +1105,7 @@ const WS = typeof AMALYN_CONFIG !== 'undefined'
     : `${location.protocol==='https:'?'wss:':'ws:'}//${location.hostname||'localhost'}:8000/ws`
 let currentUser = null
 let supabaseClient = null
+let pendingVerificationEmail = ''
 
 // Check saved session
 const saved = sessionStorage.getItem('amalyn_user')
@@ -1215,13 +1235,48 @@ async function doRegister(){
             body:JSON.stringify({name,email,password,role})
         })
         const data = await res.json()
-        if(data.status==='ok'){
-            currentUser = data.user
-            sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
-            showHome(currentUser)
+        if(data.status==='verification_required'){
+            pendingVerificationEmail = email
+            document.getElementById('verification-hint').textContent =
+                `Enter the code sent to ${email}.`
+            if(data.verification_code){
+                document.getElementById('verification-hint').textContent +=
+                    ` Development code: ${data.verification_code}`
+            }
+            showScreen('verify')
         } else {
             err.textContent = data.message||'Registration failed'
             err.classList.add('show')
+        }
+
+        async function doVerify(){
+            const code = document.getElementById('verification-code').value.trim()
+            const err = document.getElementById('verification-error')
+            if(!pendingVerificationEmail || !code){
+                err.textContent = 'Enter the verification code'
+                err.classList.add('show')
+                return
+            }
+            err.classList.remove('show')
+            try{
+                const res = await fetch(`${API}/auth/verify`,{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({email:pendingVerificationEmail,code})
+                })
+                const data = await res.json()
+                if(data.status==='ok'){
+                    currentUser = data.user
+                    sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
+                    showHome(currentUser)
+                } else {
+                    err.textContent = data.message || 'Verification failed'
+                    err.classList.add('show')
+                }
+            }catch(e){
+                err.textContent = 'Cannot connect to AMALYN API'
+                err.classList.add('show')
+            }
         }
     }catch(e){
         err.textContent='Cannot connect to AMALYN API'
@@ -1280,6 +1335,9 @@ async function oauthLogin(provider){
 // Enter key on login
 document.getElementById('login-password').addEventListener('keydown',e=>{
     if(e.key==='Enter') doLogin()
+})
+document.getElementById('verification-code').addEventListener('keydown',e=>{
+    if(e.key==='Enter') doVerify()
 })
 initializeSupabase()
 </script>
