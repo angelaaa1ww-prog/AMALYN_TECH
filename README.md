@@ -132,6 +132,18 @@ the server's public `/config` endpoint; never expose a Supabase service-role key
 | `/musician/mix` | POST | Update channel level or mute |
 | `/sentinel/status` | GET | Get signal health report |
 | `/health` | GET | API health check |
+| `/capabilities` | GET | Report local/cloud hardware capabilities |
+
+### Local mixer operation
+
+Mixer discovery, OSC control, and analog audio-interface monitoring must run on
+the same computer as the mixer network or audio interface. A hosted Render
+deployment can serve the UI and API, but it cannot see a user's private LAN or
+microphone. Run `api.py` locally for those features.
+
+The Mixer Setup page supports configurable local-network scans, supported
+Behringer X32/M32, Yamaha CL/QL, and Allen & Heath SQ/dLive OSC profiles, plus
+analog listen-and-advise mode through a selected PyAudio input device.
 
 ---
 

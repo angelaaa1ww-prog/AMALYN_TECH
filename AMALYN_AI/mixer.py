@@ -83,14 +83,16 @@ class AmalynMixerBridge:
     and a built-in simulator for testing.
     """
 
-    def __init__(self, mixer_type="simulator", channel=1):
+    def __init__(self, mixer_type="simulator", channel=1, ip_override=None):
         if mixer_type not in MIXER_PROFILES:
             supported = ", ".join(sorted(MIXER_PROFILES))
             raise ValueError(f"Unknown mixer type '{mixer_type}'. Supported: {supported}")
         if channel < 1:
             raise ValueError("channel must be at least 1")
 
-        self.profile = MIXER_PROFILES[mixer_type]
+        self.profile = dict(MIXER_PROFILES[mixer_type])
+        if ip_override:
+            self.profile["ip"] = ip_override
         self.channel = channel
         self.mixer_type = mixer_type
         self.connected = False

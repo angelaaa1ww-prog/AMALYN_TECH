@@ -1,0 +1,144 @@
+{
+    "digital": {
+        "behringer_x32": {
+            "brand": "Behringer",
+            "model": "X32 / M32",
+            "port": 10023,
+            "protocol": "OSC",
+            "detection": {"port": 10023, "probe": "/info"},
+            "image": "x32"
+        },
+        "yamaha_cl5": {
+            "brand": "Yamaha",
+            "model": "CL5 / CL3 / CL1",
+            "port": 10300,
+            "protocol": "OSC",
+            "detection": {"port": 10300, "probe": "/version"},
+            "image": "yamaha_cl"
+        },
+        "yamaha_ql": {
+            "brand": "Yamaha",
+            "model": "QL5 / QL1",
+            "port": 10300,
+            "protocol": "OSC",
+            "detection": {"port": 10300, "probe": "/version"},
+            "image": "yamaha_ql"
+        },
+        "allen_heath_sq": {
+            "brand": "Allen & Heath",
+            "model": "SQ-6 / SQ-5 / SQ-7",
+            "port": 51325,
+            "protocol": "OSC",
+            "detection": {"port": 51325, "probe": "/info"},
+            "image": "sq"
+        },
+        "allen_heath_dlive": {
+            "brand": "Allen & Heath",
+            "model": "dLive S7000 / S5000",
+            "port": 51325,
+            "protocol": "OSC",
+            "detection": {"port": 51325, "probe": "/info"},
+            "image": "dlive"
+        },
+        "digico_sd": {
+            "brand": "DiGiCo",
+            "model": "SD Series",
+            "port": 8001,
+            "protocol": "OSC",
+            "detection": {"port": 8001, "probe": "/info"},
+            "image": "digico"
+        },
+        "midas_m32": {
+            "brand": "Midas",
+            "model": "M32 / M32R",
+            "port": 10023,
+            "protocol": "OSC",
+            "detection": {"port": 10023, "probe": "/info"},
+            "image": "midas"
+        },
+        "presonus_studiolive": {
+            "brand": "PreSonus",
+            "model": "StudioLive Series III",
+            "port": 53000,
+            "protocol": "OSC",
+            "detection": {"port": 53000, "probe": "/info"},
+            "image": "presonus"
+        },
+        "ssl_live": {
+            "brand": "SSL",
+            "model": "L200 / L300 / L500",
+            "port": 9000,
+            "protocol": "OSC",
+            "detection": {"port": 9000, "probe": "/info"},
+            "image": "ssl"
+        },
+        "soundcraft_vi": {
+            "brand": "Soundcraft",
+            "model": "Vi Series",
+            "port": 49000,
+            "protocol": "OSC",
+            "detection": {"port": 49000, "probe": "/info"},
+            "image": "soundcraft"
+        },
+        "avid_s6l": {
+            "brand": "Avid",
+            "model": "S6L / Pro Tools VENUE",
+            "port": 8000,
+            "protocol": "OSC",
+            "detection": {"port": 8000, "probe": "/info"},
+            "image": "avid"
+        },
+        "roland_m5000": {
+            "brand": "Roland",
+            "model": "M-5000 / V-Mixer",
+            "port": 8000,
+            "protocol": "OSC",
+            "detection": {"port": 8000, "probe": "/info"},
+            "image": "roland"
+        }
+    },
+    "analog": {
+        "generic_analog": {
+            "brand": "Analog Mixer",
+            "model": "Any analog desk",
+            "protocol": "AUDIO_INTERFACE",
+            "description": "Connect via audio interface — AMALYN listens and advises",
+            "image": "analog"
+        },
+        "mackie_vlz": {
+            "brand": "Mackie",
+            "model": "VLZ Series",
+            "protocol": "AUDIO_INTERFACE",
+            "description": "Connect main out to audio interface input",
+            "image": "mackie"
+        },
+        "yamaha_mg": {
+            "brand": "Yamaha",
+            "model": "MG Series",
+            "protocol": "AUDIO_INTERFACE",
+            "description": "Connect via audio interface for analysis",
+            "image": "yamaha_mg"
+        },
+        "behringer_xenyx": {
+            "brand": "Behringer",
+            "model": "XENYX Series",
+            "protocol": "AUDIO_INTERFACE",
+            "description": "Connect via USB or audio interface",
+            "image": "xenyx"
+        },
+        "allen_heath_zed": {
+            "brand": "Allen & Heath",
+            "model": "ZED Series",
+            "protocol": "AUDIO_INTERFACE",
+            "description": "Connect main out to audio interface",
+            "image": "zed"
+        },
+        "soundcraft_efx": {
+            "brand": "Soundcraft",
+            "model": "EFX / EPM Series",
+            "protocol": "AUDIO_INTERFACE",
+            "description": "Connect via audio interface for analysis",
+            "image": "soundcraft_efx"
+        }
+    }
+}

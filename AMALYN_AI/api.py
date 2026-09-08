@@ -1,11 +1,12 @@
 import logging
+from discovery import scan_network, get_analog_options, get_audio_interfaces
 import numpy as np
 import asyncio
 import json
 import threading
 import os
 import smtplib
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -83,6 +84,9 @@ frame_lock = threading.Lock()
 # Importing the API must remain safe for tests, tooling, and non-audio clients.
 p = None
 stream = None
+audio_instance = None
+audio_thread = None
+analog_monitor = {"active": False, "interface_index": None, "interface_name": None}
 
 # --- MIXER ---
 mixer = AmalynMixerBridge(mixer_type="simulator", channel=1)
@@ -354,6 +358,198 @@ def trigger_safe():
 @app.get("/config.js")
 def serve_config():
     return FileResponse(os.path.join(os.path.dirname(__file__), "config.js"))
+
+# ─── Mixer Discovery ───────────────────────────────────────────────────
+discovery_results = {"status": "idle", "mixers": [], "progress": 0, "total": 0}
+discovery_lock = threading.Lock()
+
+
+@app.get("/mixer/scan")
+def start_scan(network: Optional[str] = Query(default=None)):
+    """Start a network scan for mixers in background."""
+    with discovery_lock:
+        if discovery_results["status"] == "scanning":
+            return {"status": "already_scanning"}
+
+    def run_scan():
+        with discovery_lock:
+            discovery_results["status"] = "scanning"
+            discovery_results["mixers"] = []
+            discovery_results["progress"] = 0
+            discovery_results["total"] = 0
+            discovery_results.pop("error", None)
+
+        def progress(scanned, total, found):
+            with discovery_lock:
+                discovery_results["progress"] = scanned
+                discovery_results["total"] = total
+                discovery_results["mixers"] = found
+
+        try:
+            found = scan_network(progress_callback=progress, cidr=network)
+        except (RuntimeError, ValueError) as error:
+            logger.error("[DISCOVERY] Scan failed: %s", error)
+            with discovery_lock:
+                discovery_results["status"] = "error"
+                discovery_results["error"] = str(error)
+            return
+
+        with discovery_lock:
+            discovery_results["status"] = "complete"
+            discovery_results["mixers"] = found
+            discovery_results["progress"] = discovery_results["total"]
+
+    threading.Thread(target=run_scan, daemon=True).start()
+    return {"status": "scanning_started"}
+
+
+@app.get("/mixer/scan/status")
+def scan_status():
+    with discovery_lock:
+        return dict(discovery_results)
+
+
+@app.get("/mixer/analog")
+def get_analog():
+    return {"mixers": get_analog_options()}
+
+
+@app.get("/mixer/interfaces")
+def get_interfaces():
+    try:
+        return {"interfaces": get_audio_interfaces()}
+    except (ImportError, OSError) as error:
+        logger.warning("[AUDIO] Could not list audio interfaces: %s", error)
+        return {"interfaces": [], "message": "Audio capture is unavailable on this server"}
+
+
+class ConnectRequest(BaseModel):
+    mixer_key: str
+    ip: Optional[str] = None
+    port: Optional[int] = None
+    interface_index: Optional[int] = None
+
+
+@app.post("/mixer/connect")
+def connect_mixer(req: ConnectRequest):
+    global mixer, stream, audio_instance, audio_thread, analog_monitor
+    try:
+        if req.ip:
+            import ipaddress
+            try:
+                ipaddress.ip_address(req.ip)
+            except ValueError:
+                return {"status": "error", "message": "Invalid mixer IP address"}
+            if req.port is not None and not 1 <= req.port <= 65535:
+                return {"status": "error", "message": "Invalid mixer port"}
+            # Digital mixer with known IP
+            mixer_type = {
+                "yamaha_cl5": "yamaha_cl",
+                "yamaha_ql": "yamaha_cl",
+            }.get(req.mixer_key, req.mixer_key)
+            if mixer_type not in {
+                "simulator", "behringer_x32", "yamaha_cl", "allen_heath_sq"
+            }:
+                return {
+                    "status": "error",
+                    "message": f"{req.mixer_key} was detected, but its OSC profile is not implemented yet"
+                }
+            new_mixer = AmalynMixerBridge(
+                mixer_type=mixer_type,
+                channel=1,
+                ip_override=req.ip
+            )
+            if req.port:
+                new_mixer.profile['port'] = req.port
+            success = new_mixer.connect()
+            if success:
+                mixer = new_mixer
+                return {"status": "connected", "mixer": req.mixer_key, "ip": req.ip}
+            return {"status": "error", "message": "Could not connect to mixer"}
+        else:
+            if req.interface_index is None:
+                return {"status": "error", "message": "Select an audio interface first"}
+            try:
+                import pyaudio
+            except ImportError:
+                return {"status": "error", "message": "PyAudio is not installed on this machine"}
+            if stream is not None:
+                stream.stop_stream()
+                stream.close()
+            if audio_instance is not None:
+                audio_instance.terminate()
+            audio_instance = pyaudio.PyAudio()
+            try:
+                stream = audio_instance.open(
+                    format=pyaudio.paInt16,
+                    channels=1,
+                    rate=RATE,
+                    input=True,
+                    input_device_index=req.interface_index,
+                    frames_per_buffer=CHUNK
+                )
+            except (OSError, ValueError):
+                audio_instance.terminate()
+                audio_instance = None
+                raise
+            if audio_thread is None or not audio_thread.is_alive():
+                audio_thread = threading.Thread(target=audio_engine, daemon=True)
+                audio_thread.start()
+            analog_monitor = {
+                "active": True,
+                "interface_index": req.interface_index,
+                "interface_name": None
+            }
+            return {
+                "status": "connected",
+                "mixer": req.mixer_key,
+                "type": "analog",
+                "message": "Analog mode active — AMALYN is listening and advising"
+            }
+    except (OSError, ValueError) as error:
+        logger.error("[MIXER] Connection failed: %s", error)
+        return {"status": "error", "message": f"Could not start mixer connection: {error}"}
+
+
+@app.get("/mixer/status")
+def mixer_status():
+    return {
+        "connected": mixer.connected,
+        "mixer_type": mixer.mixer_type,
+        "ip": mixer.profile["ip"],
+        "port": mixer.profile["port"],
+        "analog_monitor": dict(analog_monitor)
+    }
+
+
+@app.post("/mixer/disconnect")
+def disconnect_mixer():
+    global stream, audio_instance, analog_monitor
+    mixer.disconnect()
+    if stream is not None:
+        stream.stop_stream()
+        stream.close()
+        stream = None
+    if audio_instance is not None:
+        audio_instance.terminate()
+        audio_instance = None
+    analog_monitor = {"active": False, "interface_index": None, "interface_name": None}
+    return {"status": "disconnected"}
+
+
+@app.get("/capabilities")
+def capabilities():
+    return {
+        "mode": "local",
+        "digital_mixers": ["behringer_x32", "yamaha_cl", "allen_heath_sq"],
+        "analog_monitoring": True,
+        "network_discovery": True,
+        "cloud_audio_capture": False,
+        "notes": [
+            "Mixer discovery runs on the machine hosting this API.",
+            "Cloud deployments cannot access a user's private LAN or microphone."
+        ]
+    }
 
 # --- HEALTH ENDPOINT ---
 @app.get("/health")

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMALYN — Mixer Setup</title>
+<script src="config.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#03030a;color:#fff;font-family:'Segoe UI',sans-serif;min-height:100vh}
+.header{
+  height:46px;background:#06060f;border-bottom:1px solid #0f0f1a;
+  display:flex;align-items:center;justify-content:space-between;padding:0 22px;
+}
+.logo{font-size:12px;font-weight:900;letter-spacing:4px;color:#00ff88}
+.back{font-size:9px;color:#333;cursor:pointer;letter-spacing:1px;border:1px solid #151525;border-radius:6px;padding:5px 12px}
+.back:hover{color:#00ff88;border-color:#00ff8833}
+
+.wrap{max-width:800px;margin:0 auto;padding:30px 20px}
+
+.step{margin-bottom:36px}
+.step-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.step-num{
+  width:30px;height:30px;border-radius:50%;
+  background:#00ff8818;border:1px solid #00ff8833;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:#00ff88;flex-shrink:0;
+}
+.step-title{font-size:14px;font-weight:800;color:#ccc}
+.step-sub{font-size:10px;color:#333;margin-top:2px}
+
+/* SCAN */
+.scan-card{
+  background:#0c0c18;border:1px solid #151528;border-radius:12px;padding:24px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+}
+.scan-info strong{display:block;font-size:13px;font-weight:700;color:#ccc;margin-bottom:4px}
+.scan-info p{font-size:10px;color:#444;line-height:1.6}
+.scan-btn{
+  padding:12px 24px;border-radius:8px;border:none;
+  background:linear-gradient(135deg,#00ff88,#00cc66);
+  color:#020d18;font-size:11px;font-weight:800;letter-spacing:1px;
+  cursor:pointer;white-space:nowrap;transition:opacity .15s;flex-shrink:0;
+}
+.scan-btn:hover{opacity:.88}
+.scan-btn:disabled{opacity:.5;cursor:wait}
+
+.progress-bar{
+  height:3px;background:#0f0f1a;border-radius:3px;
+  margin-top:14px;overflow:hidden;display:none;
+}
+.progress-fill{height:100%;background:#00ff88;border-radius:3px;transition:width .3s;width:0%}
+.scan-status{font-size:9px;color:#333;margin-top:8px;letter-spacing:1px;display:none}
+
+/* RESULTS */
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:4px}
+.mixer-card{
+  background:#0c0c18;border:1px solid #151528;border-radius:10px;
+  padding:18px;cursor:pointer;transition:all .2s;
+}
+.mixer-card:hover{border-color:#00ff8833;background:#0f0f1a}
+.mixer-card.selected{border-color:#00ff88;background:#00ff8808}
+.mixer-card.analog-card:hover{border-color:#b48aff33}
+.mixer-card.analog-card.selected{border-color:#b48aff;background:#b48aff08}
+.mx-brand{font-size:9px;color:#333;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+.mx-model{font-size:13px;font-weight:700;color:#ccc;margin-bottom:6px}
+.mx-ip{font-size:9px;color:#00ff8866;font-variant-numeric:tabular-nums}
+.mx-protocol{
+  display:inline-block;margin-top:8px;padding:2px 8px;border-radius:99px;
+  font-size:8px;letter-spacing:.5px;
+  background:#00ff8814;color:#00ff88;border:1px solid #00ff8822;
+}
+.mx-protocol.analog{background:#b48aff14;color:#b48aff;border-color:#b48aff22}
+.mx-badge{
+  float:right;font-size:8px;padding:2px 8px;border-radius:99px;
+  background:#00ff8814;color:#00ff88;border:1px solid #00ff8822;
+}
+.empty-results{
+  text-align:center;padding:40px;color:#252535;font-size:11px;
+  background:#0c0c18;border:1px solid #151528;border-radius:10px;
+}
+
+/* INTERFACE SELECT */
+.interface-list{display:flex;flex-direction:column;gap:8px}
+.iface-item{
+  background:#0c0c18;border:1px solid #151528;border-radius:8px;
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;transition:all .2s;
+}
+.iface-item:hover{border-color:#b48aff33}
+.iface-item.selected{border-color:#b48aff;background:#b48aff08}
+.iface-name{font-size:11px;font-weight:700;color:#888}
+.iface-info{font-size:9px;color:#333}
+
+/* CONNECT */
+.connect-summary{
+  background:#0c0c18;border:1px solid #151528;border-radius:12px;padding:20px;
+  margin-bottom:16px;
+}
+.summary-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid #0f0f1a;
+}
+.summary-row:last-child{border-bottom:none}
+.summary-key{font-size:10px;color:#333}
+.summary-val{font-size:11px;font-weight:700;color:#888}
+.summary-val.green{color:#00ff88}
+.summary-val.purple{color:#b48aff}
+
+.connect-btn{
+  width:100%;padding:16px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,#00ff88,#00cc66);
+  color:#020d18;font-size:12px;font-weight:800;letter-spacing:2px;
+  cursor:pointer;transition:opacity .15s,transform .15s;
+}
+.connect-btn:hover{opacity:.88;transform:translateY(-1px)}
+.connect-btn:disabled{opacity:.5;cursor:wait;transform:none}
+.connect-btn.analog-btn{background:linear-gradient(135deg,#b48aff,#8a5aff);color:#fff}
+
+.success-box{
+  background:#00ff8808;border:1px solid #00ff8833;border-radius:10px;
+  padding:20px;text-align:center;display:none;
+}
+.success-box.show{display:block}
+.success-icon{font-size:32px;margin-bottom:8px}
+.success-title{font-size:14px;font-weight:800;color:#00ff88;margin-bottom:4px}
+.success-sub{font-size:10px;color:#444}
+.go-btn{
+  margin-top:16px;padding:12px 32px;border-radius:8px;border:none;
+  background:#00ff88;color:#020d18;font-size:11px;font-weight:800;
+  cursor:pointer;transition:opacity .15s;
+}
+.go-btn:hover{opacity:.88}
+
+/* TAB TOGGLE */
+.type-toggle{display:flex;gap:8px;margin-bottom:16px}
+.type-btn{
+  padding:8px 20px;border-radius:8px;border:1px solid #151528;
+  background:#0a0a1a;color:#444;font-size:9px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;
+}
+.type-btn.active{background:#00ff8814;border-color:#00ff8833;color:#00ff88}
+.type-btn.analog-active{background:#b48aff14;border-color:#b48aff33;color:#b48aff}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#151528;border-radius:2px}
+
+/* AMALYN glass system: keep setup consistent with the other portals. */
+:root{
+  color-scheme:dark;
+  --ink:#f3faff;--muted:#9db6d1;--dim:#647f9e;
+  --night:#050d18;--panel:rgba(11,29,51,.62);--panel-strong:rgba(15,38,64,.76);
+  --edge:rgba(180,222,255,.16);--line:rgba(148,205,247,.16);
+  --cyan:#7be8ff;--green:#5cebac;--purple:#b48aff;--amber:#ffc971;
+  --shadow:0 25px 70px -20px #000b,0 8px 24px -10px #000c;
+}
+html{background:#020610}
+body{
+  position:relative;overflow-x:hidden;color:var(--ink);
+  background:
+    radial-gradient(ellipse 62% 48% at 8% -10%,#2481d84a,transparent 72%),
+    radial-gradient(ellipse 48% 42% at 100% 12%,#3b74e033,transparent 72%),
+    radial-gradient(ellipse 52% 45% at 52% 112%,#1c9a8f26,transparent 70%),
+    linear-gradient(160deg,#081a30 0%,var(--night) 48%,#02060d 100%);
+}
+body:before,body:after{
+  position:fixed;z-index:-1;pointer-events:none;border-radius:50%;content:"";
+  filter:blur(90px);opacity:.2;
+}
+body:before{width:55vw;height:55vw;top:8vh;left:-22vw;background:#1c7fdd;animation:breathe 18s ease-in-out infinite alternate}
+body:after{width:42vw;height:42vw;right:-12vw;bottom:-20vh;background:#3b74e0;animation:breathe 23s ease-in-out -10s infinite alternate}
+@keyframes breathe{to{transform:translate3d(4vw,-3vh,0) scale(1.13);opacity:.32}}
+.header{
+  position:sticky;top:0;z-index:20;height:64px;padding:0 clamp(18px,3vw,42px);
+  border-bottom:1px solid var(--edge);
+  background:linear-gradient(90deg,#050f1cdd,#08192eb8);
+  box-shadow:0 1px 0 #ffffff12 inset,0 14px 34px -18px #000b;
+  backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);
+}
+.logo{color:var(--cyan);text-shadow:0 0 22px #79e5ff66}
+.back{
+  color:var(--muted);background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;box-shadow:0 1px 0 #ffffff12 inset;transition:.25s;
+}
+.back:hover{color:var(--cyan);border-color:#79e5ff66;background:var(--panel-strong);transform:translateY(-1px)}
+.wrap{padding-top:36px;padding-bottom:56px}
+.step-header{margin-bottom:18px}
+.step-num{background:#7be8ff14;border-color:#7be8ff40;color:var(--cyan);box-shadow:0 0 22px #4ba8ff22}
+.step-title{color:var(--ink);letter-spacing:.01em}
+.step-sub{color:var(--muted)}
+.scan-card,.mixer-card,.empty-results,.iface-item,.connect-summary,.success-box{
+  border-color:var(--edge);
+  background:linear-gradient(155deg,var(--panel-strong),rgba(7,19,34,.6));
+  box-shadow:var(--shadow),0 1px 0 #ffffff12 inset;
+  backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);
+}
+.scan-card{border-radius:16px}
+.scan-info strong,.mx-model{color:var(--ink)}
+.scan-info p,.success-sub{color:var(--muted)}
+.scan-btn,.connect-btn,.go-btn{
+  box-shadow:0 10px 28px -10px #00ff8899,0 1px 0 #ffffff66 inset;
+  transition:transform .25s cubic-bezier(.22,.85,.32,1),filter .25s,box-shadow .25s;
+}
+.scan-btn:hover,.connect-btn:hover,.go-btn:hover{opacity:1;filter:saturate(1.15);transform:translateY(-2px);box-shadow:0 16px 32px -12px #00ff88bb,0 1px 0 #ffffff88 inset}
+.mixer-card:hover,.iface-item:hover{border-color:#7be8ff55;background:linear-gradient(155deg,#12304fb8,#0a1c30b8);transform:translateY(-2px)}
+.mixer-card.selected{border-color:var(--green);background:#5cebac12;box-shadow:0 0 24px -10px #5cebac99,0 1px 0 #ffffff12 inset}
+.mixer-card.analog-card.selected,.iface-item.selected{border-color:var(--purple);background:#b48aff12;box-shadow:0 0 24px -10px #b48aff99,0 1px 0 #ffffff12 inset}
+.mx-brand,.iface-info,.summary-key{color:var(--dim)}
+.mx-model,.iface-name,.summary-val{color:var(--ink)}
+.progress-bar{background:#071322;border:1px solid var(--line)}
+.progress-fill{box-shadow:0 0 14px var(--green)}
+.connect-summary{border-radius:16px}
+.summary-row{border-bottom-color:var(--line)}
+.type-btn{
+  border-color:var(--line);background:var(--panel);color:var(--muted);
+  box-shadow:0 1px 0 #ffffff0d inset;backdrop-filter:blur(12px);
+}
+.type-btn:hover{color:var(--ink);border-color:#7be8ff55}
+::-webkit-scrollbar-thumb{background:#2a4a6b}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="logo">AMALYN — MIXER SETUP</span>
+  <button class="back" onclick="window.close()">← Back</button>
+</div>
+
+<div class="wrap">
+
+  <!-- STEP 1: MIXER TYPE -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Select Mixer Type</div>
+        <div class="step-sub">Digital mixers connect over WiFi. Analog mixers connect via your audio interface.</div>
+      </div>
+    </div>
+    <div class="type-toggle">
+      <button class="type-btn active" id="btn-digital" onclick="setType('digital')">Digital Mixer</button>
+      <button class="type-btn" id="btn-analog" onclick="setType('analog')">Analog Mixer</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: SCAN / SELECT -->
+  <div class="step" id="step-digital">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Find Your Mixer</div>
+        <div class="step-sub">AMALYN will scan your network and find all supported digital mixers automatically.</div>
+      </div>
+    </div>
+    <div class="scan-card">
+      <div class="scan-info">
+        <strong>Network Auto-Discovery</strong>
+        <p>Scans your local network for Behringer, Yamaha, Allen & Heath, DiGiCo, Midas, SSL, Soundcraft and more. Takes about 15 seconds.</p>
+      </div>
+      <button class="scan-btn" id="scan-btn" onclick="startScan()">Scan Network</button>
+    </div>
+    <div class="progress-bar" id="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="scan-status" id="scan-status">Scanning...</div>
+    <div class="results-grid" id="digital-results" style="margin-top:16px"></div>
+  </div>
+
+  <div class="step" id="step-analog" style="display:none">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Select Your Analog Mixer</div>
+        <div class="step-sub">Connect your mixer's main out to your laptop audio interface or mic input. AMALYN will listen and advise.</div>
+      </div>
+    </div>
+    <div class="results-grid" id="analog-results"></div>
+  </div>
+
+  <!-- STEP 3: INTERFACE (analog only) -->
+  <div class="step" id="step-interface" style="display:none">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Select Audio Interface</div>
+        <div class="step-sub">Choose the audio input device connected to your mixer's output.</div>
+      </div>
+    </div>
+    <div class="interface-list" id="interface-list"></div>
+  </div>
+
+  <!-- STEP 3/4: CONNECT -->
+  <div class="step" id="step-connect" style="display:none">
+    <div class="step-header">
+      <div class="step-num" id="connect-step-num">3</div>
+      <div>
+        <div class="step-title">Connect AMALYN</div>
+        <div class="step-sub">Review your selection and connect.</div>
+      </div>
+    </div>
+    <div class="connect-summary">
+      <div class="summary-row">
+        <span class="summary-key">Mixer</span>
+        <span class="summary-val" id="sum-mixer">--</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-key">Type</span>
+        <span class="summary-val" id="sum-type">--</span>
+      </div>
+      <div class="summary-row" id="sum-ip-row">
+        <span class="summary-key">IP Address</span>
+        <span class="summary-val green" id="sum-ip">--</span>
+      </div>
+      <div class="summary-row" id="sum-protocol-row">
+        <span class="summary-key">Protocol</span>
+        <span class="summary-val" id="sum-protocol">--</span>
+      </div>
+      <div class="summary-row" id="sum-iface-row" style="display:none">
+        <span class="summary-key">Audio Interface</span>
+        <span class="summary-val purple" id="sum-iface">--</span>
+      </div>
+    </div>
+    <button class="connect-btn" id="connect-btn" onclick="doConnect()">CONNECT TO MIXER</button>
+    <div class="success-box" id="success-box">
+      <div class="success-icon">✅</div>
+      <div class="success-title" id="success-title">Connected!</div>
+      <div class="success-sub" id="success-sub">AMALYN is now linked to your mixer</div>
+      <button class="go-btn" onclick="goDashboard()">Open Dashboard →</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = AMALYN_CONFIG.apiUrl
+let selectedMixer = null
+let selectedInterface = null
+let currentType = 'digital'
+let scanInterval = null
+
+function setType(type){
+  currentType = type
+  document.getElementById('btn-digital').className = type==='digital'?'type-btn active':'type-btn'
+  document.getElementById('btn-analog').className = type==='analog'?'type-btn analog-active':'type-btn'
+  document.getElementById('step-digital').style.display = type==='digital'?'block':'none'
+  document.getElementById('step-analog').style.display = type==='analog'?'block':'none'
+  document.getElementById('step-connect').style.display = 'none'
+  document.getElementById('step-interface').style.display = 'none'
+  selectedMixer = null
+  if(type==='analog') loadAnalog()
+}
+
+async function startScan(){
+  const btn = document.getElementById('scan-btn')
+  const bar = document.getElementById('progress-bar')
+  const fill = document.getElementById('progress-fill')
+  const status = document.getElementById('scan-status')
+  const results = document.getElementById('digital-results')
+
+  btn.disabled = true; btn.textContent = 'Scanning...'
+  bar.style.display = 'block'; status.style.display = 'block'
+  results.innerHTML = ''
+  document.getElementById('step-connect').style.display = 'none'
+
+  try{
+    await fetch(`${API}/mixer/scan`)
+    scanInterval = setInterval(async()=>{
+      const res = await fetch(`${API}/mixer/scan/status`)
+      const data = await res.json()
+      const pct = data.total > 0 ? Math.round((data.progress/data.total)*100) : 0
+      fill.style.width = pct+'%'
+      status.textContent = `Scanning network... ${pct}% (${data.mixers.length} found)`
+      if(data.status==='complete'){
+        clearInterval(scanInterval)
+        btn.disabled = false; btn.textContent = 'Scan Again'
+        status.textContent = `Scan complete — ${data.mixers.length} mixer(s) found`
+        renderDigitalResults(data.mixers)
+      } else if(data.status==='error'){
+        clearInterval(scanInterval)
+        btn.disabled = false; btn.textContent = 'Scan Network'
+        status.textContent = data.error || 'Network scan failed'
+      }
+    }, 800)
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Scan Network'
+    status.textContent = 'Cannot reach API — make sure api.py is running'
+  }
+}
+
+function renderDigitalResults(mixers){
+  const el = document.getElementById('digital-results')
+  if(!mixers.length){
+    el.innerHTML = `<div class="empty-results">
+      No mixers found on the network.<br><br>
+      Make sure your mixer is powered on and connected to the same WiFi or ethernet switch as your laptop.<br>
+      Also verify OSC is enabled on the mixer.
+    </div>`
+    return
+  }
+  el.innerHTML = mixers.map(m=>`
+    <div class="mixer-card" id="mc-${m.ip}-${m.port}" onclick="selectMixer(${JSON.stringify(m).replace(/"/g,'&quot;')})">
+      <span class="mx-badge">FOUND</span>
+      <div class="mx-brand">${m.brand}</div>
+      <div class="mx-model">${m.model}</div>
+      <div class="mx-ip">${m.ip}:${m.port}</div>
+      <span class="mx-protocol">${m.connectable === false ? 'Detected — setup unavailable' : m.protocol}</span>
+    </div>
+  `).join('')
+}
+
+async function loadAnalog(){
+  try{
+    const res = await fetch(`${API}/mixer/analog`)
+    const data = await res.json()
+    const el = document.getElementById('analog-results')
+    el.innerHTML = data.mixers.map(m=>`
+      <div class="mixer-card analog-card" onclick="selectMixer(${JSON.stringify(m).replace(/"/g,'&quot;')})">
+        <div class="mx-brand">${m.brand}</div>
+        <div class="mx-model">${m.model}</div>
+        <div style="font-size:9px;color:#444;margin-top:6px;line-height:1.5">${m.description}</div>
+        <span class="mx-protocol analog">${m.protocol}</span>
+      </div>
+    `).join('')
+  }catch(e){
+    document.getElementById('analog-results').innerHTML =
+      '<div class="empty-results">Could not load analog mixer options.</div>'
+  }
+}
+
+async function selectMixer(mixer){
+  selectedMixer = mixer
+  document.querySelectorAll('.mixer-card').forEach(c=>c.classList.remove('selected'))
+  const id = mixer.ip ? `mc-${mixer.ip}-${mixer.port}` : null
+  if(id && document.getElementById(id)) document.getElementById(id).classList.add('selected')
+
+  if(mixer.type==='analog'){
+    // Load audio interfaces
+    await loadInterfaces()
+    document.getElementById('step-interface').style.display = 'block'
+    document.getElementById('connect-step-num').textContent = '4'
+  } else {
+    document.getElementById('step-interface').style.display = 'none'
+    document.getElementById('connect-step-num').textContent = '3'
+  }
+
+  document.getElementById('step-connect').style.display = 'block'
+  document.getElementById('success-box').classList.remove('show')
+  document.getElementById('connect-btn').style.display = 'block'
+
+  document.getElementById('sum-mixer').textContent = `${mixer.brand} ${mixer.model}`
+  document.getElementById('sum-type').textContent = mixer.type==='digital'?'Digital (Network)':'Analog (Audio Interface)'
+
+  if(mixer.ip){
+    document.getElementById('sum-ip-row').style.display = 'flex'
+    document.getElementById('sum-ip').textContent = `${mixer.ip}:${mixer.port}`
+    document.getElementById('sum-protocol').textContent = mixer.protocol
+    document.getElementById('sum-iface-row').style.display = 'none'
+  } else {
+    document.getElementById('sum-ip-row').style.display = 'none'
+    document.getElementById('sum-iface-row').style.display = 'flex'
+    document.getElementById('sum-iface').textContent = 'Select interface above'
+  }
+
+  document.getElementById('sum-protocol').textContent = mixer.protocol
+
+  const cbtn = document.getElementById('connect-btn')
+  if(mixer.type==='analog'){
+    cbtn.textContent = 'START ANALOG MONITORING'
+    cbtn.className = 'connect-btn analog-btn'
+  } else {
+    cbtn.textContent = 'CONNECT TO MIXER'
+    cbtn.className = 'connect-btn'
+  }
+
+  document.getElementById('step-connect').scrollIntoView({behavior:'smooth'})
+}
+
+async function loadInterfaces(){
+  try{
+    const res = await fetch(`${API}/mixer/interfaces`)
+    const data = await res.json()
+    const el = document.getElementById('interface-list')
+    if(!data.interfaces.length){
+      el.innerHTML = `<div class="empty-results">${data.message || 'No audio input interfaces found.'}</div>`
+      return
+    }
+    el.innerHTML = data.interfaces.map(d=>`
+      <div class="iface-item" onclick="selectInterface(${JSON.stringify(d).replace(/"/g,'&quot;')}, event)">
+        <div>
+          <div class="iface-name">${d.name}</div>
+          <div class="iface-info">${d.channels} input channel(s) • ${d.sample_rate} Hz</div>
+        </div>
+        <div style="font-size:9px;color:#252535">Index ${d.index}</div>
+      </div>
+    `).join('')
+  }catch(e){
+    document.getElementById('interface-list').innerHTML =
+      '<div class="empty-results">Could not list audio interfaces. Check that audio capture is available.</div>'
+  }
+}
+
+function selectInterface(iface, clickEvent){
+  selectedInterface = iface
+  document.querySelectorAll('.iface-item').forEach(i=>i.classList.remove('selected'))
+  clickEvent.currentTarget.classList.add('selected')
+  document.getElementById('sum-iface').textContent = iface.name
+  document.getElementById('sum-iface-row').style.display = 'flex'
+}
+
+async function doConnect(){
+  const btn = document.getElementById('connect-btn')
+  btn.disabled = true; btn.textContent = 'Connecting...'
+
+  try{
+    const body = {
+      mixer_key: selectedMixer.key,
+      ip: selectedMixer.ip || null,
+      port: selectedMixer.port || null,
+      interface_index: selectedInterface ? selectedInterface.index : null
+    }
+
+    const res = await fetch(`${API}/mixer/connect`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    })
+    const data = await res.json()
+
+    if(data.status==='connected'){
+      btn.style.display = 'none'
+      const box = document.getElementById('success-box')
+      box.classList.add('show')
+      const title = document.getElementById('success-title')
+      const sub = document.getElementById('success-sub')
+      if(selectedMixer.type==='analog'){
+        title.textContent = 'Analog Monitoring Active'
+        sub.textContent = `AMALYN is listening via ${selectedInterface?.name||'your audio interface'} and will advise on EQ corrections`
+      } else {
+        title.textContent = `Connected to ${selectedMixer.brand} ${selectedMixer.model}`
+        sub.textContent = `AMALYN is now sending corrections to ${selectedMixer.ip} via ${selectedMixer.protocol}`
+      }
+      // Save selection to sessionStorage for dashboard
+      sessionStorage.setItem('amalyn_mixer', JSON.stringify(selectedMixer))
+    } else {
+      alert(`Connection failed: ${data.message}`)
+      btn.disabled = false; btn.textContent = 'CONNECT TO MIXER'
+    }
+  }catch(e){
+    alert('Cannot reach AMALYN API. Make sure api.py is running.')
+    btn.disabled = false; btn.textContent = 'CONNECT TO MIXER'
+  }
+}
+
+function goDashboard(){
+  window.location.href = 'dashboard.html'
+}
+
+// Load analog options on start
+loadAnalog()
+</script>
+</body>
+</html>
