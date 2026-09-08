@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <script src="config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050d18">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <title>AMALYN TECH | Analog Rack & Hardware Advisor</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f3faff; --muted: #9db6d1; --dim: #647f9e;
+      --night: #050d18; --bg-base: #020610;
+      --panel: rgba(11, 29, 51, .6); --panel2: rgba(21, 49, 82, .5);
+      --glass-hi: rgba(255, 255, 255, .08); --glass-edge: rgba(180, 222, 255, .16);
+      --line: rgba(148, 205, 247, .14); --line2: rgba(121, 213, 255, .5);
+      --blue: #4ba8ff; --cyan: #7be8ff; --green: #5cebac; --amber: #ffc971; --red: #ff7d92;
+      --shadow: 0 25px 70px -12px #000a, 0 8px 24px -8px #000c;
+      --shadow-sm: 0 10px 30px -8px #0007;
+      --header-bg: linear-gradient(90deg, #050f1cd9, #08192eb0);
+      --card-bg: linear-gradient(160deg, #0e2540a3, #071322a3);
+      --card-hover-bg: linear-gradient(160deg, #12304fb8, #0a1c30b8);
+      --body-bg:
+        radial-gradient(ellipse 60% 42% at 10% -8%, #2481d84a, transparent 74%),
+        radial-gradient(ellipse 46% 38% at 100% 10%, #2c66c336, transparent 72%),
+        radial-gradient(ellipse 50% 46% at 50% 118%, #1c9a8f26, transparent 70%),
+        linear-gradient(160deg, #081a30 0%, var(--night) 46%, #02060d 100%);
+    }
+
+    [data-theme="light"] {
+      color-scheme: light;
+      --ink: #0f172a; --muted: #475569; --dim: #64748b;
+      --night: #f8fafc; --bg-base: #edf2f7;
+      --panel: rgba(255, 255, 255, .88); --panel2: rgba(241, 245, 249, .92);
+      --glass-hi: rgba(255, 255, 255, .95); --glass-edge: rgba(148, 163, 184, .35);
+      --line: rgba(148, 163, 184, .26); --line2: rgba(2, 132, 199, .6);
+      --blue: #0284c7; --cyan: #0284c7; --green: #059669; --amber: #d97706; --red: #e11d48;
+      --shadow: 0 20px 50px -12px rgba(15, 23, 42, .12);
+      --header-bg: linear-gradient(90deg, #fffffffa, #f8fafcfa);
+      --card-bg: linear-gradient(160deg, #ffffff, #f1f5f9);
+      --card-hover-bg: linear-gradient(160deg, #ffffff, #e2e8f0);
+      --body-bg:
+        radial-gradient(ellipse 60% 42% at 10% -8%, #bae6fd45, transparent 74%),
+        radial-gradient(ellipse 46% 38% at 100% 10%, #bfdbfe45, transparent 72%),
+        linear-gradient(160deg, #f8fafc 0%, #f1f5f9 46%, #e2e8f0 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--bg-base); transition: background .3s; }
+    body {
+      min-height: 100vh; color: var(--ink); background: var(--body-bg);
+      font: 13px/1.5 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, select { font: inherit; }
+
+    /* ---------- Header ---------- */
+    .app-header {
+      position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between;
+      gap: 20px; height: 68px; padding: 0 clamp(16px, 3vw, 40px);
+      border-bottom: 1px solid var(--glass-edge); background: var(--header-bg);
+      backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%);
+    }
+    .brand-wrap { display: flex; align-items: center; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .mark {
+      display: grid; width: 32px; height: 32px; place-items: center;
+      border: 1px solid #8ceaffcc; border-radius: 10px;
+      background: linear-gradient(135deg, #78e6ff42, #4380ff1c);
+    }
+    .mark img { width: 22px; height: 22px; object-fit: contain; }
+    .brand-name { font-size: 13px; font-weight: 850; letter-spacing: .22em; color: var(--cyan); text-transform: uppercase; }
+    .brand-sub { font-size: 9px; font-weight: 700; letter-spacing: .15em; color: var(--dim); display: block; }
+
+    .portal-nav {
+      display: flex; align-items: center; gap: 4px; background: rgba(125, 175, 225, .1);
+      padding: 4px; border-radius: 12px; border: 1px solid var(--line);
+    }
+    .nav-link {
+      padding: 6px 12px; border-radius: 8px; color: var(--dim); font-size: 10px; font-weight: 750;
+      letter-spacing: .08em; text-transform: uppercase; text-decoration: none; transition: .2s;
+    }
+    .nav-link:hover { color: var(--ink); background: rgba(125, 175, 225, .14); }
+    .nav-link.active {
+      color: var(--cyan); background: var(--panel2);
+      box-shadow: 0 1px 0 var(--glass-hi) inset, 0 0 16px -6px var(--cyan);
+    }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .conn-badge {
+      display: flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 99px;
+      font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+      border: 1px solid var(--line); color: var(--muted);
+    }
+    .conn-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); }
+    .conn-badge.ok .conn-dot { background: var(--green); box-shadow: 0 0 10px var(--green); }
+    .conn-badge.ok { color: var(--green); border-color: rgba(92, 235, 172, .3); background: rgba(92, 235, 172, .08); }
+    .conn-badge.err .conn-dot { background: var(--red); box-shadow: 0 0 10px var(--red); }
+    .conn-badge.err { color: var(--red); border-color: rgba(255, 125, 146, .3); background: rgba(255, 125, 146, .08); }
+
+    .theme-toggle-btn {
+      width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--panel); color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ---------- Container Layout ---------- */
+    .container {
+      width: min(1560px, calc(100% - 32px)); margin: 20px auto 40px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* ---------- Master Advisory Banner ---------- */
+    .master-banner {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      padding: 16px 24px; border-radius: 16px; border: 1px solid var(--glass-edge);
+      background: linear-gradient(135deg, var(--panel2), var(--panel));
+      box-shadow: var(--shadow); backdrop-filter: blur(20px);
+    }
+    .master-banner.critical {
+      border-color: rgba(255, 125, 146, .6);
+      background: linear-gradient(135deg, rgba(255, 125, 146, .2), rgba(225, 29, 72, .1));
+      box-shadow: 0 0 35px -8px rgba(255, 125, 146, .4);
+    }
+    .master-banner.warning {
+      border-color: rgba(255, 201, 113, .6);
+      background: linear-gradient(135deg, rgba(255, 201, 113, .2), rgba(217, 119, 6, .1));
+      box-shadow: 0 0 35px -8px rgba(255, 201, 113, .4);
+    }
+    .banner-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+    .banner-icon {
+      width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 22px;
+      background: rgba(123, 232, 255, .15); border: 1px solid var(--line); flex-shrink: 0;
+    }
+    .master-banner.critical .banner-icon { background: rgba(255, 125, 146, .3); border-color: rgba(255, 125, 146, .6); }
+    .master-banner.warning .banner-icon { background: rgba(255, 201, 113, .3); border-color: rgba(255, 201, 113, .6); }
+    .banner-title { font-size: 14px; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+    .banner-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .banner-meta { display: flex; align-items: center; gap: 12px; }
+    .meta-pill {
+      padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line);
+      font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      background: var(--card-bg); color: var(--cyan);
+    }
+
+    /* ---------- Grid Layout: Left Rack / Right Checklist ---------- */
+    .main-grid {
+      display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(360px, 1fr); gap: 20px;
+    }
+    @media (max-width: 1100px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ---------- Rack Visualizer Column ---------- */
+    .rack-stack { display: flex; flex-direction: column; gap: 18px; }
+    .rack-unit {
+      border: 1px solid var(--glass-edge); border-radius: 16px; padding: 20px;
+      background: linear-gradient(155deg, var(--panel2), var(--panel));
+      box-shadow: var(--shadow); backdrop-filter: blur(20px);
+      position: relative; overflow: hidden;
+    }
+    .rack-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--line);
+    }
+    .rack-title {
+      font-size: 11px; font-weight: 850; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--cyan); display: flex; align-items: center; gap: 8px;
+    }
+    .rack-badge {
+      font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 6px;
+      letter-spacing: .1em; text-transform: uppercase; background: rgba(92, 235, 172, .15);
+      border: 1px solid rgba(92, 235, 172, .3); color: var(--green);
+    }
+    .rack-badge.warn { background: rgba(255, 201, 113, .15); border-color: rgba(255, 201, 113, .3); color: var(--amber); }
+    .rack-badge.alert { background: rgba(255, 125, 146, .2); border-color: rgba(255, 125, 146, .4); color: var(--red); }
+
+    /* ---------- 31-Band Graphic EQ Visualizer ---------- */
+    .geq-container {
+      background: #040913; border: 1px solid #142338; border-radius: 12px; padding: 18px 12px 14px;
+      position: relative; overflow-x: auto;
+    }
+    .geq-scale-lines {
+      position: absolute; inset: 26px 12px 34px 12px; pointer-events: none;
+      display: flex; flex-direction: column; justify-content: space-between; border-left: 1px dashed rgba(255,255,255,.08);
+      border-right: 1px dashed rgba(255,255,255,.08);
+    }
+    .geq-scale-lines div {
+      border-top: 1px dashed rgba(255,255,255,.07); font-size: 8px; color: #40556f; padding-left: 4px;
+    }
+    .geq-scale-center { border-top: 1px solid rgba(123, 232, 255, .25) !important; }
+
+    .geq-sliders {
+      display: flex; justify-content: space-between; align-items: flex-end; height: 160px;
+      padding: 0 4px; gap: 4px; position: relative; z-index: 1;
+    }
+    .geq-band {
+      display: flex; flex-direction: column; align-items: center; width: 100%; min-width: 18px;
+      height: 100%; justify-content: flex-end; position: relative;
+    }
+    .geq-track {
+      width: 4px; height: 120px; background: #0c1827; border-radius: 2px; position: relative;
+      border: 1px solid #1c324c;
+    }
+    .geq-thumb {
+      width: 14px; height: 22px; border-radius: 4px; position: absolute; left: -5px; top: 50%;
+      transform: translateY(-50%); background: linear-gradient(180deg, #445973, #212f42);
+      border: 1px solid #7187a4; box-shadow: 0 2px 6px #000a; transition: top .3s cubic-bezier(.34,1.4,.4,1), background .3s, border-color .3s;
+    }
+    .geq-thumb::after {
+      content: ""; position: absolute; top: 10px; left: 2px; right: 2px; height: 2px; background: #fff; opacity: .7;
+    }
+    .geq-band.active .geq-thumb {
+      background: linear-gradient(180deg, #ff7d92, #b91c1c); border-color: #ff9fb0;
+      box-shadow: 0 0 16px rgba(255, 125, 146, .8); animation: thumb-flash 1.2s infinite alternate;
+    }
+    .geq-band.active .geq-label { color: var(--red); font-weight: 850; text-shadow: 0 0 10px var(--red); }
+    @keyframes thumb-flash {
+      from { filter: brightness(1); }
+      to { filter: brightness(1.35) drop-shadow(0 0 8px #ff7d92); }
+    }
+    .geq-label {
+      font-size: 8px; font-weight: 700; color: #526b88; margin-top: 8px; white-space: nowrap;
+      transform: rotate(-45deg); transform-origin: top left; height: 18px; width: 14px;
+    }
+    .geq-action-banner {
+      margin-top: 14px; padding: 10px 14px; border-radius: 8px; background: rgba(123, 232, 255, .05);
+      border: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between;
+      font-size: 11px;
+    }
+
+    /* ---------- Analog Console Channel Strip Visualizer ---------- */
+    .strip-rack {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px;
+      background: #040913; border: 1px solid #142338; border-radius: 12px; padding: 18px;
+    }
+    .strip-module {
+      display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px 8px;
+      border: 1px solid #112237; border-radius: 10px; background: #08121f; position: relative;
+    }
+    .module-title { font-size: 9px; font-weight: 800; letter-spacing: .12em; color: var(--dim); text-transform: uppercase; }
+    
+    /* Rotary Knob UI */
+    .knob-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 4px 0;
+    }
+    .knob-dial {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: radial-gradient(circle, #253950, #0f1926);
+      border: 2px solid #364e6b; position: relative; box-shadow: 0 4px 10px #0008;
+      transition: transform .4s cubic-bezier(.34,1.4,.4,1), border-color .3s;
+    }
+    .knob-dial::after {
+      content: ""; position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
+      width: 3px; height: 10px; background: var(--cyan); border-radius: 2px;
+      box-shadow: 0 0 6px var(--cyan);
+    }
+    .knob-dial.warn { border-color: var(--amber); }
+    .knob-dial.warn::after { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+    .knob-dial.alert { border-color: var(--red); }
+    .knob-dial.alert::after { background: var(--red); box-shadow: 0 0 8px var(--red); }
+    .knob-value { font-size: 11px; font-weight: 800; color: var(--ink); }
+    .knob-label { font-size: 8px; color: var(--dim); text-transform: uppercase; }
+
+    /* Latching Button UI */
+    .latch-btn {
+      padding: 8px 14px; border-radius: 8px; border: 1px solid #2a415a; background: #101e30;
+      color: var(--dim); font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      cursor: default; display: flex; align-items: center; gap: 6px; transition: .3s;
+    }
+    .latch-btn.engaged {
+      background: linear-gradient(135deg, rgba(92, 235, 172, .25), rgba(16, 185, 129, .15));
+      border-color: var(--green); color: var(--green); box-shadow: 0 0 14px rgba(92, 235, 172, .3);
+    }
+    .latch-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ---------- Crossover & Power Amps Visualizers ---------- */
+    .dual-rack { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 800px) { .dual-rack { grid-template-columns: 1fr; } }
+    
+    .gear-card {
+      background: #040913; border: 1px solid #142338; border-radius: 12px; padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .gear-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
+    .gear-key { color: var(--dim); }
+    .gear-val { font-weight: 750; color: var(--ink); }
+    .gear-val.hl { color: var(--cyan); }
+    .gear-val.ok { color: var(--green); }
+    .gear-val.warn { color: var(--amber); }
+    .gear-val.alert { color: var(--red); }
+
+    /* ---------- Actionable Checklist Column ---------- */
+    .checklist-column { display: flex; flex-direction: column; gap: 16px; }
+    .panel {
+      border: 1px solid var(--glass-edge); border-radius: 16px; padding: 20px;
+      background: linear-gradient(155deg, var(--panel2), var(--panel));
+      box-shadow: var(--shadow); backdrop-filter: blur(20px);
+    }
+    .section-title {
+      font-size: 11px; font-weight: 850; letter-spacing: .15em; text-transform: uppercase;
+      color: var(--cyan); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .action-cards { display: flex; flex-direction: column; gap: 12px; }
+    .action-card {
+      border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+      background: var(--card-bg); transition: transform .2s, border-color .2s;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .action-card:hover { transform: translateY(-2px); border-color: var(--line2); }
+    .action-card.critical {
+      border-color: rgba(255, 125, 146, .45); background: linear-gradient(145deg, rgba(255, 125, 146, .12), #071322a3);
+    }
+    .action-card.warning {
+      border-color: rgba(255, 201, 113, .45); background: linear-gradient(145deg, rgba(255, 201, 113, .12), #071322a3);
+    }
+    .card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .card-gear-badge {
+      font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 6px; background: rgba(123, 232, 255, .1); color: var(--cyan);
+    }
+    .card-urgency {
+      font-size: 9px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase;
+    }
+    .card-urgency.critical { color: var(--red); }
+    .card-urgency.warning { color: var(--amber); }
+    .card-urgency.advisory { color: var(--blue); }
+    .card-title { font-size: 13px; font-weight: 800; color: var(--ink); }
+    .card-action {
+      font-size: 12px; font-weight: 700; color: var(--ink); padding: 8px 10px;
+      border-radius: 8px; background: rgba(255, 255, 255, .05); border-left: 3px solid var(--cyan);
+    }
+    .action-card.critical .card-action { border-left-color: var(--red); background: rgba(255, 125, 146, .08); }
+    .action-card.warning .card-action { border-left-color: var(--amber); background: rgba(255, 201, 113, .08); }
+    .card-detail { font-size: 11px; color: var(--muted); line-height: 1.45; }
+
+    .empty-actions {
+      text-align: center; padding: 36px 16px; color: var(--muted); font-size: 12px;
+      border: 1px dashed var(--line); border-radius: 12px;
+    }
+    .empty-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+
+    /* Soundcheck Checklist Box */
+    .guide-box {
+      margin-top: 16px; padding: 14px; border-radius: 10px; background: rgba(123, 232, 255, .04);
+      border: 1px solid var(--line); font-size: 11px; color: var(--muted);
+    }
+    .guide-title { font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase; font-size: 10px; letter-spacing: .1em; }
+    .guide-list { list-style: none; display: flex; flex-direction: column; gap: 6px; padding: 0; }
+    .guide-list li { display: flex; align-items: flex-start; gap: 6px; }
+    .guide-list li::before { content: "•"; color: var(--cyan); font-weight: bold; }
+  </style>
+</head>
+<body>
+  <!-- Ambient particles canvas -->
+  <canvas id="ambient-particles"></canvas>
+
+  <header class="app-header">
+    <div class="brand-wrap">
+      <a class="brand" href="dashboard.html" aria-label="AMALYN TECH">
+        <span class="mark"><img src="logo.png" alt="logo"></span>
+        <div>
+          <p class="brand-name">AMALYN TECH</p>
+          <span class="brand-sub">Analog Outboard & Hardware Advisor</span>
+        </div>
+      </a>
+      <nav class="portal-nav" aria-label="Portals">
+        <a class="nav-link" href="dashboard.html">Engineer</a>
+        <a class="nav-link active" href="analog.html">Analog Rack</a>
+        <a class="nav-link" href="producer.html">Producer Suite</a>
+        <a class="nav-link" href="musician.html">Musician IEM</a>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <span class="conn-badge" id="conn-badge"><span class="conn-dot"></span><span id="conn-text">Connecting</span></span>
+      <button class="theme-toggle-btn" type="button" aria-label="Toggle theme" onclick="AMALYN_CONFIG.toggleTheme()"></button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Master Live Advisory Banner -->
+    <section class="master-banner" id="master-banner">
+      <div class="banner-left">
+        <div class="banner-icon" id="banner-icon">🎛️</div>
+        <div>
+          <div class="banner-title" id="banner-title">Analog Hardware Advisor Active</div>
+          <div class="banner-desc" id="banner-desc">Listening to audio input. Adjust your physical rack gear as advised below.</div>
+        </div>
+      </div>
+      <div class="banner-meta">
+        <div class="meta-pill" id="dominant-readout">Dominant: -- Hz</div>
+        <div class="meta-pill" id="action-count-pill">0 Actions Required</div>
+      </div>
+    </section>
+
+    <div class="main-grid">
+      <!-- Left Column: Visual Virtual Outboard Rack -->
+      <section class="rack-stack">
+        
+        <!-- Unit 1: Outboard 31-Band Graphic EQ -->
+        <article class="rack-unit">
+          <div class="rack-header">
+            <span class="rack-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6m2-6h6m2 8h6"/></svg>
+              Outboard 31-Band Graphic EQ (1/3-Octave ISO 266)
+            </span>
+            <span class="rack-badge" id="geq-status-badge">Nominal (Flat)</span>
+          </div>
+
+          <div class="geq-container">
+            <div class="geq-scale-lines">
+              <div>+12 dB</div>
+              <div>+6 dB</div>
+              <div class="geq-scale-center">0 dB (Flat)</div>
+              <div>-6 dB</div>
+              <div>-12 dB</div>
+            </div>
+            <div class="geq-sliders" id="geq-sliders">
+              <!-- Dynamically populated 31 ISO bands -->
+            </div>
+          </div>
+
+          <div class="geq-action-banner" id="geq-banner">
+            <span id="geq-instruction">All 31 faders at 0 dB unity. No feedback cuts needed.</span>
+            <strong id="geq-target-highlight" style="color:var(--cyan)">--</strong>
+          </div>
+        </article>
+
+        <!-- Unit 2: Analog Console Channel Strip -->
+        <article class="rack-unit">
+          <div class="rack-header">
+            <span class="rack-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
+              Analog Channel Strip & Preamp (Console Front-End)
+            </span>
+            <span class="rack-badge" id="strip-status-badge">Nominal</span>
+          </div>
+
+          <div class="strip-rack">
+            <!-- Preamp Gain -->
+            <div class="strip-module">
+              <span class="module-title">Preamp Gain</span>
+              <div class="knob-wrap">
+                <div class="knob-dial" id="knob-gain" style="transform:rotate(0deg)"></div>
+                <span class="knob-value" id="val-gain">12:00</span>
+                <span class="knob-label">Gain / Trim</span>
+              </div>
+            </div>
+
+            <!-- 80 Hz Low-Cut (HPF) Button -->
+            <div class="strip-module">
+              <span class="module-title">Low-Cut HPF</span>
+              <div style="margin: auto 0; text-align:center;">
+                <div class="latch-btn" id="btn-hpf">
+                  <span class="latch-dot"></span>
+                  <span id="txt-hpf">80 Hz OFF</span>
+                </div>
+                <span class="knob-label" style="margin-top:6px; display:block;">Stage Rumble Filter</span>
+              </div>
+            </div>
+
+            <!-- Sweepable Mid Frequency -->
+            <div class="strip-module">
+              <span class="module-title">Mid Frequency</span>
+              <div class="knob-wrap">
+                <div class="knob-dial" id="knob-mid-freq" style="transform:rotate(0deg)"></div>
+                <span class="knob-value" id="val-mid-freq">1.0k</span>
+                <span class="knob-label">Sweep (Hz)</span>
+              </div>
+            </div>
+
+            <!-- Mid Gain Cut -->
+            <div class="strip-module">
+              <span class="module-title">Mid Gain Cut</span>
+              <div class="knob-wrap">
+                <div class="knob-dial" id="knob-mid-gain" style="transform:rotate(0deg)"></div>
+                <span class="knob-value" id="val-mid-gain">0 dB</span>
+                <span class="knob-label">Mid Cut</span>
+              </div>
+            </div>
+
+            <!-- Channel Fader -->
+            <div class="strip-module">
+              <span class="module-title">Channel Fader</span>
+              <div class="knob-wrap">
+                <div class="knob-dial" id="knob-fader" style="transform:rotate(0deg)"></div>
+                <span class="knob-value" id="val-fader">0 dB</span>
+                <span class="knob-label">Unity Fader</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Unit 3 & 4: Crossover & Power Amps (Dual Rack) -->
+        <div class="dual-rack">
+          <!-- Active Crossover -->
+          <article class="rack-unit">
+            <div class="rack-header">
+              <span class="rack-title">Active Crossover</span>
+              <span class="rack-badge" id="xover-status-badge">Optimal</span>
+            </div>
+            <div class="gear-card">
+              <div class="gear-row">
+                <span class="gear-key">Sub / Top Crossover:</span>
+                <span class="gear-val hl" id="xover-freq">95 Hz (24dB/Oct)</span>
+              </div>
+              <div class="gear-row">
+                <span class="gear-key">Sub Infrasonic HPF:</span>
+                <span class="gear-val ok" id="xover-infrasonic">35 Hz Active</span>
+              </div>
+              <div class="gear-row">
+                <span class="gear-key">Sub Polarity:</span>
+                <span class="gear-val">0° Normal</span>
+              </div>
+              <div class="gear-row">
+                <span class="gear-key">Acoustic Mud Alert:</span>
+                <span class="gear-val ok" id="xover-mud-status">None (Clean)</span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Power Amplifier Rack -->
+          <article class="rack-unit">
+            <div class="rack-header">
+              <span class="rack-title">Power Amplifier Rack</span>
+              <span class="rack-badge" id="amp-status-badge">Safe Headroom</span>
+            </div>
+            <div class="gear-card">
+              <div class="gear-row">
+                <span class="gear-key">Front Attenuators:</span>
+                <span class="gear-val hl" id="amp-atten-val">0 dB (Full)</span>
+              </div>
+              <div class="gear-row">
+                <span class="gear-key">Clip Limiting Status:</span>
+                <span class="gear-val ok" id="amp-clip-val">Clear (No Clip)</span>
+              </div>
+              <div class="gear-row">
+                <span class="gear-key">Compression Drivers:</span>
+                <span class="gear-val ok" id="amp-hf-protect">Protected</span>
+              </div>
+              <div class="gear-row">
+                <span class="gear-key">Output Cabling:</span>
+                <span class="gear-val ok" id="amp-cable-status">Verified</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <!-- Unit 5: Power Sequencer & Ground Hum Protection -->
+        <article class="rack-unit">
+          <div class="rack-header">
+            <span class="rack-title">Power Sequencer & Ground Loop Protection</span>
+            <span class="rack-badge" id="power-status-badge">Clean AC Line</span>
+          </div>
+          <div class="gear-card">
+            <div class="gear-row">
+              <span class="gear-key">AC Line Frequency:</span>
+              <span class="gear-val hl">50 Hz / 60 Hz Monitored</span>
+            </div>
+            <div class="gear-row">
+              <span class="gear-key">Ground Loop Hum Status:</span>
+              <span class="gear-val ok" id="ground-hum-status">No Mains Hum Detected</span>
+            </div>
+            <div class="gear-row">
+              <span class="gear-key">DI Ground Lift Advice:</span>
+              <span class="gear-val" id="ground-lift-advice">Normal (Ground Closed)</span>
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Right Column: Priority Action Checklist & Soundcheck Rules -->
+      <aside class="checklist-column">
+        <section class="panel">
+          <div class="section-title">
+            <span>What to Change Right Now</span>
+            <span id="active-tasks-badge" style="color:var(--cyan)">Live Monitoring</span>
+          </div>
+
+          <!-- Action list -->
+          <div class="action-cards" id="action-cards-container">
+            <div class="empty-actions" id="empty-actions">
+              <span class="empty-icon">✅</span>
+              <strong>All Analog Hardware In Safe State</strong>
+              <p style="margin-top:4px;">No feedback, mud, clipping, or ground hum detected on your analog gear.</p>
+            </div>
+          </div>
+
+          <!-- Soundcheck Quick Reference Guide -->
+          <div class="guide-box">
+            <div class="guide-title">Analog FOH Quick Principles</div>
+            <ul class="guide-list">
+              <li><strong>Rumble on Mics:</strong> Always engage 80 Hz Low-Cut switches on all vocal and speech channels.</li>
+              <li><strong>Feedback in Monitors:</strong> Pull down the exact 1/3-octave fader on the rack EQ instead of dropping master volume.</li>
+              <li><strong>Mains Hum (Buzz):</strong> Flip Ground Lift on stage direct boxes before touching EQ.</li>
+              <li><strong>Speaker Protection:</strong> Never run power amplifier clip LEDs solid red—back off gain trim or amp attenuators.</li>
+            </ul>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    // ISO 31-Band standard frequency list
+    const ISO_BANDS = [
+      { hz: 20, lbl: "20" }, { hz: 25, lbl: "25" }, { hz: 31.5, lbl: "31.5" }, { hz: 40, lbl: "40" },
+      { hz: 50, lbl: "50" }, { hz: 63, lbl: "63" }, { hz: 80, lbl: "80" }, { hz: 100, lbl: "100" },
+      { hz: 125, lbl: "125" }, { hz: 160, lbl: "160" }, { hz: 200, lbl: "200" }, { hz: 250, lbl: "250" },
+      { hz: 315, lbl: "315" }, { hz: 400, lbl: "400" }, { hz: 500, lbl: "500" }, { hz: 630, lbl: "630" },
+      { hz: 800, lbl: "800" }, { hz: 1000, lbl: "1k" }, { hz: 1250, lbl: "1.25k" }, { hz: 1600, lbl: "1.6k" },
+      { hz: 2000, lbl: "2k" }, { hz: 2500, lbl: "2.5k" }, { hz: 3150, lbl: "3.15k" }, { hz: 4000, lbl: "4k" },
+      { hz: 5000, lbl: "5k" }, { hz: 6300, lbl: "6.3k" }, { hz: 8000, lbl: "8k" }, { hz: 10000, lbl: "10k" },
+      { hz: 12500, lbl: "12.5k" }, { hz: 16000, lbl: "16k" }, { hz: 20000, lbl: "20k" }
+    ];
+
+    // Build the 31-band fader DOM
+    const geqSliders = document.getElementById('geq-sliders');
+    ISO_BANDS.forEach((band, idx) => {
+      const el = document.createElement('div');
+      el.className = 'geq-band';
+      el.id = `geq-band-${idx}`;
+      el.innerHTML = `
+        <div class="geq-track">
+          <div class="geq-thumb" id="geq-thumb-${idx}" style="top:50%"></div>
+        </div>
+        <span class="geq-label">${band.lbl}</span>
+      `;
+      geqSliders.appendChild(el);
+    });
+
+    // Theme & Particle Canvas Init
+    AMALYN_CONFIG.initTheme();
+    AMALYN_CONFIG.initParticleCanvas('ambient-particles');
+
+    // UI Elements
+    const connBadge = document.getElementById('conn-badge');
+    const connText = document.getElementById('conn-text');
+    const masterBanner = document.getElementById('master-banner');
+    const bannerIcon = document.getElementById('banner-icon');
+    const bannerTitle = document.getElementById('banner-title');
+    const bannerDesc = document.getElementById('banner-desc');
+    const dominantReadout = document.getElementById('dominant-readout');
+    const actionCountPill = document.getElementById('action-count-pill');
+    const actionCardsContainer = document.getElementById('action-cards-container');
+    const geqStatusBadge = document.getElementById('geq-status-badge');
+    const geqInstruction = document.getElementById('geq-instruction');
+    const geqTargetHighlight = document.getElementById('geq-target-highlight');
+    const stripStatusBadge = document.getElementById('strip-status-badge');
+    const btnHpf = document.getElementById('btn-hpf');
+    const txtHpf = document.getElementById('txt-hpf');
+    const knobGain = document.getElementById('knob-gain');
+    const valGain = document.getElementById('val-gain');
+    const knobMidFreq = document.getElementById('knob-mid-freq');
+    const valMidFreq = document.getElementById('val-mid-freq');
+    const knobMidGain = document.getElementById('knob-mid-gain');
+    const valMidGain = document.getElementById('val-mid-gain');
+    const valFader = document.getElementById('val-fader');
+    const xoverStatusBadge = document.getElementById('xover-status-badge');
+    const xoverMudStatus = document.getElementById('xover-mud-status');
+    const ampStatusBadge = document.getElementById('amp-status-badge');
+    const ampAttenVal = document.getElementById('amp-atten-val');
+    const ampClipVal = document.getElementById('amp-clip-val');
+    const powerStatusBadge = document.getElementById('power-status-badge');
+    const groundHumStatus = document.getElementById('ground-hum-status');
+    const groundLiftAdvice = document.getElementById('ground-lift-advice');
+
+    // Update UI with incoming Analog Advice
+    function updateAnalogUI(data) {
+      if (!data) return;
+      const advice = data.analog_advice || data;
+      const summary = advice.summary || {};
+      const status = summary.status || data.status || "CLEAN";
+      const adviceList = advice.advice_list || [];
+      const geqFaders = advice.geq_faders || [];
+      const strip = advice.channel_strip || {};
+      const rack = advice.rack_status || {};
+
+      // 1. Master Banner
+      masterBanner.className = 'master-banner';
+      if (status === 'CRITICAL') {
+        masterBanner.classList.add('critical');
+        bannerIcon.textContent = '🚨';
+        bannerTitle.textContent = 'CRITICAL ANALOG RACK ACTION REQUIRED';
+      } else if (status === 'WARNING') {
+        masterBanner.classList.add('warning');
+        bannerIcon.textContent = '⚠️';
+        bannerTitle.textContent = 'HARDWARE ADJUSTMENT ADVISORY';
+      } else {
+        bannerIcon.textContent = '🎛️';
+        bannerTitle.textContent = 'ANALOG HARDWARE ADVISOR NOMINAL';
+      }
+      bannerDesc.textContent = summary.primary_action || "All analog hardware settings nominal";
+      dominantReadout.textContent = `Dominant: ${data.dominant_freq || 0} Hz (${data.dominant_mag || -80} dB)`;
+      actionCountPill.textContent = `${adviceList.length} Action${adviceList.length === 1 ? '' : 's'} Required`;
+
+      // 2. 31-Band GEQ Sliders
+      let activeBandFound = false;
+      geqFaders.forEach((band, idx) => {
+        const bandEl = document.getElementById(`geq-band-${idx}`);
+        const thumbEl = document.getElementById(`geq-thumb-${idx}`);
+        if (!bandEl || !thumbEl) return;
+
+        if (band.is_active && band.cut_db < 0) {
+          activeBandFound = true;
+          bandEl.classList.add('active');
+          // Convert cut_db (-12 to 0) to top percentage (50% is 0dB, 90% is -12dB)
+          const pct = 50 + (-band.cut_db / 12.0) * 40;
+          thumbEl.style.top = `${pct}%`;
+          geqInstruction.textContent = `Pull the ${band.label} slider down by ${Math.round(band.cut_db)} dB on your 31-band rack EQ.`;
+          geqTargetHighlight.textContent = `${band.formatted} (${band.cut_db} dB)`;
+        } else {
+          bandEl.classList.remove('active');
+          thumbEl.style.top = '50%';
+        }
+      });
+
+      if (!activeBandFound) {
+        geqStatusBadge.textContent = "Nominal (Flat)";
+        geqStatusBadge.className = "rack-badge";
+        geqInstruction.textContent = "All 31 faders at 0 dB unity. No feedback cuts needed.";
+        geqTargetHighlight.textContent = "Flat";
+      } else {
+        geqStatusBadge.textContent = status === 'CRITICAL' ? "CRITICAL NOTCH" : "NOTCH ADVISORY";
+        geqStatusBadge.className = `rack-badge ${status === 'CRITICAL' ? 'alert' : 'warn'}`;
+      }
+
+      // 3. Channel Strip Knobs & HPF Button
+      if (strip.hpf_80hz) {
+        btnHpf.classList.add('engaged');
+        txtHpf.textContent = "80 Hz ENGAGED";
+      } else {
+        btnHpf.classList.remove('engaged');
+        txtHpf.textContent = "80 Hz OFF";
+      }
+
+      // Preamp Gain Knob
+      if (strip.gain_trim_cut_db < 0) {
+        knobGain.className = "knob-dial alert";
+        knobGain.style.transform = "rotate(-40deg)";
+        valGain.textContent = "Turn CCW -4dB";
+      } else {
+        knobGain.className = "knob-dial";
+        knobGain.style.transform = "rotate(0deg)";
+        valGain.textContent = "12:00 Unity";
+      }
+
+      // Mid Frequency & Mid Gain
+      if (strip.mid_cut_db < 0 && strip.mid_freq_hz) {
+        knobMidFreq.className = "knob-dial warn";
+        // Rotate dial roughly from 250Hz (-60deg) to 5kHz (+60deg)
+        const freqDeg = Math.min(70, Math.max(-70, (Math.log10(strip.mid_freq_hz / 1000) * 80)));
+        knobMidFreq.style.transform = `rotate(${freqDeg}deg)`;
+        valMidFreq.textContent = strip.mid_freq_label;
+
+        knobMidGain.className = "knob-dial alert";
+        const cutDeg = (strip.mid_cut_db / 15) * 80;
+        knobMidGain.style.transform = `rotate(${cutDeg}deg)`;
+        valMidGain.textContent = `${strip.mid_cut_db} dB`;
+        stripStatusBadge.textContent = "MID CUT ACTIVE";
+        stripStatusBadge.className = "rack-badge alert";
+      } else {
+        knobMidFreq.className = "knob-dial";
+        knobMidFreq.style.transform = "rotate(0deg)";
+        valMidFreq.textContent = "1.0k Flat";
+        knobMidGain.className = "knob-dial";
+        knobMidGain.style.transform = "rotate(0deg)";
+        valMidGain.textContent = "0 dB";
+        stripStatusBadge.textContent = strip.hpf_80hz ? "HPF ACTIVE" : "Nominal";
+        stripStatusBadge.className = strip.hpf_80hz ? "rack-badge warn" : "rack-badge";
+      }
+
+      // 4. Crossover & Power Amps
+      const xover = rack.crossover || {};
+      if (xover.status === "CHECK_POINT") {
+        xoverStatusBadge.textContent = "Overlap Mud";
+        xoverStatusBadge.className = "rack-badge warn";
+        xoverMudStatus.textContent = "Overlap at 120–160 Hz";
+        xoverMudStatus.className = "gear-val warn";
+      } else {
+        xoverStatusBadge.textContent = "Optimal";
+        xoverStatusBadge.className = "rack-badge";
+        xoverMudStatus.textContent = "None (Clean)";
+        xoverMudStatus.className = "gear-val ok";
+      }
+
+      const amp = rack.power_amps || {};
+      if (amp.status === "ATTENUATE") {
+        ampStatusBadge.textContent = "ATTENUATE NOW";
+        ampStatusBadge.className = "rack-badge alert";
+        ampAttenVal.textContent = "-3 dB Advised";
+        ampAttenVal.className = "gear-val alert";
+        ampClipVal.textContent = "Near Full Scale Clip";
+        ampClipVal.className = "gear-val alert";
+      } else {
+        ampStatusBadge.textContent = "Safe Headroom";
+        ampStatusBadge.className = "rack-badge";
+        ampAttenVal.textContent = "0 dB (Nominal)";
+        ampAttenVal.className = "gear-val hl";
+        ampClipVal.textContent = "Clear (No Clip)";
+        ampClipVal.className = "gear-val ok";
+      }
+
+      // 5. Power Sequencer & Ground Hum
+      const pwr = rack.power_sequencer || {};
+      if (pwr.status === "GROUND_HUM_DETECTED") {
+        powerStatusBadge.textContent = "AC GROUND HUM";
+        powerStatusBadge.className = "rack-badge warn";
+        groundHumStatus.textContent = "50Hz/60Hz Mains Hum";
+        groundHumStatus.className = "gear-val warn";
+        groundLiftAdvice.textContent = "LIFT GROUND ON DI BOXES";
+        groundLiftAdvice.className = "gear-val alert";
+      } else {
+        powerStatusBadge.textContent = "Clean AC Line";
+        powerStatusBadge.className = "rack-badge";
+        groundHumStatus.textContent = "No Mains Hum";
+        groundHumStatus.className = "gear-val ok";
+        groundLiftAdvice.textContent = "Normal (Ground Closed)";
+        groundLiftAdvice.className = "gear-val";
+      }
+
+      // 6. Action Checklist Cards
+      actionCardsContainer.innerHTML = '';
+      if (adviceList.length === 0) {
+        actionCardsContainer.innerHTML = `
+          <div class="empty-actions">
+            <span class="empty-icon">✅</span>
+            <strong>All Analog Hardware In Safe State</strong>
+            <p style="margin-top:4px;">No feedback, mud, clipping, or ground hum detected on your analog gear.</p>
+          </div>
+        `;
+      } else {
+        adviceList.forEach(item => {
+          const card = document.createElement('div');
+          const urgClass = (item.urgency || "advisory").toLowerCase();
+          card.className = `action-card ${urgClass}`;
+          card.innerHTML = `
+            <div class="card-top">
+              <span class="card-gear-badge">${item.target_gear}</span>
+              <span class="card-urgency ${urgClass}">${item.urgency}</span>
+            </div>
+            <div class="card-title">${item.title}</div>
+            <div class="card-action">${item.action}</div>
+            <div class="card-detail">${item.detail}</div>
+          `;
+          actionCardsContainer.appendChild(card);
+        });
+      }
+    }
+
+    // Connect to live WebSocket stream
+    function connectWebSocket() {
+      const wsUrl = AMALYN_CONFIG.wsUrl;
+      const ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        connBadge.className = 'conn-badge ok';
+        connText.textContent = 'Live Audio Stream';
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const frame = JSON.parse(event.data);
+          updateAnalogUI(frame);
+        } catch (e) {
+          console.error("Frame parse error:", e);
+        }
+      };
+
+      ws.onclose = () => {
+        connBadge.className = 'conn-badge err';
+        connText.textContent = 'Disconnected';
+        setTimeout(connectWebSocket, 2000);
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+    }
+
+    connectWebSocket();
+  </script>
+</body>
+</html>

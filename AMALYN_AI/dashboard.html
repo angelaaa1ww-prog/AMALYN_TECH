@@ -454,6 +454,7 @@
       </a>
       <nav class="portal-nav" aria-label="Portal selection">
         <a class="nav-link active" href="dashboard.html">Engineer</a>
+        <a class="nav-link" href="analog.html">Analog Rack</a>
         <a class="nav-link" href="producer.html">Producer Suite</a>
         <a class="nav-link" href="musician.html">Musician IEM</a>
       </nav>
@@ -509,6 +510,17 @@
         <div class="section-label" id="sentinel-heading">Sentinel alert</div>
         <p class="sentinel-msg" id="sentinel-msg">--</p>
         <p class="sentinel-action" id="sentinel-action">--</p>
+      </section>
+      <section class="panel" aria-labelledby="analog-heading">
+        <div class="section-label" id="analog-heading" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Analog Rack Advisor</span>
+          <a href="analog.html" style="color:var(--cyan);text-decoration:none;font-size:9px;font-weight:800;letter-spacing:.08em;">OPEN RACK &rarr;</a>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;" id="dash-analog-summary">Listening to room signal…</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <span style="font-size:9px;font-weight:800;padding:3px 8px;border-radius:6px;background:rgba(123,232,255,.1);color:var(--cyan);" id="dash-analog-gear">Console / GEQ</span>
+          <span style="font-size:9px;font-weight:800;color:var(--green);" id="dash-analog-badge">Nominal</span>
+        </div>
       </section>
       <section class="panel setup-panel" aria-labelledby="profile-summary-heading">
         <div class="section-label" id="profile-summary-heading">Session profile</div>
@@ -1053,6 +1065,16 @@
       }
       if (data.mixer_corrections) text('mc', data.mixer_corrections.total_corrections || 0);
       if (data.ml_status && Number.isFinite(data.ml_confidence)) text('ovml', `ML ${data.ml_status} · ${data.ml_confidence}% confidence`);
+      if (data.analog_advice && data.analog_advice.summary) {
+        const advSum = data.analog_advice.summary;
+        text('dash-analog-summary', advSum.primary_action || 'All analog hardware nominal');
+        text('dash-analog-gear', advSum.primary_gear || 'Rack Gear');
+        const badgeEl = $('dash-analog-badge');
+        if (badgeEl) {
+          badgeEl.textContent = advSum.urgency || 'Nominal';
+          badgeEl.style.color = advSum.urgency === 'CRITICAL' ? 'var(--red)' : (advSum.urgency === 'WARNING' ? 'var(--amber)' : 'var(--green)');
+        }
+      }
     }
 
     function reconnect() {

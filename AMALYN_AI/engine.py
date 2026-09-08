@@ -16,6 +16,7 @@ except ImportError:  # Allows the API's non-audio endpoints to remain available.
     pyaudio = None
 
 from alerts import available_sensitivity_profiles, check_for_feedback
+from analog_advisor import generate_analog_advice
 from audio_utils import get_dominant_frequency, get_frequency_map
 from config import CHANNELS, CHUNK, RATE, get_pyaudio_format
 from eq_engine import suggest_eq
@@ -43,6 +44,7 @@ def _empty_frame() -> dict[str, Any]:
         "ml_status": None,
         "ml_confidence": None,
         "sentinel": {"health_score": 100, "alerts": [], "signal_stats": {}},
+        "analog_advice": generate_analog_advice("CLEAN", 0.0, -80.0),
     }
 
 
@@ -235,6 +237,17 @@ class AudioEngine:
             if mixer is not None
             else {"total_corrections": 0, "corrections": []}
         )
+        sentinel_stats = self._sentinel.get_signal_stats()
+        analog_advice = generate_analog_advice(
+            status=status,
+            danger_freq=danger_freq,
+            danger_mag=danger_mag,
+            frequencies=frequencies,
+            magnitudes_db=magnitudes_db,
+            sentinel_stats=sentinel_stats,
+            sentinel_alerts=sentinel_alerts,
+        )
+
         frame = {
             "status": status,
             "dominant_freq": round(float(dominant_freq), 1),
@@ -251,8 +264,9 @@ class AudioEngine:
             "sentinel": {
                 "health_score": health_score,
                 "alerts": sentinel_alerts[:3],
-                "signal_stats": self._sentinel.get_signal_stats(),
+                "signal_stats": sentinel_stats,
             },
+            "analog_advice": analog_advice,
         }
         with self._lock:
             self._latest_frame = frame

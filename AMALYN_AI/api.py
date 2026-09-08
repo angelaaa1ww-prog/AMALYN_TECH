@@ -22,6 +22,7 @@ from mixer import AmalynMixerBridge
 from library import get_perfect_state, list_all_speakers, list_all_microphones, list_all_mixers, list_all_venues
 from ml_inference import ml_check
 from sentinel import AmalynSentinel
+from analog_advisor import generate_analog_advice
 from auth import authenticate, get_all_users, add_user, send_verification_code, verify_user
 
 BASE_DIR = os.path.dirname(__file__)
@@ -75,7 +76,8 @@ latest_frame = {
         "health_score": 100,
         "alerts": [],
         "signal_stats": {}
-    }
+    },
+    "analog_advice": generate_analog_advice("CLEAN", 0.0, -80.0)
 }
 frame_lock = threading.Lock()
 
@@ -192,6 +194,16 @@ def audio_engine():
 
             last_status = status
 
+            analog_advice = generate_analog_advice(
+                status=status,
+                danger_freq=danger_freq,
+                danger_mag=danger_mag,
+                frequencies=frequencies,
+                magnitudes_db=magnitudes_db,
+                sentinel_stats=signal_stats,
+                sentinel_alerts=sentinel_alerts
+            )
+
             frame = {
                 "status": status,
                 "dominant_freq": round(float(dominant_freq), 1),
@@ -209,7 +221,8 @@ def audio_engine():
                     "health_score": health_score,
                     "alerts": sentinel_alerts[:3],
                     "signal_stats": signal_stats
-                }
+                },
+                "analog_advice": analog_advice
             }
 
             with frame_lock:
@@ -535,6 +548,16 @@ def disconnect_mixer():
         audio_instance = None
     analog_monitor = {"active": False, "interface_index": None, "interface_name": None}
     return {"status": "disconnected"}
+
+
+@app.get("/analog/advice")
+def get_analog_advice():
+    """Return the latest live physical gear advice for analog mixers and outboard racks."""
+    with frame_lock:
+        advice = latest_frame.get("analog_advice")
+        if advice:
+            return advice
+    return generate_analog_advice("CLEAN", 0.0, -80.0)
 
 
 @app.get("/capabilities")
