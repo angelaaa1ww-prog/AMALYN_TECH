@@ -22,5 +22,27 @@
     "password": "4e4f8c1e8e19b0e6032d4609496846eefca4ee1264506ca312cad24d50b43341",
     "role": "musician",
     "avatar": "M"
+  },
+  {
+    "id": 4,
+    "name": "Amani",
+    "email": "angel",
+    "password": "eff4ebbb2288f9f1b78e131fdb615d9e18504b38c3860f40528e95af7f875330",
+    "role": "engineer",
+    "avatar": "A",
+    "verified": false,
+    "verification_code": "405F5D",
+    "verification_expires_at": "2026-09-09T16:43:20.074802+00:00"
+  },
+  {
+    "id": 5,
+    "name": "Amani",
+    "email": "angelitonamani@gmail.com",
+    "password": "eff4ebbb2288f9f1b78e131fdb615d9e18504b38c3860f40528e95af7f875330",
+    "role": "engineer",
+    "avatar": "A",
+    "verified": false,
+    "verification_code": "E533BE",
+    "verification_expires_at": "2026-09-09T16:43:48.639327+00:00"
   }
 ]

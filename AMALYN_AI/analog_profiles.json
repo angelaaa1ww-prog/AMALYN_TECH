@@ -1,0 +1,214 @@
+{
+  "builtin_mixers": {
+    "yamaha_mg": {
+      "key": "yamaha_mg",
+      "brand": "Yamaha",
+      "model": "MG Series (MG10XU / MG12XU / MG16XU / MG20XU)",
+      "category": "ANALOG_MIXER",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["mg-xu", "mg10xu", "mg12xu", "mg16xu", "mg20xu", "yamaha mg", "yamaha"],
+      "specs": {
+        "hpf_freq": 80,
+        "hpf_label": "80 Hz",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 250,
+        "mid_sweep_max": 5000,
+        "high_shelf_freq": 10000,
+        "low_shelf_freq": 100,
+        "compressor": "1-Knob Analog (Channels 1-8)",
+        "preamp_headroom_db": 24,
+        "nominal_output_dbu": 4
+      },
+      "description": "Popular analog live console with transparent D-PRE preamps, 1-knob compression, and SPX digital effects."
+    },
+    "mackie_profx": {
+      "key": "mackie_profx",
+      "brand": "Mackie",
+      "model": "ProFX Series (ProFXv2 / ProFXv3 / Onyx)",
+      "category": "ANALOG_MIXER",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["profx", "mackie", "onyx"],
+      "specs": {
+        "hpf_freq": 100,
+        "hpf_label": "100 Hz",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 100,
+        "mid_sweep_max": 8000,
+        "high_shelf_freq": 12000,
+        "low_shelf_freq": 80,
+        "compressor": "1-Knob Compression",
+        "preamp_headroom_db": 22,
+        "nominal_output_dbu": 4
+      },
+      "description": "Standard club and touring analog desk with Onyx preamps, 100 Hz low-cut, and wide-sweep 3-band EQ."
+    },
+    "behringer_xenyx": {
+      "key": "behringer_xenyx",
+      "brand": "Behringer",
+      "model": "XENYX USB Series (X1204USB / QX1832USB / X2222USB)",
+      "category": "ANALOG_MIXER",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["xenyx", "behringer usb", "q1202usb", "qx1832usb", "x2222usb", "x1204usb", "behringer"],
+      "specs": {
+        "hpf_freq": 75,
+        "hpf_label": "75 Hz",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 100,
+        "mid_sweep_max": 8000,
+        "high_shelf_freq": 12000,
+        "low_shelf_freq": 80,
+        "compressor": "1-Knob Compression",
+        "preamp_headroom_db": 22,
+        "nominal_output_dbu": 4
+      },
+      "description": "Affordable analog console with British EQ circuitry, 75 Hz low-cut filter, and stereo USB interface."
+    },
+    "allen_heath_zed": {
+      "key": "allen_heath_zed",
+      "brand": "Allen & Heath",
+      "model": "ZED / ZEDi Series (ZED-10FX / ZED-14 / ZEDi-10 / ZED-24)",
+      "category": "ANALOG_MIXER",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["zed", "zedi", "allen & heath", "allen&heath"],
+      "specs": {
+        "hpf_freq": 100,
+        "hpf_label": "100 Hz",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 120,
+        "mid_sweep_max": 4000,
+        "high_shelf_freq": 12000,
+        "low_shelf_freq": 80,
+        "compressor": "None (Insert Loop)",
+        "preamp_headroom_db": 26,
+        "nominal_output_dbu": 4
+      },
+      "description": "High-fidelity analog console with DuoPre preamps, MusiQ responsive 3-band sweepable EQ, and high-impedance inputs."
+    },
+    "soundcraft_signature": {
+      "key": "soundcraft_signature",
+      "brand": "Soundcraft",
+      "model": "Signature Series (Signature 10 / 12 / 16 / 22 MTK)",
+      "category": "ANALOG_MIXER",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["signature", "soundcraft"],
+      "specs": {
+        "hpf_freq": 100,
+        "hpf_label": "100 Hz",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 140,
+        "mid_sweep_max": 3000,
+        "high_shelf_freq": 12000,
+        "low_shelf_freq": 60,
+        "compressor": "dbx Limiters on mono channels",
+        "preamp_headroom_db": 25,
+        "nominal_output_dbu": 4
+      },
+      "description": "Iconic British analog desk with Ghost preamps, Sapphyre asymmetric EQ, and built-in dbx limiters."
+    },
+    "presonus_studiolive_ar": {
+      "key": "presonus_studiolive_ar",
+      "brand": "PreSonus",
+      "model": "StudioLive AR Series (AR8 / AR12 / AR16 USB)",
+      "category": "ANALOG_MIXER",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["studiolive ar", "presonus ar", "presonus"],
+      "specs": {
+        "hpf_freq": 80,
+        "hpf_label": "80 Hz",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 140,
+        "mid_sweep_max": 3500,
+        "high_shelf_freq": 12000,
+        "low_shelf_freq": 80,
+        "compressor": "None",
+        "preamp_headroom_db": 22,
+        "nominal_output_dbu": 4
+      },
+      "description": "Hybrid analog mixer with Class-A XMAX preamps, 3-band semi-parametric EQ, and stereo USB recorder."
+    },
+    "alto_live": {
+      "key": "alto_live",
+      "brand": "Alto Professional",
+      "model": "Live Series (Live 802 / Live 1202 / Live 1604)",
+      "category": "ANALOG_MIXER",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["alto live", "alto"],
+      "specs": {
+        "hpf_freq": 75,
+        "hpf_label": "75 Hz",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 100,
+        "mid_sweep_max": 8000,
+        "high_shelf_freq": 12000,
+        "low_shelf_freq": 80,
+        "compressor": "1-Knob Compression (Ch 1-4)",
+        "preamp_headroom_db": 20,
+        "nominal_output_dbu": 4
+      },
+      "description": "Live performance analog console with DNA preamps, dynamic compression, and 9-band graphic master EQ."
+    },
+    "focusrite_scarlett": {
+      "key": "focusrite_scarlett",
+      "brand": "Focusrite",
+      "model": "Scarlett USB Interface (2i2 / 4i4 / 18i20)",
+      "category": "AUDIO_INTERFACE",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["scarlett", "focusrite"],
+      "specs": {
+        "hpf_freq": 80,
+        "hpf_label": "80 Hz (DSP/Console)",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 100,
+        "mid_sweep_max": 8000,
+        "high_shelf_freq": 12000,
+        "low_shelf_freq": 80,
+        "compressor": "External / Outboard",
+        "preamp_headroom_db": 22,
+        "nominal_output_dbu": 4
+      },
+      "description": "Industry-standard USB interface connecting analog console Aux/Direct outputs to AMALYN."
+    },
+    "behringer_uphoria": {
+      "key": "behringer_uphoria",
+      "brand": "Behringer",
+      "model": "U-Phoria USB Interface (UMC202HD / UMC404HD / UMC1820)",
+      "category": "AUDIO_INTERFACE",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["u-phoria", "umc202hd", "umc404hd", "umc1820"],
+      "specs": {
+        "hpf_freq": 80,
+        "hpf_label": "80 Hz (Console)",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 100,
+        "mid_sweep_max": 8000,
+        "high_shelf_freq": 12000,
+        "low_shelf_freq": 80,
+        "compressor": "External / Outboard",
+        "preamp_headroom_db": 20,
+        "nominal_output_dbu": 4
+      },
+      "description": "Midas-designed preamp USB interface for capturing analog console signals."
+    },
+    "generic_analog": {
+      "key": "generic_analog",
+      "brand": "Universal Analog",
+      "model": "Standard Analog Mixing Console",
+      "category": "ANALOG_MIXER",
+      "connection_type": "USB_AUDIO",
+      "usb_keywords": ["usb audio codec", "usb audio", "generic", "microphone", "sound mapper"],
+      "specs": {
+        "hpf_freq": 80,
+        "hpf_label": "80 Hz",
+        "has_sweep_mid": true,
+        "mid_sweep_min": 100,
+        "mid_sweep_max": 8000,
+        "high_shelf_freq": 12000,
+        "low_shelf_freq": 80,
+        "compressor": "Analog Outboard",
+        "preamp_headroom_db": 22,
+        "nominal_output_dbu": 4
+      },
+      "description": "Flexible universal profile matching any analog console connected via USB or audio interface."
+    }
+  }
+}

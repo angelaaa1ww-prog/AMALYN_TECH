@@ -17,7 +17,9 @@ except ImportError:  # Allows the API's non-audio endpoints to remain available.
 
 from alerts import available_sensitivity_profiles, check_for_feedback
 from analog_advisor import generate_analog_advice
+from analog_manager import analog_manager
 from audio_utils import get_dominant_frequency, get_frequency_map
+from calibration import RTAMeasurement, SPLMeter
 from config import CHANNELS, CHUNK, RATE, get_pyaudio_format
 from eq_engine import suggest_eq
 from library import get_perfect_state
@@ -44,7 +46,9 @@ def _empty_frame() -> dict[str, Any]:
         "ml_status": None,
         "ml_confidence": None,
         "sentinel": {"health_score": 100, "alerts": [], "signal_stats": {}},
-        "analog_advice": generate_analog_advice("CLEAN", 0.0, -80.0),
+        "spl": SPLMeter(sample_rate=RATE).snapshot(),
+        "rta": RTAMeasurement().snapshot(),
+        "analog_advice": generate_analog_advice("CLEAN", 0.0, -80.0, mixer_profile=analog_manager.get_active_mixer()),
     }
 
 
@@ -77,6 +81,8 @@ class AudioEngine:
         self._last_correction_at = 0.0
         self._last_error: str | None = None
         self._sentinel = AmalynSentinel()
+        self._spl_meter = SPLMeter(sample_rate=RATE)
+        self._rta_measurement = RTAMeasurement()
         self._ml_check = self._load_ml_check() if enable_ml else None
 
     @property
@@ -198,6 +204,8 @@ class AudioEngine:
         """Analyze one frame. Kept separate from I/O so the DSP path is testable."""
         frequencies, magnitudes_db = get_frequency_map(audio_data)
         dominant_freq, dominant_mag = get_dominant_frequency(frequencies, magnitudes_db)
+        spl = self._spl_meter.update(audio_data)
+        rta = self._rta_measurement.update(frequencies, magnitudes_db)
         status, danger_freq, danger_mag = check_for_feedback(
             frequencies, magnitudes_db, sensitivity=self.sensitivity
         )
@@ -246,6 +254,7 @@ class AudioEngine:
             magnitudes_db=magnitudes_db,
             sentinel_stats=sentinel_stats,
             sentinel_alerts=sentinel_alerts,
+            mixer_profile=analog_manager.get_active_mixer(),
         )
 
         frame = {
@@ -266,6 +275,8 @@ class AudioEngine:
                 "alerts": sentinel_alerts[:3],
                 "signal_stats": sentinel_stats,
             },
+            "spl": spl,
+            "rta": rta,
             "analog_advice": analog_advice,
         }
         with self._lock:

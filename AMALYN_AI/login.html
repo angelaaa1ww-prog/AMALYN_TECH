@@ -642,9 +642,10 @@ body{
         <div class="error-msg" id="verification-error"></div>
         <div class="field">
             <label>Verification code</label>
-            <input type="text" id="verification-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
+            <input type="text" id="verification-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="123456">
         </div>
         <button class="btn-primary" id="verify-btn" onclick="doVerify()">Verify account →</button>
+        <div class="switch-text">Didn't receive it? <a onclick="resendVerificationCode()">Resend code</a></div>
         <div class="switch-text"><a onclick="showScreen('register')">Use a different email</a></div>
     </div>
 </div>
@@ -1122,7 +1123,8 @@ const saved = sessionStorage.getItem('amalyn_user')
 if(saved){
     try{
         currentUser = JSON.parse(saved)
-        if(currentUser && currentUser.email) showHome(currentUser)
+        if(currentUser && currentUser.email && currentUser.email_verified) showHome(currentUser)
+        else sessionStorage.removeItem('amalyn_user')
     }catch{
         sessionStorage.removeItem('amalyn_user')
     }
@@ -1156,6 +1158,15 @@ async function initializeSupabase(){
 }
 
 function applyOAuthUser(user){
+    const emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at)
+    if(!emailVerified){
+        const err = document.getElementById('login-error')
+        if(err){
+            err.textContent = 'Google did not confirm this email address. Use email registration instead.'
+            err.classList.add('show')
+        }
+        return
+    }
     const metadata = user.user_metadata || {}
     const displayName = metadata.full_name || metadata.name || user.email.split('@')[0]
     currentUser = {
@@ -1163,7 +1174,8 @@ function applyOAuthUser(user){
         name: displayName,
         email: user.email,
         role: metadata.role || 'musician',
-        avatar: displayName[0].toUpperCase()
+        avatar: displayName[0].toUpperCase(),
+        email_verified: true
     }
     sessionStorage.setItem('amalyn_user', JSON.stringify(currentUser))
     showHome(currentUser)
@@ -1213,6 +1225,8 @@ async function doLogin(){
             currentUser = data.user
             sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
             showHome(currentUser)
+        } else if(data.status==='verification_required'){
+            beginVerification(email, 'Verify your email before signing in. Enter the code we sent, or request a new one.')
         } else {
             err.textContent = data.message||'Invalid email or password'
             err.classList.add('show')
@@ -1246,50 +1260,84 @@ async function doRegister(){
         })
         const data = await res.json()
         if(data.status==='verification_required'){
-            pendingVerificationEmail = email
-            document.getElementById('verification-hint').textContent =
-                `Enter the code sent to ${email}.`
-            if(data.verification_code){
-                document.getElementById('verification-hint').textContent +=
-                    ` Development code: ${data.verification_code}`
-            }
-            showScreen('verify')
+            beginVerification(email, `Enter the six-digit code sent to ${email}.`)
         } else {
             err.textContent = data.message||'Registration failed'
             err.classList.add('show')
         }
 
-        async function doVerify(){
-            const code = document.getElementById('verification-code').value.trim()
-            const err = document.getElementById('verification-error')
-            if(!pendingVerificationEmail || !code){
-                err.textContent = 'Enter the verification code'
-                err.classList.add('show')
-                return
-            }
-            err.classList.remove('show')
-            try{
-                const res = await fetch(`${API}/auth/verify`,{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({email:pendingVerificationEmail,code})
-                })
-                const data = await res.json()
-                if(data.status==='ok'){
-                    currentUser = data.user
-                    sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
-                    showHome(currentUser)
-                } else {
-                    err.textContent = data.message || 'Verification failed'
-                    err.classList.add('show')
-                }
-            }catch(e){
-                err.textContent = 'Cannot connect to AMALYN API'
-                err.classList.add('show')
-            }
-        }
     }catch(e){
         err.textContent='Cannot connect to AMALYN API'
+        err.classList.add('show')
+    }
+}
+
+function beginVerification(email, message){
+    pendingVerificationEmail = email
+    document.getElementById('verification-code').value = ''
+    document.getElementById('verification-error').classList.remove('show')
+    document.getElementById('verification-hint').textContent = message || `Enter the six-digit code sent to ${email}.`
+    showScreen('verify')
+    setTimeout(()=>document.getElementById('verification-code').focus(), 20)
+}
+
+async function doVerify(){
+    const code = document.getElementById('verification-code').value.trim()
+    const err = document.getElementById('verification-error')
+    const button = document.getElementById('verify-btn')
+    if(!pendingVerificationEmail || !/^\d{6}$/.test(code)){
+        err.textContent = 'Enter the six-digit verification code'
+        err.classList.add('show')
+        return
+    }
+    err.classList.remove('show')
+    button.disabled = true; button.textContent = 'Verifying…'
+    try{
+        const res = await fetch(`${API}/auth/verify`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({email:pendingVerificationEmail,code})
+        })
+        const data = await res.json()
+        if(data.status==='ok'){
+            currentUser = data.user
+            sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
+            showHome(currentUser)
+        } else {
+            err.textContent = data.message || 'Verification failed'
+            err.classList.add('show')
+        }
+    }catch(e){
+        err.textContent = 'Cannot connect to AMALYN API'
+        err.classList.add('show')
+    }finally{
+        button.disabled = false; button.textContent = 'Verify account →'
+    }
+}
+
+async function resendVerificationCode(){
+    const err = document.getElementById('verification-error')
+    if(!pendingVerificationEmail){
+        err.textContent = 'Return to sign in and enter your email first.'
+        err.classList.add('show')
+        return
+    }
+    err.classList.remove('show')
+    try{
+        const res = await fetch(`${API}/auth/verify/resend`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({email:pendingVerificationEmail})
+        })
+        const data = await res.json()
+        if(data.status==='ok'){
+            document.getElementById('verification-hint').textContent = `A new six-digit code was sent to ${pendingVerificationEmail}. It expires in 15 minutes.`
+        } else {
+            err.textContent = data.message || 'Could not resend the verification code'
+            err.classList.add('show')
+        }
+    }catch(e){
+        err.textContent = 'Cannot connect to AMALYN API'
         err.classList.add('show')
     }
 }

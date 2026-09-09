@@ -146,49 +146,40 @@
     .button.primary:hover{background:linear-gradient(135deg,#a6f0ff,#70baff);box-shadow:0 14px 30px -6px rgba(75,168,255,.65),0 1px 0 #ffffff80 inset}
     .button:disabled{opacity:.55;cursor:wait;transform:none;box-shadow:none}
 
-    /* ---------- Spectacular Hazard Alert Beacon ---------- */
-    .hazard-beacon{
+    /* ---------- Calm feedback notice ---------- */
+    .feedback-notice{
       display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-      padding:14px 20px;border-radius:14px;border:1px solid rgba(255,125,146,.6);
-      background:linear-gradient(135deg,rgba(255,125,146,.2),rgba(255,80,100,.1));
-      box-shadow:0 0 35px -8px rgba(255,125,146,.4),0 1px 0 #ffffff22 inset;
-      animation:beacon-pulse 1.8s ease-in-out infinite alternate;
+      padding:12px 15px;border-radius:12px;border:1px solid rgba(255,125,146,.36);
+      background:linear-gradient(120deg,rgba(255,125,146,.11),rgba(15,37,61,.55));
+      box-shadow:0 1px 0 #ffffff16 inset,0 10px 24px -18px rgba(0,0,0,.55);
       margin-bottom:14px;backdrop-filter:blur(14px)
     }
-    .hazard-beacon[hidden]{display:none!important}
-    .hazard-beacon.warning{
-      border-color:rgba(255,201,113,.7);background:linear-gradient(135deg,rgba(255,201,113,.2),rgba(255,160,50,.1));
-      box-shadow:0 0 35px -8px rgba(255,201,113,.4),0 1px 0 #ffffff22 inset;
-      animation:beacon-pulse-warn 2s ease-in-out infinite alternate
+    .feedback-notice[hidden]{display:none!important}
+    .feedback-notice.warning{
+      border-color:rgba(255,201,113,.38);background:linear-gradient(120deg,rgba(255,201,113,.10),rgba(15,37,61,.55));
     }
-    @keyframes beacon-pulse{from{box-shadow:0 0 25px -8px rgba(255,125,146,.3)}to{box-shadow:0 0 45px -4px rgba(255,125,146,.65)}}
-    @keyframes beacon-pulse-warn{from{box-shadow:0 0 25px -8px rgba(255,201,113,.3)}to{box-shadow:0 0 45px -4px rgba(255,201,113,.65)}}
-    .hazard-left{display:flex;align-items:center;gap:14px;min-width:0}
-    .hazard-icon-pulse{
-      display:grid;place-items:center;width:38px;height:38px;border-radius:10px;
-      background:rgba(255,125,146,.25);border:1px solid rgba(255,125,146,.6);font-size:18px
+    .feedback-notice-left{display:flex;align-items:center;gap:11px;min-width:0}
+    .feedback-notice-icon{
+      display:grid;place-items:center;width:30px;height:30px;border-radius:50%;
+      background:rgba(255,125,146,.14);border:1px solid rgba(255,125,146,.4);font-size:13px
     }
-    .hazard-beacon.warning .hazard-icon-pulse{background:rgba(255,201,113,.25);border-color:rgba(255,201,113,.6)}
-    .hazard-title{font-size:12px;font-weight:850;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
-    .hazard-desc{margin-top:2px;font-size:11px;color:var(--muted)}
-    .hazard-actions{display:flex;align-items:center;gap:9px}
-    .hazard-action-btn{
-      padding:8px 14px;border-radius:9px;border:1px solid rgba(255,125,146,.6);
-      background:linear-gradient(135deg,#ff7d92,#e11d48);color:#fff;
-      font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
-      box-shadow:0 4px 14px rgba(225,29,72,.35);transition:transform .2s,box-shadow .2s
+    .feedback-notice.warning .feedback-notice-icon{background:rgba(255,201,113,.14);border-color:rgba(255,201,113,.42)}
+    .feedback-notice-title{font-size:11px;font-weight:800;letter-spacing:.05em;color:var(--ink)}
+    .feedback-notice-desc{margin-top:2px;font-size:10px;color:var(--muted)}
+    .feedback-notice-actions{display:flex;align-items:center;gap:8px}
+    .feedback-review-btn{
+      padding:7px 11px;border-radius:8px;border:1px solid rgba(121,213,255,.42);
+      background:rgba(123,232,255,.08);color:var(--cyan);
+      font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+      transition:transform .2s,background .2s,border-color .2s
     }
-    .hazard-beacon.warning .hazard-action-btn{
-      border-color:rgba(255,201,113,.7);background:linear-gradient(135deg,#ffc971,#d97706);color:#020610;
-      box-shadow:0 4px 14px rgba(217,119,6,.35)
-    }
-    .hazard-action-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(225,29,72,.5)}
-    .hazard-safe-btn{
-      padding:8px 12px;border-radius:9px;border:1px solid var(--line);
+    .feedback-review-btn:hover{transform:translateY(-1px);background:rgba(123,232,255,.14);border-color:var(--line2)}
+    .feedback-safe-btn{
+      padding:7px 10px;border-radius:8px;border:1px solid var(--line);
       background:var(--panel);color:var(--ink);font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
       transition:border-color .2s,background .2s
     }
-    .hazard-safe-btn:hover{border-color:var(--line2);background:var(--panel2)}
+    .feedback-safe-btn:hover{border-color:var(--line2);background:var(--panel2)}
 
     /* ---------- Layout ---------- */
     .dashboard{
@@ -225,6 +216,8 @@
     .status-note{position:relative;color:var(--muted);font-size:11px;z-index:1}
 
     .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .calibration-note{margin:11px 0 0;color:var(--muted);font-size:9px;line-height:1.5}
+    .calibration-launch{width:100%;margin-top:12px}
     .stat{
       position:relative;min-width:0;padding:12px;border:1px solid var(--line);border-radius:11px;
       background:var(--card-bg);
@@ -399,6 +392,27 @@
     .skip{border:0;color:var(--muted);background:transparent;cursor:pointer;font-size:10px;font-weight:720;transition:color .25s}
     .skip:hover{color:var(--cyan)}
 
+    /* ---------- Calibration Suite ---------- */
+    .calibration-modal{overflow:auto;align-items:start;padding-top:clamp(18px,5vh,52px);padding-bottom:clamp(18px,5vh,52px)}
+    .calibration-modal .modal{max-width:780px}
+    .calibration-close{position:absolute;z-index:2;top:14px;right:14px;display:grid;width:32px;height:32px;place-items:center;border:1px solid var(--line);border-radius:9px;color:var(--muted);background:var(--panel);font-size:18px;line-height:1}
+    .calibration-close:hover{color:var(--ink);border-color:var(--line2)}
+    .calibration-grid{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .calibration-tool{min-width:0;padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--card-bg);box-shadow:0 1px 0 var(--glass-hi) inset}
+    .calibration-tool h2{margin:0;color:var(--ink);font-size:13px;letter-spacing:-.02em}
+    .calibration-tool p{margin:6px 0 12px;color:var(--muted);font-size:9px;line-height:1.5}
+    .calibration-form{display:grid;gap:8px}
+    .calibration-form label{color:var(--dim);font-size:8px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .calibration-form input{width:100%;height:35px;margin-top:4px;padding:0 9px;border:1px solid var(--line);border-radius:8px;outline:0;color:var(--ink);background:var(--panel);font-size:11px}
+    .calibration-form input:focus{border-color:var(--line2)}
+    .calibration-form .pink-safety{display:flex;align-items:flex-start;gap:7px;color:var(--muted);font-size:8px;font-weight:600;letter-spacing:0;line-height:1.4;text-transform:none}
+    .calibration-form .pink-safety input{width:13px;height:13px;margin:0;accent-color:var(--amber);flex:0 0 auto}
+    .calibration-tool .button{width:100%;min-height:35px;padding:0 9px;font-size:8px}
+    .calibration-secondary{border-color:rgba(255,201,113,.35)!important;color:var(--amber)!important}
+    .calibration-result{min-height:48px;margin-top:11px;padding:9px;border:1px solid var(--line);border-radius:9px;color:var(--cyan);background:rgba(123,232,255,.055);font-size:9px;line-height:1.5;white-space:pre-line}
+    .calibration-result.warning{color:var(--amber);border-color:rgba(255,201,113,.35);background:rgba(255,201,113,.06)}
+    .calibration-state{display:inline-flex;margin-top:10px;padding:4px 7px;border:1px solid var(--line);border-radius:99px;color:var(--cyan);background:rgba(123,232,255,.08);font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+
     .toast{
       position:fixed;z-index:120;right:22px;bottom:22px;width:min(360px,calc(100% - 44px));padding:14px 15px;
       border:1px solid rgba(92,235,172,.6);border-radius:13px;color:var(--ink);background:var(--panel2);
@@ -437,6 +451,7 @@
       .analysis-meta{display:none}
       .system-strip{grid-template-columns:1fr}
       .setup-grid{grid-template-columns:1fr;gap:12px}
+      .calibration-grid{grid-template-columns:1fr}
       .modal{padding:26px 20px}
       .spectrum-title{font-size:22px}
     }
@@ -506,6 +521,17 @@
           <div class="stat"><label>Noise floor</label><strong id="noise-floor">--</strong></div>
         </div>
       </section>
+      <section class="panel" aria-labelledby="calibration-heading">
+        <div class="section-label" id="calibration-heading">Calibration suite</div>
+        <div class="stat-grid">
+          <div class="stat"><label>SPL slow</label><strong class="signal" id="spl-slow">--</strong></div>
+          <div class="stat"><label>SPL peak</label><strong id="spl-peak">--</strong></div>
+          <div class="stat"><label>Meter</label><strong id="spl-unit">dBFS</strong></div>
+          <div class="stat"><label>RTA</label><strong id="rta-state">Idle</strong></div>
+        </div>
+        <p class="calibration-note" id="spl-note">SPL compliance readings require a physical microphone calibration.</p>
+        <button class="button calibration-launch" id="open-calibration" type="button" aria-haspopup="dialog">Open calibration tools</button>
+      </section>
       <section class="panel alert-panel" id="sentinel-card" aria-labelledby="sentinel-heading" role="status" aria-live="polite" hidden>
         <div class="section-label" id="sentinel-heading">Sentinel alert</div>
         <p class="sentinel-msg" id="sentinel-msg">--</p>
@@ -534,18 +560,18 @@
     </aside>
 
     <section class="workspace" aria-label="Live audio spectrum">
-      <!-- High-visibility Feedback Alert Beacon -->
-      <div class="hazard-beacon" id="hazard-beacon" hidden>
-        <div class="hazard-left">
-          <div class="hazard-icon-pulse"><span id="beacon-icon">🚨</span></div>
+      <!-- Calm, actionable feedback notice -->
+      <div class="feedback-notice" id="feedback-notice" hidden>
+        <div class="feedback-notice-left">
+          <div class="feedback-notice-icon"><span id="feedback-notice-icon">●</span></div>
           <div>
-            <div class="hazard-title" id="beacon-title">CRITICAL FEEDBACK RISK DETECTED</div>
-            <div class="hazard-desc" id="beacon-desc">High resonance building at 1000 Hz (-12.0 dBFS)</div>
+            <div class="feedback-notice-title" id="feedback-notice-title">Feedback attention needed</div>
+            <div class="feedback-notice-desc" id="feedback-notice-desc">A narrow resonance needs review.</div>
           </div>
         </div>
-        <div class="hazard-actions">
-          <button class="hazard-action-btn" id="beacon-cut-btn" type="button">Apply Notch Cut</button>
-          <button class="hazard-safe-btn" id="beacon-safe-btn" type="button">Safe State</button>
+        <div class="feedback-notice-actions">
+          <button class="feedback-review-btn" id="feedback-review-btn" type="button">Review EQ</button>
+          <button class="feedback-safe-btn" id="feedback-safe-btn" type="button">Safe profile</button>
         </div>
       </div>
 
@@ -618,6 +644,52 @@
       <div class="modal-actions"><button class="button primary" id="setup-btn" type="button">Load Perfect State <span aria-hidden="true">→</span></button><button class="skip" id="setup-skip" type="button">Continue without a profile</button></div>
     </div>
   </div>
+  <div class="modal-layer calibration-modal" id="calibration-modal" role="dialog" aria-modal="true" aria-labelledby="calibration-title" aria-hidden="true">
+    <div class="modal">
+      <button class="calibration-close" id="calibration-close" type="button" aria-label="Close calibration tools">×</button>
+      <div class="modal-brand"><span class="mark" aria-hidden="true"><img src="logo.png" alt=""></span>AMALYN TECH</div>
+      <div class="modal-kicker">Engineer-controlled measurement</div>
+      <h1 id="calibration-title">Calibration tools</h1>
+      <p class="modal-intro">Use measured distances and a real SPL reference. Start RTA capture only after pink noise is safely routed through the PA.</p>
+      <div class="calibration-grid">
+        <section class="calibration-tool" aria-labelledby="delay-tool-title">
+          <h2 id="delay-tool-title">Delay calculator</h2>
+          <p>Align a fill or delay speaker to the main PA using its additional path distance.</p>
+          <div class="calibration-form">
+            <label>Distance in metres<input id="delay-distance" type="number" min="0" max="2000" step="0.01" value="10"></label>
+            <label>Air temperature °C<input id="delay-temperature" type="number" min="-40" max="60" step="0.1" value="20"></label>
+            <button class="button primary" id="delay-calculate" type="button">Calculate delay</button>
+          </div>
+          <div class="calibration-result" id="delay-result">Enter the additional distance to calculate time-of-flight.</div>
+        </section>
+        <section class="calibration-tool" aria-labelledby="spl-tool-title">
+          <h2 id="spl-tool-title">SPL meter</h2>
+          <p>Match AMALYN's input reading to a verified SPL calibrator or reference meter at the measurement position.</p>
+          <div class="calibration-form">
+            <label>AMALYN reference dBFS<input id="spl-reference-dbfs" type="number" min="-120" max="0" step="0.1" value="-20"></label>
+            <label>Physical reference dB SPL<input id="spl-reference-spl" type="number" min="0" max="160" step="0.1" value="94"></label>
+            <label>Venue limit dB SPL<input id="spl-limit" type="number" min="0" max="160" step="0.1" placeholder="Optional"></label>
+            <button class="button primary" id="spl-calibrate" type="button">Set SPL reference</button>
+            <button class="button calibration-secondary" id="spl-clear" type="button">Clear calibration</button>
+          </div>
+          <div class="calibration-result warning" id="spl-result">Uncalibrated: readings remain dBFS and must not be used for compliance.</div>
+        </section>
+        <section class="calibration-tool" aria-labelledby="rta-tool-title">
+          <h2 id="rta-tool-title">RTA room capture</h2>
+          <p>Use a calibrated omni mic. Route pink noise at a safe, controlled level, then capture a relative 1/3-octave response.</p>
+          <div class="calibration-form">
+            <label>Capture length (seconds)<input id="rta-duration" type="number" min="5" max="90" step="1" value="15"></label>
+            <label class="pink-safety"><input id="pink-noise-safe" type="checkbox">I have verified the output path and set PA/master level safely before playing pink noise.</label>
+            <button class="button calibration-secondary" id="pink-noise-toggle" type="button">Play −30 dBFS pink noise</button>
+            <button class="button primary" id="rta-start" type="button">Start RTA capture</button>
+            <button class="button calibration-secondary" id="rta-cancel" type="button">Cancel capture</button>
+          </div>
+          <span class="calibration-state" id="rta-modal-state">Idle</span>
+          <div class="calibration-result" id="rta-result">No room measurement yet. Recommendations are cut-only and always require engineer approval.</div>
+        </section>
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -647,6 +719,8 @@
       toast: null,
       profileKey: '',
       sentinelKey: '',
+      spl: null,
+      rta: null,
       hoverX: null,
       hoverY: null
     };
@@ -906,24 +980,24 @@
       while (list.children.length > 80) list.lastElementChild.remove();
     }
 
-    // Hazard Beacon Alert Bar Handler
-    function updateHazardBeacon(risk, freq, mag, sug) {
-      const beacon = $('hazard-beacon');
+    // Calm feedback notice — informative and actionable without alarm styling.
+    function updateFeedbackNotice(risk, freq, mag, sug) {
+      const notice = $('feedback-notice');
       if (risk === 'CLEAN' || !risk) {
-        beacon.hidden = true;
+        notice.hidden = true;
         return;
       }
-      beacon.hidden = false;
-      beacon.className = `hazard-beacon ${risk.toLowerCase()}`;
-      $('beacon-icon').textContent = risk === 'CRITICAL' ? '🚨' : '⚠️';
-      text('beacon-title', `${risk} FEEDBACK RISK DETECTED`);
-      text('beacon-desc', `Resonance peak building at ${Math.round(freq)} Hz (${number(mag)} dBFS) — ${sug ? `${sug.cut_db}dB cut recommended` : 'Reduce channel gain'}`);
-      const cutBtn = $('beacon-cut-btn');
+      notice.hidden = false;
+      notice.className = `feedback-notice ${risk.toLowerCase()}`;
+      $('feedback-notice-icon').textContent = risk === 'CRITICAL' ? '●' : '○';
+      text('feedback-notice-title', risk === 'CRITICAL' ? 'Feedback attention needed' : 'Feedback watch');
+      text('feedback-notice-desc', `Narrow peak at ${Math.round(freq)} Hz (${number(mag)} dBFS). ${sug ? `Review the suggested ${Math.abs(sug.cut_db)} dB cut.` : 'Reduce channel gain if it continues.'}`);
+      const reviewBtn = $('feedback-review-btn');
       if (sug) {
-        cutBtn.textContent = `Apply ${sug.cut_db}dB Notch at ${Math.round(freq)}Hz`;
-        cutBtn.hidden = false;
+        reviewBtn.textContent = `Review ${Math.abs(sug.cut_db)} dB at ${Math.round(freq)} Hz`;
+        reviewBtn.hidden = false;
       } else {
-        cutBtn.hidden = true;
+        reviewBtn.hidden = true;
       }
     }
 
@@ -945,7 +1019,7 @@
       text('acquisition-state', risk === 'CLEAN' ? 'Listening' : label);
       text('protection-state', risk === 'CRITICAL' ? 'Intervening' : 'Armed');
 
-      updateHazardBeacon(risk, freq, mag, frame.suggestion);
+      updateFeedbackNotice(risk, freq, mag, frame.suggestion);
 
       if (risk === 'WARNING' && s.last !== 'WARNING') {
         text('wc', ++s.warnings);
@@ -1042,6 +1116,52 @@
       }
     }
 
+    function calibration(data) {
+      if (data.spl) s.spl = data.spl;
+      if (data.rta) s.rta = data.rta;
+
+      const spl = s.spl;
+      if (spl) {
+        const unit = spl.unit || 'dBFS';
+        const slow = Number(spl.slow_db);
+        const peak = Number(spl.peak_db);
+        text('spl-slow', Number.isFinite(slow) ? `${slow.toFixed(1)} ${unit}` : '--');
+        text('spl-peak', Number.isFinite(peak) ? `${peak.toFixed(1)} ${unit}` : '--');
+        text('spl-unit', spl.calibrated ? 'Calibrated' : 'dBFS only');
+        text('spl-note', spl.message || 'SPL compliance readings require a physical microphone calibration.');
+        const limit = spl.limit_status || 'uncalibrated';
+        const color = limit === 'exceeded' ? 'var(--red)' : limit === 'approaching' ? 'var(--amber)' : 'var(--cyan)';
+        $('spl-slow').style.color = color;
+        $('spl-peak').style.color = color;
+        const splResult = spl.calibrated
+          ? `Calibrated • Slow ${Number.isFinite(slow) ? slow.toFixed(1) : '--'} ${unit}\nLimit: ${spl.limit_db_spl ?? 'not set'} • ${String(limit).replace('_', ' ')}`
+          : 'Uncalibrated: readings remain dBFS and must not be used for compliance.';
+        text('spl-result', splResult);
+        $('spl-result').classList.toggle('warning', !spl.calibrated || limit === 'approaching' || limit === 'exceeded');
+      }
+
+      const rta = s.rta;
+      if (!rta) return;
+      const state = rta.state || 'idle';
+      const stateLabel = state === 'measuring'
+        ? `Capturing ${rta.elapsed_seconds || 0}/${rta.duration_seconds || 0}s`
+        : state.charAt(0).toUpperCase() + state.slice(1);
+      text('rta-state', stateLabel);
+      text('rta-modal-state', stateLabel);
+      const result = rta.result;
+      let message = 'No room measurement yet. Recommendations are cut-only and always require engineer approval.';
+      if (state === 'measuring') {
+        message = `Capturing ${rta.frames || 0} analysis frames. Keep pink noise stable until capture completes.`;
+      } else if (result) {
+        const cuts = Array.isArray(result.correction_eq) ? result.correction_eq : [];
+        const topCuts = cuts.slice(0, 3).map(c => `${Math.round(c.frequency_hz)} Hz ${c.cut_db} dB`).join(' • ');
+        message = `${result.message || 'Measurement complete.'}\n${cuts.length ? `${cuts.length} review-only cuts: ${topCuts}` : 'No resonant peaks above the correction threshold.'}`;
+      } else if (state === 'cancelled') {
+        message = 'Capture cancelled. Route pink noise safely, then start a new measurement when ready.';
+      }
+      text('rta-result', message);
+    }
+
     function frame(data) {
       const fs = Array.isArray(data.frequencies) ? data.frequencies : [];
       const ms = Array.isArray(data.magnitudes) ? data.magnitudes : [];
@@ -1057,6 +1177,7 @@
       suggestion(data.suggestion, data.status);
       perfect(data.perfect_state);
       sentinel(data.sentinel);
+      calibration(data);
       if (Number.isFinite(data.dominant_freq) && data.dominant_freq > 0) {
         text('domf', `${Math.round(data.dominant_freq)} Hz`);
         text('domm', `${number(data.dominant_mag)} dBFS`);
@@ -1108,7 +1229,7 @@
     }
 
     // Direct Action Trigger
-    $('beacon-safe-btn').addEventListener('click', async () => {
+    $('feedback-safe-btn').addEventListener('click', async () => {
       try {
         const res = await fetch(`${api}/mixer/safe`);
         if (res.ok) toast('Mixer safe profile engaged! All EQs flattened.');
@@ -1118,8 +1239,164 @@
       }
     });
 
-    $('beacon-cut-btn').addEventListener('click', () => {
-      toast(`Cut frequency recommendation recorded for mixer.`);
+    $('feedback-review-btn').addEventListener('click', () => {
+      toast('EQ recommendation noted. Review the channel and apply it deliberately.');
+    });
+
+    // Calibration Suite controls
+    const calibrationModal = $('calibration-modal');
+    async function calibrationRequest(path, options = {}) {
+      const response = await fetch(`${api}${path}`, options);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw Error(data.detail || `Calibration request failed (${response.status})`);
+      return data;
+    }
+    async function openCalibration() {
+      calibrationModal.setAttribute('aria-hidden', 'false');
+      try {
+        const [spl, rta] = await Promise.all([
+          calibrationRequest('/calibration/spl'),
+          calibrationRequest('/calibration/rta')
+        ]);
+        calibration({ spl, rta });
+      } catch (error) {
+        console.error('Could not load calibration status', error);
+        toast('Could not load calibration status. Ensure AMALYN is running.', true);
+      }
+      setTimeout(() => $('delay-distance').focus(), 20);
+    }
+    function closeCalibration() {
+      stopPinkNoise();
+      calibrationModal.setAttribute('aria-hidden', 'true');
+      $('open-calibration').focus();
+    }
+    $('open-calibration').addEventListener('click', openCalibration);
+    $('calibration-close').addEventListener('click', closeCalibration);
+    calibrationModal.addEventListener('click', event => { if (event.target === calibrationModal) closeCalibration(); });
+
+    $('delay-calculate').addEventListener('click', async () => {
+      const button = $('delay-calculate');
+      button.disabled = true;
+      try {
+        const data = await calibrationRequest('/calibration/delay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            distance_m: Number($('delay-distance').value),
+            temperature_c: Number($('delay-temperature').value)
+          })
+        });
+        text('delay-result', `${data.delay_ms.toFixed(2)} ms delay\n${data.distance_m} m at ${data.temperature_c}°C • ${data.speed_of_sound_mps} m/s`);
+      } catch (error) {
+        toast(error.message || 'Could not calculate delay.', true);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    $('spl-calibrate').addEventListener('click', async () => {
+      const button = $('spl-calibrate');
+      const limitInput = $('spl-limit').value.trim();
+      button.disabled = true;
+      try {
+        const spl = await calibrationRequest('/calibration/spl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reference_dbfs: Number($('spl-reference-dbfs').value),
+            reference_db_spl: Number($('spl-reference-spl').value),
+            limit_db_spl: limitInput ? Number(limitInput) : null
+          })
+        });
+        calibration({ spl });
+        toast('SPL reference set for this active measurement session.');
+      } catch (error) {
+        toast(error.message || 'Could not set SPL reference.', true);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    $('spl-clear').addEventListener('click', async () => {
+      try {
+        const spl = await calibrationRequest('/calibration/spl', { method: 'DELETE' });
+        calibration({ spl });
+        toast('SPL reference cleared. Meter now reports dBFS.');
+      } catch (error) {
+        toast(error.message || 'Could not clear SPL reference.', true);
+      }
+    });
+
+    let pinkNoiseAudio = null;
+    function stopPinkNoise() {
+      if (pinkNoiseAudio) {
+        pinkNoiseAudio.pause();
+        pinkNoiseAudio.currentTime = 0;
+        pinkNoiseAudio = null;
+      }
+      text('pink-noise-toggle', 'Play −30 dBFS pink noise');
+    }
+    $('pink-noise-toggle').addEventListener('click', async () => {
+      if (pinkNoiseAudio && !pinkNoiseAudio.paused) {
+        stopPinkNoise();
+        toast('Pink-noise playback stopped.');
+        return;
+      }
+      if (!$('pink-noise-safe').checked) {
+        toast('Confirm the PA output path and safe level before playing pink noise.', true);
+        return;
+      }
+      const duration = Number($('rta-duration').value);
+      if (!Number.isFinite(duration) || duration < 5 || duration > 90) {
+        toast('Pink-noise duration must be between 5 and 90 seconds.', true);
+        return;
+      }
+      const url = `${api}/calibration/pink-noise?duration_seconds=${encodeURIComponent(duration)}&level_dbfs=-30`;
+      const audio = new Audio(url);
+      audio.volume = 1;
+      audio.onended = () => stopPinkNoise();
+      audio.onerror = () => {
+        if (pinkNoiseAudio === audio) stopPinkNoise();
+        toast('Pink-noise playback could not start. Check the AMALYN server and browser output.', true);
+      };
+      try {
+        await audio.play();
+        pinkNoiseAudio = audio;
+        text('pink-noise-toggle', 'Stop pink noise');
+        toast(`Pink noise playing for ${duration}s at −30 dBFS. Monitor the PA level.`);
+      } catch (error) {
+        console.error('Pink-noise playback failed', error);
+        stopPinkNoise();
+        toast('Pink-noise playback was blocked by the browser output device.', true);
+      }
+    });
+
+    $('rta-start').addEventListener('click', async () => {
+      const button = $('rta-start');
+      button.disabled = true;
+      try {
+        const rta = await calibrationRequest('/calibration/rta/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duration_seconds: Number($('rta-duration').value) })
+        });
+        calibration({ rta });
+        toast('RTA capture started. Keep pink noise stable and monitor the PA level.');
+      } catch (error) {
+        toast(error.message || 'Could not start RTA capture.', true);
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    $('rta-cancel').addEventListener('click', async () => {
+      try {
+        const rta = await calibrationRequest('/calibration/rta/cancel', { method: 'POST' });
+        calibration({ rta });
+        toast('RTA capture cancelled.');
+      } catch (error) {
+        toast(error.message || 'Could not cancel RTA capture.', true);
+      }
     });
 
     // Modal session setup
@@ -1137,6 +1414,7 @@
     modal.addEventListener('click', e => { if (e.target === modal) closeSetup(); });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') closeSetup();
+      if (e.key === 'Escape' && calibrationModal.getAttribute('aria-hidden') === 'false') closeCalibration();
     });
 
     $('setup-btn').addEventListener('click', async () => {
@@ -1200,6 +1478,7 @@
     addEventListener('beforeunload', () => {
       clearTimeout(s.timer);
       s.socket?.close();
+      stopPinkNoise();
     });
 
     resize();

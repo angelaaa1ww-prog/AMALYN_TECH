@@ -11,6 +11,7 @@ AMALYN TECH is a modular audio intelligence system that eliminates human error a
 - **AI Feedback Detection** — detects feedback building before it explodes
 - **ML Anomaly Detection** — trained neural network catches problems threshold systems miss
 - **Auto-EQ Suggestions** — tells you exactly which frequency to cut and by how much
+- **Calibration Suite** — engineer-armed pink-noise RTA capture, one-third-octave room traces, SPL monitoring, and loudspeaker delay calculation
 - **Perfect State System** — loads ideal settings for your exact venue and gear combination
 - **Mixer Integration** — pushes corrections directly to Yamaha, Behringer, Allen & Heath via OSC
 - **AMALYN Sentinel** — monitors signal health and predicts hardware failure before it happens
@@ -131,6 +132,11 @@ the server's public `/config` endpoint; never expose a Supabase service-role key
 | `/musician/channels` | GET | Get IEM channel mix |
 | `/musician/mix` | POST | Update channel level or mute |
 | `/sentinel/status` | GET | Get signal health report |
+| `/calibration/delay` | POST | Calculate loudspeaker delay from distance and temperature |
+| `/calibration/spl` | GET / POST / DELETE | Read, set, or clear the active SPL reference |
+| `/calibration/rta` | GET | Read room-measurement state and one-third-octave trace |
+| `/calibration/rta/start` | POST | Start an engineer-reviewed pink-noise RTA capture |
+| `/calibration/pink-noise` | GET | Generate the browser-routed pink-noise WAV test signal |
 | `/health` | GET | API health check |
 | `/capabilities` | GET | Report local/cloud hardware capabilities |
 
@@ -144,6 +150,13 @@ microphone. Run `api.py` locally for those features.
 The Mixer Setup page supports configurable local-network scans, supported
 Behringer X32/M32, Yamaha CL/QL, and Allen & Heath SQ/dLive OSC profiles, plus
 analog listen-and-advise mode through a selected PyAudio input device.
+
+The Calibration Suite deliberately reports **dBFS** until the engineer enters a
+physical microphone/interface SPL reference. Calibrated readings are labelled
+unweighted dB SPL (Z); regulatory compliance additionally requires the
+applicable weighting and a certified Class 1/2 meter. Pink-noise playback
+requires an explicit dashboard safety acknowledgement and defaults to -30 dBFS;
+always verify the output routing and PA level before playback.
 
 ---
 

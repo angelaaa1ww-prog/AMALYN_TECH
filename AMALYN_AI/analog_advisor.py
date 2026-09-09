@@ -96,14 +96,26 @@ def generate_analog_advice(
     magnitudes_db: Optional[np.ndarray] = None,
     sentinel_stats: Optional[Dict[str, Any]] = None,
     sentinel_alerts: Optional[List[Dict[str, Any]]] = None,
+    mixer_profile: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Analyzes live DSP state and produces an actionable, prioritized hardware checklist
     specifically designed for analog mixing consoles, outboard racks, crossovers, and amps.
+    Adapts recommendations to the active mixer model's hardware specifications.
     """
     advice_list: List[Dict[str, Any]] = []
     sentinel_stats = sentinel_stats or {}
     sentinel_alerts = sentinel_alerts or []
+
+    # Extract hardware specs from active mixer profile
+    specs = mixer_profile.get("specs", {}) if mixer_profile else {}
+    hpf_freq = int(specs.get("hpf_freq", 80))
+    hpf_label = str(specs.get("hpf_label", f"{hpf_freq} Hz"))
+    has_sweep_mid = bool(specs.get("has_sweep_mid", True))
+    mid_sweep_min = int(specs.get("mid_sweep_min", 100))
+    mid_sweep_max = int(specs.get("mid_sweep_max", 8000))
+    brand_name = str(mixer_profile.get("brand", "Analog Console")) if mixer_profile else "Analog Console"
+    model_name = str(mixer_profile.get("model", "Mixing Desk")) if mixer_profile else "Mixing Desk"
 
     clip_rate = float(sentinel_stats.get("clip_rate", 0.0))
     rms = float(sentinel_stats.get("rms", 0.0))
@@ -147,13 +159,13 @@ def generate_analog_advice(
     # -------------------------------------------------------------
     # 2. ANALOG CONSOLE CHANNEL STRIP ADVICE
     # -------------------------------------------------------------
-    # Low Cut (HPF) Check
+    # Low Cut (HPF) Check — tailored to active mixer's HPF cutoff (75Hz, 80Hz, 100Hz)
     need_hpf = False
-    if danger_freq and danger_freq <= 95 and status in ("WARNING", "CRITICAL"):
+    if danger_freq and danger_freq <= (hpf_freq + 15) and status in ("WARNING", "CRITICAL"):
         need_hpf = True
     elif magnitudes_db is not None and frequencies is not None and len(frequencies) > 5:
-        # Check if sub rumble (< 80 Hz) is disproportionately high
-        sub_indices = np.where((frequencies >= 20) & (frequencies <= 80))[0]
+        # Check if sub rumble is disproportionately high below HPF cutoff
+        sub_indices = np.where((frequencies >= 20) & (frequencies <= hpf_freq))[0]
         if len(sub_indices) > 0:
             sub_max = float(np.max(magnitudes_db[sub_indices]))
             if sub_max > -30.0:
@@ -163,12 +175,12 @@ def generate_analog_advice(
         advice_list.append({
             "id": "console_hpf",
             "category": "CONSOLE",
-            "target_gear": "Analog Channel Strip",
+            "target_gear": f"{brand_name} Channel Strip",
             "urgency": "WARNING",
-            "title": "Engage 80 Hz Low-Cut (HPF) Button",
-            "action": "Press the [80 Hz HPF / Low Cut] push-button IN on the vocal/mic channel",
-            "detail": "Eliminates stage floor rumble, mic handling thumps, and protects PA subwoofers from unnecessary low-frequency excursion.",
-            "target_param": "80 Hz Low-Cut Switch",
+            "title": f"Engage {hpf_label} Low-Cut (HPF) Button",
+            "action": f"Press the [{hpf_label} HPF / Low Cut] push-button IN on the {brand_name} channel strip",
+            "detail": f"Eliminates stage floor rumble, mic handling thumps, and protects subwoofers below {hpf_label}.",
+            "target_param": f"{hpf_label} Low-Cut Switch",
             "value": "ENGAGED"
         })
 
@@ -177,29 +189,29 @@ def generate_analog_advice(
         advice_list.append({
             "id": "console_gain",
             "category": "CONSOLE",
-            "target_gear": "Analog Channel Strip",
+            "target_gear": f"{brand_name} Channel Strip",
             "urgency": "CRITICAL",
             "title": "Back Off Analog Preamp Gain / Trim Pot",
-            "action": "Rotate the channel [GAIN / TRIM] knob counter-clockwise by 2–3 notches (-4 to -6 dB)",
+            "action": f"Rotate the {brand_name} channel [GAIN / TRIM] knob counter-clockwise by 2–3 notches (-4 to -6 dB)",
             "detail": f"Analog input is clipping ({clip_rate:.1f}% clipped samples). Backing down gain prevents harsh analog/digital distortion.",
             "target_param": "Gain / Trim Knob",
             "value": "-4 to -6 dB"
         })
 
-    # Sweepable Mid EQ on Console
+    # Sweepable Mid EQ on Console — tailored to mixer's sweep range
     sweep_target_khz: Optional[str] = None
     sweep_cut_db = 0.0
-    if danger_freq and 250 <= danger_freq <= 6000 and status in ("WARNING", "CRITICAL"):
+    if danger_freq and mid_sweep_min <= danger_freq <= mid_sweep_max and status in ("WARNING", "CRITICAL") and has_sweep_mid:
         sweep_target_khz = format_frequency(danger_freq)
         sweep_cut_db = suggested_geq_cut or -6.0
         advice_list.append({
             "id": "console_mid_sweep",
             "category": "CONSOLE",
-            "target_gear": "Analog Channel Strip",
+            "target_gear": f"{brand_name} Channel Strip",
             "urgency": "WARNING" if status == "WARNING" else "CRITICAL",
             "title": f"Sweep Mid EQ Knob to {sweep_target_khz}",
             "action": f"Turn Mid-Freq pot to ~{sweep_target_khz} and cut Mid-Gain knob by {sweep_cut_db:.0f} dB",
-            "detail": "Carves out the acoustic feedback spike directly at the channel strip preamp before it hits the master mix bus.",
+            "detail": f"Carves out the acoustic feedback spike directly at the {brand_name} channel strip preamp before it hits the master mix bus.",
             "target_param": "Sweepable Mid EQ",
             "value": f"{sweep_target_khz} / {sweep_cut_db:.0f} dB"
         })
@@ -329,7 +341,13 @@ def generate_analog_advice(
         "mid_cut_db": sweep_cut_db,
         "high_shelf_db": -3.0 if (danger_freq and danger_freq > 8000 and status in ("WARNING", "CRITICAL")) else 0.0,
         "low_shelf_db": -3.0 if (danger_freq and 80 < danger_freq < 250 and status in ("WARNING", "CRITICAL")) else 0.0,
-        "fader_db": -10.0 if (status == "CRITICAL" and danger_mag > -10.0) else 0.0
+        "fader_db": -10.0 if (status == "CRITICAL" and danger_mag > -10.0) else 0.0,
+        "hpf_label": hpf_label,
+        "hpf_freq": hpf_freq,
+        "mid_sweep_min": mid_sweep_min,
+        "mid_sweep_max": mid_sweep_max,
+        "brand": brand_name,
+        "model": model_name
     }
 
     # Outboard Rack Unit Summary
@@ -342,7 +360,8 @@ def generate_analog_advice(
         "console": {
             "status": "ACTION_REQUIRED" if (need_hpf or sweep_cut_db < 0 or clip_rate > 3.0) else "NOMINAL",
             "hpf": "ENGAGE" if need_hpf else "BYPASS",
-            "gain": "REDUCE" if clip_rate > 3.0 else "NOMINAL"
+            "gain": "REDUCE" if clip_rate > 3.0 else "NOMINAL",
+            "mixer_model": f"{brand_name} {model_name}"
         },
         "crossover": {
             "status": "CHECK_POINT" if (danger_freq and 110 <= danger_freq <= 180) else "OPTIMAL",
@@ -365,11 +384,18 @@ def generate_analog_advice(
             "status": status,
             "total_actions": len(advice_list),
             "primary_action": primary_advice["action"] if primary_advice else "All analog hardware settings nominal",
-            "primary_gear": primary_advice["target_gear"] if primary_advice else "System Clean",
-            "urgency": primary_advice["urgency"] if primary_advice else "CLEAN"
+            "primary_gear": primary_advice["target_gear"] if primary_advice else f"{brand_name} Strip",
+            "urgency": primary_advice["urgency"] if primary_advice else "CLEAN",
+            "mixer_model": f"{brand_name} {model_name}"
         },
         "advice_list": advice_list,
         "geq_faders": geq_faders,
         "channel_strip": channel_strip,
-        "rack_status": rack_status
+        "rack_status": rack_status,
+        "active_mixer": mixer_profile or {
+            "key": "generic_analog",
+            "brand": brand_name,
+            "model": model_name,
+            "specs": specs
+        }
     }

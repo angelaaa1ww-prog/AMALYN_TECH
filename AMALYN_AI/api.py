@@ -1,4 +1,6 @@
 import logging
+import io
+import wave
 from discovery import scan_network, get_analog_options, get_audio_interfaces
 import numpy as np
 import asyncio
@@ -6,15 +8,16 @@ import json
 import threading
 import os
 import smtplib
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Dict, Any
 import uvicorn
 from config import FORMAT, CHANNELS, RATE, CHUNK
 from audio_utils import get_frequency_map, get_dominant_frequency
+from calibration import SPLMeter, RTAMeasurement, calculate_delay, generate_pink_noise
 from alerts import check_for_feedback
 from eq_engine import suggest_eq
 from logger import log_event
@@ -23,7 +26,15 @@ from library import get_perfect_state, list_all_speakers, list_all_microphones, 
 from ml_inference import ml_check
 from sentinel import AmalynSentinel
 from analog_advisor import generate_analog_advice
-from auth import authenticate, get_all_users, add_user, send_verification_code, verify_user
+from analog_manager import analog_manager
+from auth import (
+    authenticate_with_status,
+    get_all_users,
+    add_user,
+    resend_verification_code,
+    send_verification_code,
+    verify_user,
+)
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -58,6 +69,12 @@ app.add_middleware(
 )
 app.mount("/static", StaticFiles(directory=BASE_DIR), name="static")
 
+# --- CALIBRATION STATE ---
+# These objects are intentionally session-scoped. An SPL reference is valid only
+# for the active interface, microphone, gain and measurement position.
+spl_meter = SPLMeter(sample_rate=RATE)
+rta_measurement = RTAMeasurement()
+
 # --- SHARED STATE ---
 latest_frame = {
     "status": "CLEAN",
@@ -77,7 +94,9 @@ latest_frame = {
         "alerts": [],
         "signal_stats": {}
     },
-    "analog_advice": generate_analog_advice("CLEAN", 0.0, -80.0)
+    "spl": spl_meter.snapshot(),
+    "rta": rta_measurement.snapshot(),
+    "analog_advice": generate_analog_advice("CLEAN", 0.0, -80.0, mixer_profile=analog_manager.get_active_mixer())
 }
 frame_lock = threading.Lock()
 
@@ -144,6 +163,25 @@ class VerifyRequest(BaseModel):
     code: str
 
 
+class ResendVerificationRequest(BaseModel):
+    email: str
+
+
+class DelayRequest(BaseModel):
+    distance_m: float
+    temperature_c: float = 20.0
+
+
+class SPLCalibrationRequest(BaseModel):
+    reference_dbfs: float
+    reference_db_spl: float
+    limit_db_spl: Optional[float] = None
+
+
+class RTAMeasurementRequest(BaseModel):
+    duration_seconds: float = 15.0
+
+
 # --- AUDIO ENGINE ---
 def audio_engine():
     global last_status, last_correction_freq
@@ -160,6 +198,8 @@ def audio_engine():
             audio_data = np.frombuffer(data, dtype=np.int16).astype(np.float32)
             frequencies, magnitudes_db = get_frequency_map(audio_data)
             dominant_freq, dominant_mag = get_dominant_frequency(frequencies, magnitudes_db)
+            spl = spl_meter.update(audio_data)
+            rta = rta_measurement.update(frequencies, magnitudes_db)
 
             # Threshold detection
             status, danger_freq, danger_mag = check_for_feedback(frequencies, magnitudes_db)
@@ -201,7 +241,8 @@ def audio_engine():
                 frequencies=frequencies,
                 magnitudes_db=magnitudes_db,
                 sentinel_stats=signal_stats,
-                sentinel_alerts=sentinel_alerts
+                sentinel_alerts=sentinel_alerts,
+                mixer_profile=analog_manager.get_active_mixer()
             )
 
             frame = {
@@ -222,6 +263,8 @@ def audio_engine():
                     "alerts": sentinel_alerts[:3],
                     "signal_stats": signal_stats
                 },
+                "spl": spl,
+                "rta": rta,
                 "analog_advice": analog_advice
             }
 
@@ -257,9 +300,14 @@ async def websocket_endpoint(websocket: WebSocket):
 # --- AUTH ENDPOINTS ---
 @app.post("/auth/login")
 def login(request: LoginRequest):
-    user = authenticate(request.email, request.password)
+    user, status = authenticate_with_status(request.email, request.password)
     if user:
         return {"status": "ok", "user": user}
+    if status == "verification_required":
+        return {
+            "status": "verification_required",
+            "message": "Verify your email before signing in.",
+        }
     return {"status": "error", "message": "Invalid email or password"}
 
 
@@ -281,13 +329,15 @@ def register(request: RegisterRequest):
     except (OSError, ValueError, smtplib.SMTPException) as error:
         logger.error("[AUTH] Verification email failed: %s", error)
         return {"status": "error", "message": "Could not send verification code"}
-    response = {
+    if not delivered:
+        return {
+            "status": "error",
+            "message": "Email delivery is not configured. Ask the AMALYN administrator to configure SMTP, then sign in and request a code.",
+        }
+    return {
         "status": "verification_required",
         "message": "Enter the verification code sent to your email."
     }
-    if not delivered and os.getenv("AMALYN_ENV", "development").lower() != "production":
-        response["verification_code"] = user["verification_code"]
-    return response
 
 
 @app.post("/auth/verify")
@@ -297,14 +347,26 @@ def verify(request: VerifyRequest):
         return {"status": "error", "message": error}
     return {
         "status": "ok",
-        "user": {
-            "id": user["id"],
-            "name": user["name"],
-            "email": user["email"],
-            "role": user["role"],
-            "avatar": user["avatar"]
-        }
+        "user": user,
     }
+
+
+@app.post("/auth/verify/resend")
+def resend_verification(request: ResendVerificationRequest):
+    user, error = resend_verification_code(request.email)
+    if error:
+        return {"status": "error", "message": error}
+    try:
+        delivered = send_verification_code(user)
+    except (OSError, ValueError, smtplib.SMTPException) as error:
+        logger.error("[AUTH] Verification resend failed: %s", error)
+        return {"status": "error", "message": "Could not send verification code"}
+    if not delivered:
+        return {
+            "status": "error",
+            "message": "Email delivery is not configured. Ask the AMALYN administrator to configure SMTP.",
+        }
+    return {"status": "ok", "message": "A new verification code has been sent."}
 
 
 # --- SETUP ENDPOINT ---
@@ -334,6 +396,96 @@ def get_library():
         "mixers": list_all_mixers(),
         "venues": list_all_venues()
     }
+
+
+# --- CALIBRATION ENDPOINTS ---
+@app.post("/calibration/delay")
+def delay_calculation(request: DelayRequest):
+    """Calculate loudspeaker time-of-flight from a measured physical distance."""
+    try:
+        return calculate_delay(request.distance_m, request.temperature_c)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@app.get("/calibration/spl")
+def spl_status():
+    """Return the current SPL meter state (dBFS until physically calibrated)."""
+    return spl_meter.snapshot()
+
+
+@app.post("/calibration/spl")
+def set_spl_calibration(request: SPLCalibrationRequest):
+    """Set a microphone/interface SPL reference and optional venue limit."""
+    try:
+        return spl_meter.set_calibration(
+            request.reference_dbfs,
+            request.reference_db_spl,
+            request.limit_db_spl,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@app.delete("/calibration/spl")
+def clear_spl_calibration():
+    """Return to uncalibrated dBFS display for the active session."""
+    return spl_meter.clear_calibration()
+
+
+@app.post("/calibration/spl/reset")
+def reset_spl_meter():
+    spl_meter.reset()
+    return spl_meter.snapshot()
+
+
+@app.get("/calibration/rta")
+def rta_status():
+    """Return the one-third-octave room measurement status and latest trace."""
+    return rta_measurement.snapshot()
+
+
+@app.post("/calibration/rta/start")
+def start_rta_measurement(request: RTAMeasurementRequest):
+    """Start a bounded room capture after pink noise is safely routed to the PA."""
+    try:
+        return rta_measurement.start(request.duration_seconds)
+    except RuntimeError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@app.post("/calibration/rta/cancel")
+def cancel_rta_measurement():
+    return rta_measurement.cancel()
+
+
+@app.get("/calibration/pink-noise")
+def pink_noise_track(
+    duration_seconds: float = Query(default=15.0, ge=5.0, le=90.0),
+    level_dbfs: float = Query(default=-30.0, ge=-80.0, le=-12.0),
+):
+    """Stream a bounded pink-noise WAV for an explicitly armed browser playback.
+
+    The browser's output device remains under the engineer's control.  The
+    dashboard requires a safety acknowledgement before requesting this route.
+    """
+    samples = generate_pink_noise(
+        sample_count=round(RATE * duration_seconds), level_dbfs=level_dbfs
+    )
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(RATE)
+        wav.writeframes(samples.tobytes())
+    buffer.seek(0)
+    return StreamingResponse(
+        buffer,
+        media_type="audio/wav",
+        headers={"Content-Disposition": "inline; filename=amalyn-pink-noise.wav"},
+    )
 
 
 # --- SENTINEL ENDPOINT ---
@@ -557,7 +709,88 @@ def get_analog_advice():
         advice = latest_frame.get("analog_advice")
         if advice:
             return advice
-    return generate_analog_advice("CLEAN", 0.0, -80.0)
+    return generate_analog_advice("CLEAN", 0.0, -80.0, mixer_profile=analog_manager.get_active_mixer())
+
+
+# --- ANALOG MIXER USB & CUSTOM MODEL ENDPOINTS ---
+
+class CustomMixerRequest(BaseModel):
+    brand: str
+    model: str
+    key: Optional[str] = None
+    category: Optional[str] = "ANALOG_MIXER"
+    connection_type: Optional[str] = "USB_AUDIO"
+    usb_keywords: Optional[List[str]] = []
+    specs: Optional[Dict[str, Any]] = {}
+    description: Optional[str] = ""
+
+
+class MapDeviceRequest(BaseModel):
+    device_name: str
+    mixer_key: str
+
+
+class SelectMixerRequest(BaseModel):
+    mixer_key: str
+    device_name: Optional[str] = None
+
+
+@app.get("/analog/usb/scan")
+def scan_analog_usb():
+    """Scan connected USB audio input devices and auto-identify matching analog mixers."""
+    return analog_manager.scan_usb_mixers()
+
+
+@app.get("/analog/mixers")
+def list_analog_mixers():
+    """List all available built-in and user-added custom analog mixer models."""
+    return {
+        "mixers": analog_manager.get_all_mixers(),
+        "active": analog_manager.get_active_mixer(),
+        "device_mappings": analog_manager.device_mappings
+    }
+
+
+@app.post("/analog/mixers/custom")
+def create_custom_mixer(req: CustomMixerRequest):
+    """Add or update a custom analog mixer model with specific channel strip specs."""
+    success, msg, data = analog_manager.add_custom_mixer(req.dict())
+    if not success:
+        raise HTTPException(status_code=400, detail=msg)
+    return {"status": "success", "message": msg, "mixer": data}
+
+
+@app.delete("/analog/mixers/custom/{mixer_key}")
+def delete_custom_mixer(mixer_key: str):
+    """Delete a user-defined custom analog mixer model."""
+    success, msg = analog_manager.delete_custom_mixer(mixer_key)
+    if not success:
+        raise HTTPException(status_code=404, detail=msg)
+    return {"status": "success", "message": msg}
+
+
+@app.post("/analog/device/map")
+def map_analog_device(req: MapDeviceRequest):
+    """Permanently map a USB audio hardware descriptor to an analog mixer model."""
+    success, msg = analog_manager.map_device_to_mixer(req.device_name, req.mixer_key)
+    if not success:
+        raise HTTPException(status_code=400, detail=msg)
+    return {"status": "success", "message": msg, "active_mixer": analog_manager.get_active_mixer()}
+
+
+@app.post("/analog/mixer/select")
+def select_analog_mixer(req: SelectMixerRequest):
+    """Select or switch the active analog mixer model."""
+    success = analog_manager.set_active_mixer(req.mixer_key, device_name=req.device_name, manual=True)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Mixer profile '{req.mixer_key}' not found")
+    return {"status": "success", "active_mixer": analog_manager.get_active_mixer()}
+
+
+@app.get("/analog/mixer/active")
+def get_active_analog_mixer():
+    """Get the currently active analog mixer model and its hardware specs."""
+    return analog_manager.get_active_mixer()
 
 
 @app.get("/capabilities")
