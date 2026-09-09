@@ -119,6 +119,11 @@ accounts on Render, set `MONGODB_URI` (plus the optional database and collection
 names) in the service environment. Local development uses `AMALYN_AI/users.json`
 when MongoDB is not configured.
 
+Google sign-in also requires a second AMALYN verification code sent through the
+configured SMTP provider before the portal opens. Browser email autocomplete is
+enabled on the email fields; selecting a browser-suggested address still passes
+through the same server-side email validation.
+
 ---
 
 ## Portals
