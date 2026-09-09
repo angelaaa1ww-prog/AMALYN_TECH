@@ -34,6 +34,12 @@ from auth import (
     resend_verification_code,
     send_verification_code,
     verify_user,
+    start_oauth_verification,
+    resend_oauth_verification_code,
+    verify_oauth_user,
+    password_errors,
+    validate_email,
+    PASSWORD_REQUIREMENTS,
 )
 
 BASE_DIR = os.path.dirname(__file__)
@@ -155,6 +161,7 @@ class RegisterRequest(BaseModel):
     name: str
     email: str
     password: str
+    confirm_password: str
     role: str
 
 
@@ -165,6 +172,12 @@ class VerifyRequest(BaseModel):
 
 class ResendVerificationRequest(BaseModel):
     email: str
+
+
+class OAuthVerificationRequest(BaseModel):
+    name: str
+    email: str
+    role: str = "musician"
 
 
 class DelayRequest(BaseModel):
@@ -316,8 +329,20 @@ def list_users():
     return {"users": get_all_users()}
 
 
+@app.get("/auth/password-policy")
+def password_policy():
+    return {"requirements": PASSWORD_REQUIREMENTS}
+
+
 @app.post("/auth/register")
 def register(request: RegisterRequest):
+    if not validate_email(request.email):
+        return {"status": "error", "message": "Enter a valid email address"}
+    password_validation_errors = password_errors(
+        request.password, request.confirm_password
+    )
+    if password_validation_errors:
+        return {"status": "error", "message": password_validation_errors[0]}
     user, error = add_user(
         request.name, request.email,
         request.password, request.role
@@ -360,6 +385,55 @@ def resend_verification(request: ResendVerificationRequest):
         delivered = send_verification_code(user)
     except (OSError, ValueError, smtplib.SMTPException) as error:
         logger.error("[AUTH] Verification resend failed: %s", error)
+        return {"status": "error", "message": "Could not send verification code"}
+    if not delivered:
+        return {
+            "status": "error",
+            "message": "Email delivery is not configured. Ask the AMALYN administrator to configure SMTP.",
+        }
+    return {"status": "ok", "message": "A new verification code has been sent."}
+
+
+@app.post("/auth/oauth/verify/start")
+def start_oauth_verify(request: OAuthVerificationRequest):
+    user, error = start_oauth_verification(
+        request.name, request.email, request.role
+    )
+    if error:
+        return {"status": "error", "message": error}
+    try:
+        delivered = send_verification_code(user, oauth=True)
+    except (OSError, ValueError, smtplib.SMTPException) as error:
+        logger.error("[AUTH] OAuth verification email failed: %s", error)
+        return {"status": "error", "message": "Could not send verification code"}
+    if not delivered:
+        return {
+            "status": "error",
+            "message": "Email delivery is not configured. Ask the AMALYN administrator to configure SMTP.",
+        }
+    return {
+        "status": "verification_required",
+        "message": "Enter the verification code sent to your Google email address.",
+    }
+
+
+@app.post("/auth/oauth/verify")
+def verify_oauth(request: VerifyRequest):
+    user, error = verify_oauth_user(request.email, request.code)
+    if error:
+        return {"status": "error", "message": error}
+    return {"status": "ok", "user": user}
+
+
+@app.post("/auth/oauth/verify/resend")
+def resend_oauth_verify(request: ResendVerificationRequest):
+    user, error = resend_oauth_verification_code(request.email)
+    if error:
+        return {"status": "error", "message": error}
+    try:
+        delivered = send_verification_code(user, oauth=True)
+    except (OSError, ValueError, smtplib.SMTPException) as error:
+        logger.error("[AUTH] OAuth verification resend failed: %s", error)
         return {"status": "error", "message": "Could not send verification code"}
     if not delivered:
         return {

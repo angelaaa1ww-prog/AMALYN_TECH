@@ -214,6 +214,18 @@ body{
 }
 .error-msg.show{display:block}
 
+.password-rules{
+    margin:-4px 0 14px;padding:10px 12px;border:1px solid var(--panel-border);
+    border-radius:10px;background:var(--panel-bg);font-size:10px;color:var(--text-muted);
+}
+.password-rules-title{font-weight:700;color:var(--text-secondary);margin-bottom:6px}
+.password-rules ul{list-style:none;display:grid;gap:3px}
+.password-rules li:before{content:"○";display:inline-block;width:17px;color:var(--text-muted)}
+.password-rules li.valid{color:#5cebac}
+.password-rules li.valid:before{content:"✓";color:#5cebac}
+.password-strength{height:4px;margin-top:8px;background:var(--code-bg);border-radius:99px;overflow:hidden}
+.password-strength span{display:block;height:100%;width:0;background:#ff7d92;transition:width .2s,background .2s}
+
 .switch-text{text-align:center;font-size:10px;color:var(--text-muted);margin-top:18px}
 .switch-text a{color:var(--accent-cyan);cursor:pointer;font-weight:600}
 
@@ -614,7 +626,22 @@ body{
         </div>
         <div class="field">
             <label>Password</label>
-            <input type="password" id="reg-password" placeholder="Choose a password">
+            <input type="password" id="reg-password" placeholder="Choose a password" autocomplete="new-password">
+            <div class="password-strength"><span id="password-strength-bar"></span></div>
+        </div>
+        <div class="password-rules" id="password-rules">
+            <div class="password-rules-title">Password must contain:</div>
+            <ul>
+                <li id="rule-length">At least 8 characters</li>
+                <li id="rule-upper">One uppercase letter</li>
+                <li id="rule-lower">One lowercase letter</li>
+                <li id="rule-number">One number</li>
+                <li id="rule-special">One special character</li>
+            </ul>
+        </div>
+        <div class="field">
+            <label>Confirm Password</label>
+            <input type="password" id="reg-confirm-password" placeholder="Repeat your password" autocomplete="new-password">
         </div>
         <div class="field">
             <label>Your Role</label>
@@ -1210,6 +1237,10 @@ async function doLogin(){
         err.textContent = 'Please enter your email and password'
         err.classList.add('show'); return
     }
+    if(!isValidEmail(email)){
+        err.textContent = 'Enter a valid email address'
+        err.classList.add('show'); return
+    }
 
     btn.disabled = true; btn.textContent = 'Signing in...'
     err.classList.remove('show')
@@ -1243,11 +1274,21 @@ async function doRegister(){
     const name = document.getElementById('reg-name').value.trim()
     const email = document.getElementById('reg-email').value.trim()
     const password = document.getElementById('reg-password').value
+    const confirmPassword = document.getElementById('reg-confirm-password').value
     const role = document.getElementById('reg-role').value
     const err = document.getElementById('register-error')
 
     if(!name||!email||!password){
         err.textContent='Please fill in all fields'
+        err.classList.add('show'); return
+    }
+    if(!isValidEmail(email)){
+        err.textContent='Enter a valid email address, for example you@example.com'
+        err.classList.add('show'); return
+    }
+    const passwordErrors = getPasswordErrors(password, confirmPassword)
+    if(passwordErrors.length){
+        err.textContent = passwordErrors[0]
         err.classList.add('show'); return
     }
     err.classList.remove('show')
@@ -1256,7 +1297,7 @@ async function doRegister(){
         const res = await fetch(`${API}/auth/register`,{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({name,email,password,role})
+            body:JSON.stringify({name,email,password,confirm_password:confirmPassword,role})
         })
         const data = await res.json()
         if(data.status==='verification_required'){
@@ -1270,6 +1311,43 @@ async function doRegister(){
         err.textContent='Cannot connect to AMALYN API'
         err.classList.add('show')
     }
+}
+
+function isValidEmail(email){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254
+}
+
+function getPasswordErrors(password, confirmation){
+    const errors = []
+    if(password.length < 8) errors.push('Password must be at least 8 characters')
+    if(password.length > 128) errors.push('Password must be no more than 128 characters')
+    if(!/[A-Z]/.test(password)) errors.push('Password must include an uppercase letter')
+    if(!/[a-z]/.test(password)) errors.push('Password must include a lowercase letter')
+    if(!/\d/.test(password)) errors.push('Password must include a number')
+    if(!/[^A-Za-z0-9]/.test(password)) errors.push('Password must include a special character')
+    if(password !== confirmation) errors.push('Passwords do not match')
+    return errors
+}
+
+function updatePasswordFeedback(){
+    const password = document.getElementById('reg-password').value
+    const confirmation = document.getElementById('reg-confirm-password').value
+    const checks = {
+        'rule-length': password.length >= 8 && password.length <= 128,
+        'rule-upper': /[A-Z]/.test(password),
+        'rule-lower': /[a-z]/.test(password),
+        'rule-number': /\d/.test(password),
+        'rule-special': /[^A-Za-z0-9]/.test(password)
+    }
+    Object.keys(checks).forEach(id=>{
+        document.getElementById(id).classList.toggle('valid', checks[id])
+    })
+    const score = Object.values(checks).filter(Boolean).length
+    const bar = document.getElementById('password-strength-bar')
+    bar.style.width = `${score * 20}%`
+    bar.style.background = score <= 2 ? '#ff7d92' : score < 5 ? '#ffc971' : '#5cebac'
+    const confirmField = document.getElementById('reg-confirm-password')
+    confirmField.style.borderColor = confirmation && password !== confirmation ? '#ff7d92' : ''
 }
 
 function beginVerification(email, message){
@@ -1397,6 +1475,8 @@ document.getElementById('login-password').addEventListener('keydown',e=>{
 document.getElementById('verification-code').addEventListener('keydown',e=>{
     if(e.key==='Enter') doVerify()
 })
+document.getElementById('reg-password').addEventListener('input', updatePasswordFeedback)
+document.getElementById('reg-confirm-password').addEventListener('input', updatePasswordFeedback)
 initializeSupabase()
 </script>
 </body>

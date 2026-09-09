@@ -44,5 +44,18 @@
     "verified": false,
     "verification_code": "E533BE",
     "verification_expires_at": "2026-09-09T16:43:48.639327+00:00"
+  },
+  {
+    "id": 6,
+    "name": "Angela",
+    "email": "angelaamani667@gmail.com",
+    "password": "880673f401dcf6be16b2d52328494fcaf536e4688e41fe6e53127a90aa5ceda8",
+    "role": "engineer",
+    "avatar": "A",
+    "verified": false,
+    "verification_code": "970896",
+    "verification_expires_at": "2026-09-09T17:11:41.445295+00:00",
+    "verification_attempts": 0,
+    "verification_sent_at": "2026-09-09T16:56:41.445295+00:00"
   }
 ]

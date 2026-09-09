@@ -110,6 +110,15 @@ then enter each provider's OAuth client credentials and callback URL from
 Supabase. The login page reads only `SUPABASE_URL` and `SUPABASE_ANON_KEY` from
 the server's public `/config` endpoint; never expose a Supabase service-role key.
 
+### Account storage and password rules
+
+Email registration requires a valid email address, at least 8 characters, an
+uppercase letter, a lowercase letter, a number, a special character, and a
+matching confirmation. Passwords are hashed before storage. For durable
+accounts on Render, set `MONGODB_URI` (plus the optional database and collection
+names) in the service environment. Local development uses `AMALYN_AI/users.json`
+when MongoDB is not configured.
+
 ---
 
 ## Portals
