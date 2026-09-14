@@ -1,9 +1,13 @@
 # database.py — AMALYN MongoDB Connection
 
 import os
+from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import MongoClient
 from datetime import datetime
+
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"), override=True)
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"), override=False)
 
 # ── Connection String ──────────────────────────────────────────────────
 # Put your MongoDB connection string in a .env file:
@@ -13,7 +17,11 @@ MONGO_URI = os.getenv(
     "mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/amalyn"
 )
 
-DB_NAME = "amalyn"
+MONGO_URI = os.getenv("MONGODB_URI", MONGO_URI)
+if not MONGO_URI:
+    raise RuntimeError("MONGODB_URI must be configured in .env before starting the API")
+
+DB_NAME = os.getenv("MONGODB_DATABASE", "amalyn")
 
 # Async client — used by FastAPI endpoints
 async_client = AsyncIOMotorClient(MONGO_URI)

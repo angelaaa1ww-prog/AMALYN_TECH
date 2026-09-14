@@ -59,12 +59,29 @@ async def startup():
     await init_indexes()
     print("[DB] MongoDB connected and ready")
 
-@app.get("/"); def serve_login(): return FileResponse(os.path.join(BASE_DIR,"login.html"))
-@app.get("/dashboard"); def serve_dashboard(): return FileResponse(os.path.join(BASE_DIR,"dashboard.html"))
-@app.get("/musician"); def serve_musician(): return FileResponse(os.path.join(BASE_DIR,"musician.html"))
-@app.get("/producer"); def serve_producer(): return FileResponse(os.path.join(BASE_DIR,"producer.html"))
-@app.get("/mixer-setup"); def serve_mixer_setup(): return FileResponse(os.path.join(BASE_DIR,"mixer_setup.html"))
-@app.get("/config.js"); def serve_config(): return FileResponse(os.path.join(BASE_DIR,"config.js"))
+@app.get("/")
+def serve_login():
+    return FileResponse(os.path.join(BASE_DIR, "login.html"))
+
+@app.get("/dashboard")
+def serve_dashboard():
+    return FileResponse(os.path.join(BASE_DIR, "dashboard.html"))
+
+@app.get("/musician")
+def serve_musician():
+    return FileResponse(os.path.join(BASE_DIR, "musician.html"))
+
+@app.get("/producer")
+def serve_producer():
+    return FileResponse(os.path.join(BASE_DIR, "producer.html"))
+
+@app.get("/mixer-setup")
+def serve_mixer_setup():
+    return FileResponse(os.path.join(BASE_DIR, "mixer_setup.html"))
+
+@app.get("/config.js")
+def serve_config():
+    return FileResponse(os.path.join(BASE_DIR, "config.js"))
 
 # ── Shared Audio State ─────────────────────────────────────────────────
 latest_frame = {
@@ -125,6 +142,7 @@ class RegisterRequest(BaseModel):
     name: str
     email: str
     password: str
+    confirm_password: Optional[str] = None
     role: str = "engineer"
 
 class SetupRequest(BaseModel):
@@ -246,7 +264,9 @@ async def websocket_endpoint(websocket: WebSocket):
 # ── Auth ───────────────────────────────────────────────────────────────
 @app.post("/auth/register")
 async def register(req: RegisterRequest):
-    user, error = await create_user(req.name, req.email, req.password, req.role)
+    user, error = await create_user(
+        req.name, req.email, req.password, req.role, req.confirm_password
+    )
     if error:
         return {"status": "error", "message": error}
     token = __import__("auth_db").create_token(user["id"])
