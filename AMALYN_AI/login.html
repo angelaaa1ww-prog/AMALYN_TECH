@@ -1191,6 +1191,9 @@ async function initializeSupabase(){
 }
 
 async function applyOAuthUser(user){
+    if(pendingVerificationKind === 'oauth' && pendingVerificationEmail === user.email){
+        return
+    }
     const emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at)
     if(!emailVerified){
         const err = document.getElementById('login-error')
@@ -1213,7 +1216,11 @@ async function applyOAuthUser(user){
            body:JSON.stringify({name:displayName,email:user.email,role})
        })
        const data = await res.json()
-       if(data.status === 'verification_required'){
+       if(data.status === 'ok'){
+           currentUser = data.user
+           sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
+           showHome(currentUser)
+       } else if(data.status === 'verification_required'){
            pendingVerificationKind = 'oauth'
            beginVerification(user.email, `Enter the code sent to your Google email address.`, 'oauth')
        } else {
@@ -1320,10 +1327,14 @@ async function doRegister(){
             body:JSON.stringify({name,email,password,confirm_password:confirmPassword,role})
         })
         const data = await res.json()
-        if(data.status==='verification_required'){
+        if(data.status==='ok'){
+            currentUser = data.user
+            sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
+            showHome(currentUser)
+        } else if(data.status==='verification_required'){
             beginVerification(email, `Enter the six-digit code sent to ${email}.`)
         } else {
-            err.textContent = data.message||'Registration failed'
+            err.textContent = data.message || data.detail || 'Registration failed'
             err.classList.add('show')
         }
 
@@ -1480,7 +1491,7 @@ async function oauthLogin(provider){
 
     // Supabase Auth uses 'azure' for Microsoft accounts
     const targetProvider = provider === 'microsoft' ? 'azure' : provider
-    const redirectUrl = `${location.origin}${location.pathname}`
+    const redirectUrl = `${location.origin}/login.html`
     
     const {error} = await supabaseClient.auth.signInWithOAuth({
         provider: targetProvider,

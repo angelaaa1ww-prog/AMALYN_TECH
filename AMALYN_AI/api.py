@@ -1,8 +1,14 @@
 import os
 from dotenv import load_dotenv
-load_dotenv()
 
-import pyaudio
+BASE_DIR = os.path.dirname(__file__)
+load_dotenv(os.path.join(os.path.dirname(BASE_DIR), ".env"))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
+try:
+    import pyaudio
+except ImportError:
+    pyaudio = None
 import numpy as np
 import asyncio
 import json
@@ -30,7 +36,9 @@ from sentinel import AmalynSentinel
 from database import init_indexes
 from auth_db import (
     create_user, authenticate_user,
-    get_user_by_id, get_all_users, decode_token
+    get_user_by_id, get_all_users, decode_token,
+    create_token, start_oauth_verification, verify_oauth_user,
+    resend_oauth_verification_code, verify_user, resend_verification_code,
 )
 from session_db import (
     create_session, end_session, get_user_sessions,
@@ -40,8 +48,6 @@ from session_db import (
     delete_show_file, get_user_stats
 )
 from discovery import scan_network, get_analog_options, get_audio_interfaces
-
-BASE_DIR = os.path.dirname(__file__)
 
 app = FastAPI(title="AMALYN TECH API", version="1.0.0")
 app.add_middleware(
@@ -56,11 +62,19 @@ app.mount("/static", StaticFiles(directory=BASE_DIR), name="static")
 
 @app.on_event("startup")
 async def startup():
-    await init_indexes()
-    print("[DB] MongoDB connected and ready")
+    try:
+        await init_indexes()
+    except Exception as error:
+        print(f"[DB] Startup check failed: {error}")
+    else:
+        print("[DB] MongoDB connected and ready")
 
 @app.get("/")
 def serve_login():
+    return FileResponse(os.path.join(BASE_DIR, "login.html"))
+
+@app.get("/login.html")
+def serve_login_file():
     return FileResponse(os.path.join(BASE_DIR, "login.html"))
 
 @app.get("/dashboard")
@@ -83,6 +97,13 @@ def serve_mixer_setup():
 def serve_config():
     return FileResponse(os.path.join(BASE_DIR, "config.js"))
 
+@app.get("/config")
+def public_config():
+    return {
+        "supabase_url": os.getenv("SUPABASE_URL", "").strip(),
+        "supabase_anon_key": os.getenv("SUPABASE_ANON_KEY", "").strip(),
+    }
+
 # ── Shared Audio State ─────────────────────────────────────────────────
 latest_frame = {
     "status":"CLEAN","dominant_freq":0.0,"dominant_mag":-80.0,
@@ -94,8 +115,21 @@ latest_frame = {
 }
 frame_lock = threading.Lock()
 
-p = pyaudio.PyAudio()
-stream = p.open(format=FORMAT,channels=CHANNELS,rate=RATE,input=True,frames_per_buffer=CHUNK)
+if pyaudio is None:
+    p = None
+    stream = None
+    print("[AUDIO] PyAudio is unavailable; running in cloud/API-only mode")
+else:
+    try:
+        p = pyaudio.PyAudio()
+        stream = p.open(
+            format=FORMAT, channels=CHANNELS, rate=RATE,
+            input=True, frames_per_buffer=CHUNK
+        )
+    except (OSError, ValueError) as error:
+        p = None
+        stream = None
+        print(f"[AUDIO] Microphone unavailable; running in cloud/API-only mode: {error}")
 mixer = AmalynMixerBridge(mixer_type="simulator",channel=1)
 mixer.connect()
 sentinel = AmalynSentinel()
@@ -137,6 +171,12 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
 class LoginRequest(BaseModel):
     email: str
     password: str
+
+class OAuthVerificationRequest(BaseModel):
+    name: str = ""
+    email: str
+    role: str = "musician"
+    code: Optional[str] = None
 
 class RegisterRequest(BaseModel):
     name: str
@@ -241,7 +281,8 @@ def audio_engine():
         except Exception as e:
             print(f"[ENGINE] Error: {e}")
 
-threading.Thread(target=audio_engine, daemon=True).start()
+if stream is not None:
+    threading.Thread(target=audio_engine, daemon=True).start()
 
 
 # ── WebSocket ──────────────────────────────────────────────────────────
@@ -264,9 +305,14 @@ async def websocket_endpoint(websocket: WebSocket):
 # ── Auth ───────────────────────────────────────────────────────────────
 @app.post("/auth/register")
 async def register(req: RegisterRequest):
-    user, error = await create_user(
-        req.name, req.email, req.password, req.role, req.confirm_password
-    )
+    try:
+        user, error = await create_user(
+            req.name, req.email, req.password, req.role, req.confirm_password
+        )
+    except Exception as error:
+        return {"status": "error", "message": f"Registration service error: {error}"}
+    if error == "verification_required":
+        return {"status": "verification_required", "email": user["email"]}
     if error:
         return {"status": "error", "message": error}
     token = __import__("auth_db").create_token(user["id"])
@@ -275,6 +321,11 @@ async def register(req: RegisterRequest):
 @app.post("/auth/login")
 async def login(req: LoginRequest):
     result, error = await authenticate_user(req.email, req.password)
+    if error == "verification_required":
+        return {
+            "status": "verification_required",
+            "message": "Verify your email before signing in.",
+        }
     if error:
         return {"status": "error", "message": error}
     return {"status": "ok", "user": result["user"], "token": result["token"]}
@@ -287,6 +338,55 @@ async def me(authorization: Optional[str] = Header(None)):
 @app.get("/auth/users")
 async def list_users_endpoint():
     return {"users": await get_all_users()}
+
+@app.post("/auth/verify")
+async def verify_email(req: OAuthVerificationRequest):
+    if not req.code:
+        return {"status": "error", "message": "Verification code is required"}
+    user, error = await verify_user(req.email, req.code)
+    if error:
+        return {"status": "error", "message": error}
+    return {"status": "ok", "user": user, "token": create_token(user["id"])}
+
+@app.post("/auth/verify/resend")
+async def resend_email(req: OAuthVerificationRequest):
+    user, error = await resend_verification_code(req.email)
+    if error:
+        return {"status": "error", "message": error}
+    return {"status": "ok", "email": user["email"]}
+
+@app.post("/auth/oauth/verify/start")
+async def start_oauth_verification_endpoint(req: OAuthVerificationRequest):
+    try:
+        user, error = await start_oauth_verification(req.name, req.email, req.role)
+    except (OSError, ValueError) as error:
+        return {"status": "error", "message": str(error)}
+    if error:
+        return {"status": "error", "message": error}
+    return {
+        "status": "ok",
+        "user": user,
+        "token": create_token(user["id"]),
+    }
+
+@app.post("/auth/oauth/verify")
+async def verify_oauth_endpoint(req: OAuthVerificationRequest):
+    if not req.code:
+        return {"status": "error", "message": "Verification code is required"}
+    user, error = await verify_oauth_user(req.email, req.code)
+    if error:
+        return {"status": "error", "message": error}
+    return {"status": "ok", "user": user, "token": create_token(user["id"])}
+
+@app.post("/auth/oauth/verify/resend")
+async def resend_oauth_endpoint(req: OAuthVerificationRequest):
+    try:
+        user, error = await resend_oauth_verification_code(req.email)
+    except (OSError, ValueError) as error:
+        return {"status": "error", "message": str(error)}
+    if error:
+        return {"status": "error", "message": error}
+    return {"status": "ok", "email": user["email"]}
 
 
 # ── User Progress ──────────────────────────────────────────────────────
