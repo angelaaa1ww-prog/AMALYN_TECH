@@ -80,13 +80,16 @@ async def create_user(name, email, password, role="engineer", confirm_password=N
         return None, "Passwords do not match"
     if await users_col.find_one({"email": clean_email}):
         return None, "Email already exists"
+    require_verification = os.getenv(
+        "AMALYN_REQUIRE_EMAIL_VERIFICATION", ""
+    ).strip().lower() in {"1", "true", "yes"}
     user = {
         "name": name.strip(),
         "email": clean_email,
         "password": _hash_password(password),
         "role": role,
         "avatar": name.strip()[:1].upper() or "U",
-        "email_verified": False,
+        "email_verified": not require_verification,
         "verification_code": f"{secrets.randbelow(1_000_000):06d}",
         "verification_expires_at": (
             datetime.now(timezone.utc) + timedelta(minutes=15)
@@ -96,16 +99,26 @@ async def create_user(name, email, password, role="engineer", confirm_password=N
     }
     result = await users_col.insert_one(user)
     user["_id"] = result.inserted_id
-    if not send_verification_code(user):
+    if require_verification and not send_verification_code(user):
         await users_col.delete_one({"_id": user["_id"]})
         return None, "Email verification is not configured on the server"
-    return _public_user(user), "verification_required"
+    if require_verification:
+        return _public_user(user), "verification_required"
+    return _public_user(user), None
 
 
 async def authenticate_user(email, password):
     user = await users_col.find_one({"email": email.strip().lower()})
     if not user or not _check_password(password, user.get("password", "")):
         return None, "Invalid email or password"
+    require_verification = os.getenv(
+        "AMALYN_REQUIRE_EMAIL_VERIFICATION", ""
+    ).strip().lower() in {"1", "true", "yes"}
+    if not user.get("email_verified", False) and not require_verification:
+        await users_col.update_one(
+            {"_id": user["_id"]}, {"$set": {"email_verified": True}}
+        )
+        user["email_verified"] = True
     if not user.get("email_verified", False):
         return None, "verification_required"
     return {"user": _public_user(user), "token": create_token(user["_id"])}, None
