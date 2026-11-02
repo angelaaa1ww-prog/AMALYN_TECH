@@ -26,12 +26,12 @@ from audio_utils import get_frequency_map, get_dominant_frequency
 from alerts import check_for_feedback
 from eq_engine import suggest_eq
 from logger import log_event
-from mixer import AmalynMixerBridge
+from mixer import AmalynMixerBridge, MIXER_PROFILES
 from library import (
     get_perfect_state, list_all_speakers,
     list_all_microphones, list_all_mixers, list_all_venues
 )
-from ml_inference import ml_check
+from ml_inference import ml_check, ml_engine
 from sentinel import AmalynSentinel
 from database import init_indexes
 from auth_db import (
@@ -62,12 +62,16 @@ app.mount("/static", StaticFiles(directory=BASE_DIR), name="static")
 
 @app.on_event("startup")
 async def startup():
-    try:
-        await init_indexes()
-    except Exception as error:
-        print(f"[DB] Startup check failed: {error}")
-    else:
-        print("[DB] MongoDB connected and ready")
+    async def initialize_database():
+        try:
+            await init_indexes()
+        except Exception as error:
+            print(f"[DB] Startup check failed: {error}")
+        else:
+            print("[DB] MongoDB connected and ready")
+
+    # Do not block HTTP readiness on an optional/unreachable MongoDB service.
+    asyncio.create_task(initialize_database())
 
 @app.get("/")
 def serve_login():
@@ -559,9 +563,38 @@ def health():
         "status": "AMALYN API Running",
         "version": "1.0.0",
         "session": current_session_id,
-        "engine": "active",
-        "ml": "active",
+        "engine": "active" if stream is not None else "unavailable",
+        "ml": "active" if ml_engine.is_ready() else "unavailable",
         "sentinel": "active",
+    }
+
+
+@app.get("/capabilities")
+def capabilities():
+    """Report capabilities available on this host without probing external services."""
+    return {
+        "audio_capture": {
+            "available": stream is not None,
+            "backend": "PyAudio" if pyaudio is not None else None,
+            "sample_rate": RATE if stream is not None else None,
+            "channels": CHANNELS if stream is not None else None,
+        },
+        "ml": {
+            "available": ml_engine.is_ready(),
+            "model": "amalyn_detector" if ml_engine.is_ready() else None,
+        },
+        "mixer": {
+            "simulator": True,
+            "connected": mixer.connected,
+            "supported_profiles": sorted(MIXER_PROFILES),
+        },
+        "cloud": {
+            "mongodb_configured": bool(os.getenv("MONGODB_URI", "").strip()),
+            "supabase_configured": bool(
+                os.getenv("SUPABASE_URL", "").strip()
+                and os.getenv("SUPABASE_ANON_KEY", "").strip()
+            ),
+        },
     }
 
 

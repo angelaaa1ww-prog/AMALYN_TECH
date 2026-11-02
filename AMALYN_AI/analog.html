@@ -493,10 +493,122 @@
         </div>
       </div>
       <div class="banner-meta">
+        <div class="mixer-badge" id="mixer-id-badge" onclick="openMixerModal()" title="Click to configure mixer">
+          🎛️ <span id="mixer-id-text">Detecting Mixer…</span>
+        </div>
         <div class="meta-pill" id="dominant-readout">Dominant: -- Hz</div>
         <div class="meta-pill" id="action-count-pill">0 Actions Required</div>
       </div>
     </section>
+
+    <!-- ===== Mixer Setup Modal ===== -->
+    <div class="mixer-modal-overlay" id="mixer-modal-overlay" onclick="if(event.target===this)closeMixerModal()">
+      <div class="mixer-modal">
+        <div class="modal-header">
+          <span class="modal-title">🎛️ Mixer Setup &amp; Identification</span>
+          <button class="modal-close-btn" onclick="closeMixerModal()">✕</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="modal-tabs">
+          <button class="modal-tab active" onclick="switchModalTab('tab-scan',this)">Auto-Detect USB</button>
+          <button class="modal-tab" onclick="switchModalTab('tab-library',this)">Mixer Library</button>
+          <button class="modal-tab" onclick="switchModalTab('tab-add',this)">Add New Model</button>
+          <button class="modal-tab" onclick="switchModalTab('tab-map',this)">Device Mapping</button>
+        </div>
+
+        <!-- Tab 1: Auto-Detect -->
+        <div class="modal-pane active" id="tab-scan">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Plug your analog mixer into a USB port, then click Scan. AMALYN will identify it and load the correct profile automatically.</p>
+          <div class="form-action-row" style="margin-top:0;justify-content:flex-start;">
+            <button class="btn-primary" onclick="runUsbScan()">🔍 Scan USB Devices</button>
+          </div>
+          <div class="scan-device-list" id="scan-results-list">
+            <p style="font-size:11px;color:var(--dim);margin-top:8px;">No scan run yet.</p>
+          </div>
+          <div class="modal-feedback" id="scan-feedback"></div>
+        </div>
+
+        <!-- Tab 2: Mixer Library -->
+        <div class="modal-pane" id="tab-library">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Select any mixer from the built-in library or your custom additions. Click a mixer to make it the active profile.</p>
+          <div class="mixer-library-list" id="mixer-library-list">
+            <p style="font-size:11px;color:var(--dim);">Loading library…</p>
+          </div>
+          <div class="modal-feedback" id="library-feedback"></div>
+        </div>
+
+        <!-- Tab 3: Add New Model -->
+        <div class="modal-pane" id="tab-add">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:4px;">Add a mixer that's not in the library. Fill in its specs so AMALYN can give tailored advice.</p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Brand *</label>
+              <input class="form-input" id="add-brand" placeholder="e.g. Yamaha" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Model *</label>
+              <input class="form-input" id="add-model" placeholder="e.g. MG16XU" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Channels</label>
+              <input class="form-input" id="add-channels" type="number" placeholder="16" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">HPF Frequency (Hz)</label>
+              <input class="form-input" id="add-hpf" type="number" placeholder="80" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mid Sweep Min (Hz)</label>
+              <input class="form-input" id="add-mid-min" type="number" placeholder="250" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mid Sweep Max (Hz)</label>
+              <input class="form-input" id="add-mid-max" type="number" placeholder="5000" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">USB Keywords (comma-sep)</label>
+              <input class="form-input" id="add-keywords" placeholder="e.g. MG16, YAMAHA" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Has Compressor?</label>
+              <select class="form-input" id="add-compressor">
+                <option value="false">No</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Notes (optional)</label>
+              <input class="form-input" id="add-notes" placeholder="Any notes about this mixer…" />
+            </div>
+          </div>
+          <div class="form-action-row">
+            <button class="btn-secondary" onclick="clearAddForm()">Clear</button>
+            <button class="btn-primary" onclick="submitCustomMixer()">💾 Save Mixer</button>
+          </div>
+          <div class="modal-feedback" id="add-feedback"></div>
+        </div>
+
+        <!-- Tab 4: Device Mapping -->
+        <div class="modal-pane" id="tab-map">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">If your mixer shows up as a generic USB Audio device, you can permanently map that device name to a known mixer profile.</p>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">USB Device Name (exact, e.g. "USB Audio CODEC")</label>
+              <input class="form-input" id="map-device-name" placeholder="Paste the USB device name here" />
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Map to Mixer Profile Key</label>
+              <input class="form-input" id="map-profile-key" placeholder="e.g. yamaha_mg or my_custom_mixer" />
+            </div>
+          </div>
+          <div class="form-action-row">
+            <button class="btn-primary" onclick="submitDeviceMap()">📌 Save Mapping</button>
+          </div>
+          <div class="modal-feedback" id="map-feedback"></div>
+        </div>
+      </div>
+    </div>
 
     <div class="main-grid">
       <!-- Left Column: Visual Virtual Outboard Rack -->
@@ -558,7 +670,7 @@
               <div style="margin: auto 0; text-align:center;">
                 <div class="latch-btn" id="btn-hpf">
                   <span class="latch-dot"></span>
-                  <span id="txt-hpf">80 Hz OFF</span>
+                  <span id="txt-hpf">HPF OFF</span>
                 </div>
                 <span class="knob-label" style="margin-top:6px; display:block;">Stage Rumble Filter</span>
               </div>
@@ -781,6 +893,32 @@
       const geqFaders = advice.geq_faders || [];
       const strip = advice.channel_strip || {};
       const rack = advice.rack_status || {};
+      const activeMixer = advice.active_mixer || {};
+
+      // 0. Mixer ID Badge
+      const mixerBadge = document.getElementById('mixer-id-badge');
+      const mixerText = document.getElementById('mixer-id-text');
+      if (activeMixer.brand && activeMixer.model && activeMixer.brand !== 'Generic') {
+        mixerText.textContent = `${activeMixer.brand} ${activeMixer.model}`;
+        mixerBadge.className = 'mixer-badge identified';
+      } else if (summary.mixer_model) {
+        mixerText.textContent = summary.mixer_model;
+        mixerBadge.className = 'mixer-badge';
+      } else {
+        mixerText.textContent = 'Generic Analog — Click to Identify';
+        mixerBadge.className = 'mixer-badge';
+      }
+
+      // Dynamic Channel Strip title & HPF label
+      const stripTitle = document.getElementById('strip-rack-title');
+      if (stripTitle) {
+        stripTitle.textContent = strip.brand
+          ? `${strip.brand} ${strip.model || ''} Channel Strip`.trim()
+          : 'Analog Channel Strip & Preamp';
+      }
+      const hpfLabel = strip.hpf_freq ? `${strip.hpf_freq} Hz` : '80 Hz';
+      const midSweepMin = strip.mid_sweep_min || 250;
+      const midSweepMax = strip.mid_sweep_max || 5000;
 
       // 1. Master Banner
       masterBanner.className = 'master-banner';
@@ -810,7 +948,6 @@
         if (band.is_active && band.cut_db < 0) {
           activeBandFound = true;
           bandEl.classList.add('active');
-          // Convert cut_db (-12 to 0) to top percentage (50% is 0dB, 90% is -12dB)
           const pct = 50 + (-band.cut_db / 12.0) * 40;
           thumbEl.style.top = `${pct}%`;
           geqInstruction.textContent = `Pull the ${band.label} slider down by ${Math.round(band.cut_db)} dB on your 31-band rack EQ.`;
@@ -831,13 +968,13 @@
         geqStatusBadge.className = `rack-badge ${status === 'CRITICAL' ? 'alert' : 'warn'}`;
       }
 
-      // 3. Channel Strip Knobs & HPF Button
+      // 3. Channel Strip — HPF Button (dynamic label from mixer profile)
       if (strip.hpf_80hz) {
         btnHpf.classList.add('engaged');
-        txtHpf.textContent = "80 Hz ENGAGED";
+        txtHpf.textContent = `${hpfLabel} ENGAGED`;
       } else {
         btnHpf.classList.remove('engaged');
-        txtHpf.textContent = "80 Hz OFF";
+        txtHpf.textContent = `${hpfLabel} OFF`;
       }
 
       // Preamp Gain Knob
@@ -851,11 +988,12 @@
         valGain.textContent = "12:00 Unity";
       }
 
-      // Mid Frequency & Mid Gain
+      // Mid Frequency & Mid Gain — sweep range from mixer profile
       if (strip.mid_cut_db < 0 && strip.mid_freq_hz) {
         knobMidFreq.className = "knob-dial warn";
-        // Rotate dial roughly from 250Hz (-60deg) to 5kHz (+60deg)
-        const freqDeg = Math.min(70, Math.max(-70, (Math.log10(strip.mid_freq_hz / 1000) * 80)));
+        const freqRange = Math.log10(midSweepMax) - Math.log10(midSweepMin);
+        const freqPos = (Math.log10(strip.mid_freq_hz) - Math.log10(midSweepMin)) / freqRange;
+        const freqDeg = Math.min(70, Math.max(-70, (freqPos - 0.5) * 140));
         knobMidFreq.style.transform = `rotate(${freqDeg}deg)`;
         valMidFreq.textContent = strip.mid_freq_label;
 
@@ -868,7 +1006,7 @@
       } else {
         knobMidFreq.className = "knob-dial";
         knobMidFreq.style.transform = "rotate(0deg)";
-        valMidFreq.textContent = "1.0k Flat";
+        valMidFreq.textContent = "Flat";
         knobMidGain.className = "knob-dial";
         knobMidGain.style.transform = "rotate(0deg)";
         valMidGain.textContent = "0 dB";
@@ -952,6 +1090,360 @@
           actionCardsContainer.appendChild(card);
         });
       }
+    }
+
+    // ===== Mixer Setup Modal Logic =====
+    const BASE = `${window.location.protocol}//${window.location.host}`;
+
+    function openMixerModal() {
+      document.getElementById('mixer-modal-overlay').classList.add('open');
+      loadMixerLibrary();
+    }
+    function closeMixerModal() {
+      document.getElementById('mixer-modal-overlay').classList.remove('open');
+    }
+    function switchModalTab(paneId, btn) {
+      document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.modal-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(paneId).classList.add('active');
+      if (paneId === 'tab-library') loadMixerLibrary();
+    }
+
+    function showFeedback(elId, msg, isOk) {
+      const el = document.getElementById(elId);
+      el.textContent = msg;
+      el.className = `modal-feedback ${isOk ? 'ok' : 'err'}`;
+      setTimeout(() => { el.className = 'modal-feedback'; }, 4000);
+    }
+
+    // Tab 1: USB Scan
+    async function runUsbScan() {
+      const list = document.getElementById('scan-results-list');
+      list.innerHTML = '<p style="font-size:11px;color:var(--dim);">Scanning USB devices…</p>';
+      try {
+        const res = await fetch(`${BASE}/analog/usb/scan`);
+        const data = await res.json();
+        const devices = data.devices || [];
+        if (devices.length === 0) {
+          list.innerHTML = '<p style="font-size:11px;color:var(--dim);">No USB audio devices found. Connect your mixer and try again.</p>';
+          return;
+        }
+        list.innerHTML = '';
+        devices.forEach(dev => {
+          const item = document.createElement('div');
+          item.className = 'scan-device-item';
+          const matched = dev.matched_profile ? `→ ${dev.matched_profile}` : '→ Generic (unmatched)';
+          item.innerHTML = `
+            <div>
+              <div class="scan-device-name">${dev.name}</div>
+              <div class="scan-device-match">${matched} ${dev.confidence ? '(' + dev.confidence + '%)' : ''}</div>
+            </div>
+            <button class="scan-select-btn" onclick="selectMixerProfile('${dev.profile_key || 'generic_analog'}', '${dev.name}')">Use This</button>
+          `;
+          list.appendChild(item);
+        });
+      } catch(e) {
+        list.innerHTML = '<p style="font-size:11px;color:var(--red);">Scan failed. Is the AMALYN server running?</p>';
+      }
+    }
+
+    async function selectMixerProfile(key, deviceName) {
+      try {
+        await fetch(`${BASE}/analog/mixer/select`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ profile_key: key })
+        });
+        showFeedback('scan-feedback', `✓ Mixer set to "${deviceName}" (${key})`, true);
+        loadMixerLibrary();
+      } catch(e) {
+        showFeedback('scan-feedback', 'Failed to set mixer profile.', false);
+      }
+    }
+
+    // Tab 2: Mixer Library
+    async function loadMixerLibrary() {
+      const list = document.getElementById('mixer-library-list');
+      list.innerHTML = '<p style="font-size:11px;color:var(--dim);">Loading…</p>';
+      try {
+        const [mixRes, activeRes] = await Promise.all([
+          fetch(`${BASE}/analog/mixers`),
+          fetch(`${BASE}/analog/mixer/active`)
+        ]);
+        const mixData = await mixRes.json();
+        const activeData = await activeRes.json();
+        const activeKey = (activeData.active_mixer || {}).profile_key || '';
+        const mixers = mixData.mixers || [];
+        if (mixers.length === 0) { list.innerHTML = '<p style="font-size:11px;color:var(--dim);">No mixers in library.</p>'; return; }
+        list.innerHTML = '';
+        mixers.forEach(m => {
+          const isActive = m.key === activeKey;
+          const isCustom = m.source === 'custom';
+          const item = document.createElement('div');
+          item.className = `mixer-lib-item${isActive ? ' active-mixer' : ''}`;
+          item.innerHTML = `
+            <div style="flex:1;min-width:0;">
+              <div class="mixer-lib-name">${m.brand_name || m.key} ${m.model_name || ''}</div>
+              <div class="mixer-lib-specs">${m.channels ? m.channels + 'ch' : ''} ${m.hpf_freq ? '• HPF ' + m.hpf_freq + 'Hz' : ''} ${m.has_sweep_mid ? '• Sweep Mid' : ''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              <span class="mixer-lib-tag${isCustom ? ' custom' : ''}">${isCustom ? 'Custom' : 'Built-in'}</span>
+              ${isActive ? '<span class="mixer-lib-tag">Active</span>' : `<button class="scan-select-btn" onclick="selectMixerProfile('${m.key}','${m.brand_name} ${m.model_name}')">Select</button>`}
+              ${isCustom ? `<button class="mixer-delete-btn" onclick="deleteCustomMixer('${m.key}')">✕</button>` : ''}
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      } catch(e) {
+        list.innerHTML = '<p style="font-size:11px;color:var(--red);">Failed to load library. Server offline?</p>';
+      }
+    }
+
+    async function deleteCustomMixer(key) {
+      if (!confirm(`Delete custom mixer "${key}"?`)) return;
+      try {
+        await fetch(`${BASE}/analog/mixers/custom/${key}`, { method: 'DELETE' });
+        showFeedback('library-feedback', `✓ Deleted "${key}"`, true);
+        loadMixerLibrary();
+      } catch(e) {
+        showFeedback('library-feedback', 'Delete failed.', false);
+      }
+    }
+
+    // Tab 3: Add New Model
+    function clearAddForm() {
+      ['add-brand','add-model','add-channels','add-hpf','add-mid-min','add-mid-max','add-keywords','add-notes'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.getElementById('add-compressor').value = 'false';
+    }
+
+    async function submitCustomMixer() {
+      const brand = document.getElementById('add-brand').value.trim();
+      const model = document.getElementById('add-model').value.trim();
+      if (!brand || !model) { showFeedback('add-feedback', 'Brand and Model are required.', false); return; }
+      const keywords = document.getElementById('add-keywords').value.split(',').map(k => k.trim()).filter(Boolean);
+      const payload = {
+        brand_name: brand,
+        model_name: model,
+        channels: parseInt(document.getElementById('add-channels').value) || 0,
+        hpf_freq: parseInt(document.getElementById('add-hpf').value) || 80,
+        mid_sweep_min: parseInt(document.getElementById('add-mid-min').value) || 250,
+        mid_sweep_max: parseInt(document.getElementById('add-mid-max').value) || 5000,
+        has_compressor: document.getElementById('add-compressor').value === 'true',
+        usb_keywords: keywords,
+        notes: document.getElementById('add-notes').value.trim()
+      };
+      try {
+        const res = await fetch(`${BASE}/analog/mixers/custom`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showFeedback('add-feedback', `✓ ${brand} ${model} saved! Key: ${data.key}`, true);
+          clearAddForm();
+        } else {
+          showFeedback('add-feedback', data.detail || 'Save failed.', false);
+        }
+      } catch(e) {
+        showFeedback('add-feedback', 'Save failed. Server offline?', false);
+      }
+    }
+
+    // Tab 4: Device Mapping
+    async function submitDeviceMap() {
+      const deviceName = document.getElementById('map-device-name').value.trim();
+      const profileKey = document.getElementById('map-profile-key').value.trim();
+      if (!deviceName || !profileKey) { showFeedback('map-feedback', 'Both fields are required.', false); return; }
+      try {
+        const res = await fetch(`${BASE}/analog/device/map`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ device_name: deviceName, profile_key: profileKey })
+        });
+        if (res.ok) {
+          showFeedback('map-feedback', `✓ Mapped "${deviceName}" → ${profileKey}`, true);
+          document.getElementById('map-device-name').value = '';
+          document.getElementById('map-profile-key').value = '';
+        } else {
+          const d = await res.json();
+          showFeedback('map-feedback', d.detail || 'Mapping failed.', false);
+        }
+      } catch(e) {
+        showFeedback('map-feedback', 'Failed. Server offline?', false);
+      }
+    }
+
+    // ===== Mixer Setup Modal Logic =====
+    const BASE = `${window.location.protocol}//${window.location.host}`;
+
+    function openMixerModal() {
+      document.getElementById('mixer-modal-overlay').classList.add('open');
+      loadMixerLibrary();
+    }
+    function closeMixerModal() {
+      document.getElementById('mixer-modal-overlay').classList.remove('open');
+    }
+    function switchModalTab(paneId, btn) {
+      document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.modal-pane').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(paneId).classList.add('active');
+      if (paneId === 'tab-library') loadMixerLibrary();
+    }
+    function showFeedback(elId, msg, isOk) {
+      const el = document.getElementById(elId);
+      el.textContent = msg;
+      el.className = `modal-feedback ${isOk ? 'ok' : 'err'}`;
+      setTimeout(() => { el.className = 'modal-feedback'; }, 4000);
+    }
+
+    // Tab 1: USB Scan
+    async function runUsbScan() {
+      const list = document.getElementById('scan-results-list');
+      list.innerHTML = '<p style="font-size:11px;color:var(--dim);">Scanning USB devices…</p>';
+      try {
+        const res = await fetch(`${BASE}/analog/usb/scan`);
+        const data = await res.json();
+        const devices = data.devices || [];
+        if (devices.length === 0) {
+          list.innerHTML = '<p style="font-size:11px;color:var(--dim);">No USB audio devices found. Connect your mixer and try again.</p>';
+          return;
+        }
+        list.innerHTML = '';
+        devices.forEach(dev => {
+          const item = document.createElement('div');
+          item.className = 'scan-device-item';
+          const matched = dev.matched_profile ? `→ ${dev.matched_profile}` : '→ Generic (unmatched)';
+          item.innerHTML = `
+            <div>
+              <div class="scan-device-name">${dev.name}</div>
+              <div class="scan-device-match">${matched} ${dev.confidence ? '(' + dev.confidence + '%)' : ''}</div>
+            </div>
+            <button class="scan-select-btn" onclick="selectMixerProfile('${dev.profile_key || 'generic_analog'}', '${dev.name}')">Use This</button>
+          `;
+          list.appendChild(item);
+        });
+      } catch(e) {
+        list.innerHTML = '<p style="font-size:11px;color:var(--red);">Scan failed. Is the AMALYN server running?</p>';
+      }
+    }
+
+    async function selectMixerProfile(key, deviceName) {
+      try {
+        await fetch(`${BASE}/analog/mixer/select`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ profile_key: key })
+        });
+        showFeedback('scan-feedback', `✓ Mixer set to "${deviceName}" (${key})`, true);
+        loadMixerLibrary();
+      } catch(e) { showFeedback('scan-feedback', 'Failed to set mixer profile.', false); }
+    }
+
+    // Tab 2: Mixer Library
+    async function loadMixerLibrary() {
+      const list = document.getElementById('mixer-library-list');
+      list.innerHTML = '<p style="font-size:11px;color:var(--dim);">Loading…</p>';
+      try {
+        const [mixRes, activeRes] = await Promise.all([
+          fetch(`${BASE}/analog/mixers`),
+          fetch(`${BASE}/analog/mixer/active`)
+        ]);
+        const mixData = await mixRes.json();
+        const activeData = await activeRes.json();
+        const activeKey = (activeData.active_mixer || {}).profile_key || '';
+        const mixers = mixData.mixers || [];
+        if (mixers.length === 0) { list.innerHTML = '<p style="font-size:11px;color:var(--dim);">No mixers in library.</p>'; return; }
+        list.innerHTML = '';
+        mixers.forEach(m => {
+          const isActive = m.key === activeKey;
+          const isCustom = m.source === 'custom';
+          const item = document.createElement('div');
+          item.className = `mixer-lib-item${isActive ? ' active-mixer' : ''}`;
+          item.innerHTML = `
+            <div style="flex:1;min-width:0;">
+              <div class="mixer-lib-name">${m.brand_name || m.key} ${m.model_name || ''}</div>
+              <div class="mixer-lib-specs">${m.channels ? m.channels + 'ch' : ''} ${m.hpf_freq ? '• HPF ' + m.hpf_freq + 'Hz' : ''} ${m.has_sweep_mid ? '• Sweep Mid' : ''}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              <span class="mixer-lib-tag${isCustom ? ' custom' : ''}">${isCustom ? 'Custom' : 'Built-in'}</span>
+              ${isActive ? '<span class="mixer-lib-tag">Active</span>' :
+                `<button class="scan-select-btn" onclick="selectMixerProfile('${m.key}','${m.brand_name} ${m.model_name}')">Select</button>`}
+              ${isCustom ? `<button class="mixer-delete-btn" onclick="deleteCustomMixer('${m.key}')">✕</button>` : ''}
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      } catch(e) {
+        list.innerHTML = '<p style="font-size:11px;color:var(--red);">Failed to load library. Server offline?</p>';
+      }
+    }
+
+    async function deleteCustomMixer(key) {
+      if (!confirm(`Delete custom mixer "${key}"?`)) return;
+      try {
+        await fetch(`${BASE}/analog/mixers/custom/${key}`, { method: 'DELETE' });
+        showFeedback('library-feedback', `✓ Deleted "${key}"`, true);
+        loadMixerLibrary();
+      } catch(e) { showFeedback('library-feedback', 'Delete failed.', false); }
+    }
+
+    // Tab 3: Add New Model
+    function clearAddForm() {
+      ['add-brand','add-model','add-channels','add-hpf','add-mid-min','add-mid-max','add-keywords','add-notes'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.getElementById('add-compressor').value = 'false';
+    }
+
+    async function submitCustomMixer() {
+      const brand = document.getElementById('add-brand').value.trim();
+      const model = document.getElementById('add-model').value.trim();
+      if (!brand || !model) { showFeedback('add-feedback', 'Brand and Model are required.', false); return; }
+      const keywords = document.getElementById('add-keywords').value.split(',').map(k => k.trim()).filter(Boolean);
+      const payload = {
+        brand_name: brand, model_name: model,
+        channels: parseInt(document.getElementById('add-channels').value) || 0,
+        hpf_freq: parseInt(document.getElementById('add-hpf').value) || 80,
+        mid_sweep_min: parseInt(document.getElementById('add-mid-min').value) || 250,
+        mid_sweep_max: parseInt(document.getElementById('add-mid-max').value) || 5000,
+        has_compressor: document.getElementById('add-compressor').value === 'true',
+        usb_keywords: keywords,
+        notes: document.getElementById('add-notes').value.trim()
+      };
+      try {
+        const res = await fetch(`${BASE}/analog/mixers/custom`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) { showFeedback('add-feedback', `✓ ${brand} ${model} saved! Key: ${data.key}`, true); clearAddForm(); }
+        else showFeedback('add-feedback', data.detail || 'Save failed.', false);
+      } catch(e) { showFeedback('add-feedback', 'Save failed. Server offline?', false); }
+    }
+
+    // Tab 4: Device Mapping
+    async function submitDeviceMap() {
+      const deviceName = document.getElementById('map-device-name').value.trim();
+      const profileKey = document.getElementById('map-profile-key').value.trim();
+      if (!deviceName || !profileKey) { showFeedback('map-feedback', 'Both fields are required.', false); return; }
+      try {
+        const res = await fetch(`${BASE}/analog/device/map`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ device_name: deviceName, profile_key: profileKey })
+        });
+        if (res.ok) {
+          showFeedback('map-feedback', `✓ Mapped "${deviceName}" → ${profileKey}`, true);
+          document.getElementById('map-device-name').value = '';
+          document.getElementById('map-profile-key').value = '';
+        } else { const d = await res.json(); showFeedback('map-feedback', d.detail || 'Mapping failed.', false); }
+      } catch(e) { showFeedback('map-feedback', 'Failed. Server offline?', false); }
     }
 
     // Connect to live WebSocket stream
