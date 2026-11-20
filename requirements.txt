@@ -12,3 +12,4 @@ python-dotenv
 python-osc
 matplotlib
 pymongo
+motor

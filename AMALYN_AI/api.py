@@ -1,4 +1,6 @@
 import os
+import io
+import wave
 from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(__file__)
@@ -16,7 +18,7 @@ import threading
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
 import uvicorn
@@ -48,6 +50,13 @@ from session_db import (
     delete_show_file, get_user_stats
 )
 from discovery import scan_network, get_analog_options, get_audio_interfaces
+from analog_manager import analog_manager
+from calibration import (
+    RTAMeasurement,
+    SPLMeter,
+    calculate_delay,
+    generate_pink_noise,
+)
 
 app = FastAPI(title="AMALYN TECH API", version="1.0.0")
 app.add_middleware(
@@ -137,6 +146,8 @@ else:
 mixer = AmalynMixerBridge(mixer_type="simulator",channel=1)
 mixer.connect()
 sentinel = AmalynSentinel()
+spl_meter = SPLMeter(sample_rate=RATE)
+rta_measurement = RTAMeasurement()
 
 last_status = "CLEAN"
 last_correction_freq = 0
@@ -222,6 +233,42 @@ class ConnectRequest(BaseModel):
     port: Optional[int] = None
     interface_index: Optional[int] = None
 
+class DelayRequest(BaseModel):
+    distance_m: float
+    temperature_c: float = 20.0
+
+class SPLCalibrationRequest(BaseModel):
+    reference_dbfs: float
+    reference_db_spl: float
+    limit_db_spl: Optional[float] = None
+
+class RTAStartRequest(BaseModel):
+    duration_seconds: float = 15.0
+
+class PinkNoiseRequest(BaseModel):
+    sample_count: int = 44_100 * 10
+    level_dbfs: float = -30.0
+    seed: Optional[int] = None
+
+class AnalogMixerSelectRequest(BaseModel):
+    profile_key: str
+    device_name: Optional[str] = None
+
+class AnalogMixerMapRequest(BaseModel):
+    device_name: str
+    profile_key: str
+
+class AnalogMixerCreateRequest(BaseModel):
+    brand_name: str
+    model_name: str
+    channels: int = 0
+    hpf_freq: int = 80
+    mid_sweep_min: int = 100
+    mid_sweep_max: int = 8000
+    has_compressor: bool = False
+    usb_keywords: list[str] = []
+    notes: str = ""
+
 
 # ── Audio Engine ───────────────────────────────────────────────────────
 def audio_engine():
@@ -233,6 +280,8 @@ def audio_engine():
             audio_data = np.frombuffer(data, dtype=np.int16).astype(np.float32)
             frequencies, magnitudes_db = get_frequency_map(audio_data)
             dominant_freq, dominant_mag = get_dominant_frequency(frequencies, magnitudes_db)
+            spl_reading = spl_meter.update(audio_data)
+            rta_reading = rta_measurement.update(frequencies, magnitudes_db)
             status, danger_freq, danger_mag = check_for_feedback(frequencies, magnitudes_db)
             ml_status, ml_confidence = ml_check(magnitudes_db)
             if ml_status and ml_status != "CLEAN" and status == "CLEAN":
@@ -276,7 +325,9 @@ def audio_engine():
                     "health_score": health_score,
                     "alerts": sentinel_alerts[:3],
                     "signal_stats": signal_stats
-                }
+                },
+                "spl": spl_reading,
+                "rta": rta_reading,
             }
             with frame_lock:
                 latest_frame.update(frame)
@@ -554,6 +605,173 @@ def connect_mixer(req: ConnectRequest):
 def trigger_safe():
     mixer.send_safe_profile()
     return {"status":"Safe profile applied"}
+
+
+# ── Analog mixer and calibration ──────────────────────────────────────
+@app.get("/analog/usb/scan")
+def scan_analog_usb():
+    result = analog_manager.scan_usb_mixers()
+    devices = []
+    for device in result["devices"]:
+        profile = device.get("matched_mixer") or {}
+        devices.append({
+            "name": device["device_name"],
+            "device_index": device["device_index"],
+            "channels": device["channels"],
+            "sample_rate": device["sample_rate"],
+            "matched_profile": (
+                f'{profile.get("brand", "")} {profile.get("model", "")}'.strip()
+                if profile else None
+            ),
+            "profile_key": profile.get("key"),
+            "confidence": device["confidence"],
+            "match_reason": device["match_reason"],
+        })
+    return {
+        "devices": devices,
+        "total_detected": result["total_detected"],
+        "active_mixer": result["active_mixer"],
+        "auto_detected": result["auto_detected"],
+    }
+
+
+@app.get("/analog/mixers")
+def list_analog_mixers():
+    mixers = []
+    for key, profile in analog_manager.get_all_mixers().items():
+        specs = profile.get("specs", {})
+        mixers.append({
+            "key": key,
+            "brand_name": profile.get("brand", ""),
+            "model_name": profile.get("model", ""),
+            "channels": profile.get("channels", 0),
+            "hpf_freq": specs.get("hpf_freq"),
+            "has_sweep_mid": specs.get("has_sweep_mid", False),
+            "source": "custom" if profile.get("is_custom") else "builtin",
+        })
+    return {"mixers": mixers}
+
+
+@app.get("/analog/mixer/active")
+def active_analog_mixer():
+    profile = analog_manager.get_active_mixer()
+    return {"active_mixer": {"profile_key": analog_manager.active_mixer_key, **profile}}
+
+
+@app.post("/analog/mixer/select")
+def select_analog_mixer(req: AnalogMixerSelectRequest):
+    if not analog_manager.set_active_mixer(
+        req.profile_key, device_name=req.device_name, manual=True
+    ):
+        raise HTTPException(status_code=404, detail="Analog mixer profile not found")
+    return {"status": "ok", "active_mixer": analog_manager.get_active_mixer()}
+
+
+@app.post("/analog/mixers/custom")
+def create_analog_mixer(req: AnalogMixerCreateRequest):
+    success, message, entry = analog_manager.add_custom_mixer({
+        "brand": req.brand_name,
+        "model": req.model_name,
+        "usb_keywords": req.usb_keywords,
+        "specs": {
+            "hpf_freq": req.hpf_freq,
+            "mid_sweep_min": req.mid_sweep_min,
+            "mid_sweep_max": req.mid_sweep_max,
+            "compressor": "Analog Compressor" if req.has_compressor else "None",
+        },
+        "description": req.notes,
+    })
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+    return {"status": "ok", "message": message, "key": entry["key"], "mixer": entry}
+
+
+@app.delete("/analog/mixers/custom/{mixer_key}")
+def delete_analog_mixer(mixer_key: str):
+    success, message = analog_manager.delete_custom_mixer(mixer_key)
+    if not success:
+        raise HTTPException(status_code=404, detail=message)
+    return {"status": "ok", "message": message}
+
+
+@app.post("/analog/device/map")
+def map_analog_device(req: AnalogMixerMapRequest):
+    success, message = analog_manager.map_device_to_mixer(
+        req.device_name, req.profile_key
+    )
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+    return {"status": "ok", "message": message}
+
+
+@app.post("/calibration/delay")
+def calibration_delay(req: DelayRequest):
+    try:
+        return calculate_delay(req.distance_m, req.temperature_c)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@app.get("/calibration/spl")
+def calibration_spl():
+    return spl_meter.snapshot()
+
+
+@app.post("/calibration/spl")
+def set_calibration_spl(req: SPLCalibrationRequest):
+    try:
+        return spl_meter.set_calibration(
+            req.reference_dbfs, req.reference_db_spl, req.limit_db_spl
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@app.delete("/calibration/spl")
+def clear_calibration_spl():
+    return spl_meter.clear_calibration()
+
+
+@app.get("/calibration/rta")
+def calibration_rta():
+    return rta_measurement.snapshot()
+
+
+@app.post("/calibration/rta/start")
+def start_calibration_rta(req: RTAStartRequest):
+    try:
+        return rta_measurement.start(req.duration_seconds)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@app.post("/calibration/rta/cancel")
+def cancel_calibration_rta():
+    return rta_measurement.cancel()
+
+
+@app.get("/calibration/pink-noise")
+def calibration_pink_noise(
+    sample_count: int = 44_100 * 10,
+    level_dbfs: float = -30.0,
+    seed: Optional[int] = None,
+):
+    try:
+        samples = generate_pink_noise(sample_count, level_dbfs, seed)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(RATE)
+        wav.writeframes(samples.tobytes())
+    buffer.seek(0)
+    return StreamingResponse(
+        buffer,
+        media_type="audio/wav",
+        headers={"Content-Disposition": "inline; filename=amalyn-pink-noise.wav"},
+    )
 
 
 # ── Health ─────────────────────────────────────────────────────────────

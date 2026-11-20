@@ -152,7 +152,7 @@ class AnalogMixerManager:
         internal_markers = ["realtek", "intel® smart sound", "internal", "stereo mix"]
         if any(marker in lower for marker in internal_markers):
             return False
-        return any(ind in lower for marker in indicators if ind in lower)
+        return any(marker in lower for marker in indicators)
 
     def match_device_to_mixer(self, device_name: str) -> Tuple[Optional[Dict[str, Any]], float, str]:
         """

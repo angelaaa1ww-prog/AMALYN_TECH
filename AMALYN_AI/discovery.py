@@ -145,17 +145,26 @@ def get_audio_interfaces():
     List available audio input devices on this machine.
     For analog mixers — user picks which interface to use.
     """
-    import pyaudio
-    p = pyaudio.PyAudio()
+    try:
+        import pyaudio
+    except ImportError:
+        return []
+
+    try:
+        p = pyaudio.PyAudio()
+    except OSError:
+        return []
     devices = []
-    for i in range(p.get_device_count()):
-        info = p.get_device_info_by_index(i)
-        if info['maxInputChannels'] > 0:
-            devices.append({
-                "index": i,
-                "name": info['name'],
-                "channels": info['maxInputChannels'],
-                "sample_rate": int(info['defaultSampleRate'])
-            })
-    p.terminate()
+    try:
+        for i in range(p.get_device_count()):
+            info = p.get_device_info_by_index(i)
+            if info['maxInputChannels'] > 0:
+                devices.append({
+                    "index": i,
+                    "name": info['name'],
+                    "channels": info['maxInputChannels'],
+                    "sample_rate": int(info['defaultSampleRate'])
+                })
+    finally:
+        p.terminate()
     return devices

@@ -1,0 +1,208 @@
+======================================================
+   AMALYN TECH — HOW TO OPEN AND RUN THE SYSTEM
+======================================================
+   AI-Driven Audio Intelligence & Predictive Monitoring
+   Built by Angela — Nairobi, Kenya
+======================================================
+
+
+=====================
+  BEFORE YOU START
+=====================
+
+Make sure you have:
+  1. Python 3.11 installed
+  2. The amalyn_env virtual environment set up
+     (located at AMALYN_TECH\amalyn_env)
+  3. A microphone connected to your computer
+     (the system works without one, but runs in API-only mode)
+
+
+==========================================
+  OPTION A — QUICK START (Double-Click)
+==========================================
+
+1. Open File Explorer
+2. Go to: AMALYN_TECH\AMALYN_AI
+3. Double-click "START_SERVER.bat"
+4. Wait until you see:
+      [OK] Starting AMALYN API on http://localhost:8000
+      [ENGINE] Audio engine started
+5. Open your browser and go to:
+      http://localhost:8000
+6. The Login Portal will appear — sign in or create an account
+7. To stop: press Ctrl+C in the black terminal window
+
+
+==========================================
+  OPTION B — POWERSHELL (Step by Step)
+==========================================
+
+STEP 1 — Open PowerShell
+   Open Windows PowerShell (or the terminal in VS Code with Ctrl + `)
+
+STEP 2 — Allow scripts to run (only needed once per session)
+   Copy and paste this command:
+
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+
+STEP 3 — Activate the virtual environment
+   Copy and paste this command:
+
+   & C:\Users\angel\Desktop\amalyn_tech\AMALYN_TECH\amalyn_env\Scripts\Activate.ps1
+
+   You will see (amalyn_env) appear at the start of the line.
+   That means the environment is active.
+
+STEP 4 — Navigate to the AI folder
+   Copy and paste this command:
+
+   cd C:\Users\angel\Desktop\amalyn_tech\AMALYN_TECH\AMALYN_AI
+
+STEP 5 — Start the server
+   Copy and paste this command:
+
+   python api.py
+
+   Wait until you see these lines:
+      [ML] Model loaded successfully
+      [ENGINE] Audio engine started
+
+STEP 6 — Open in your browser
+   Open Chrome or Edge and go to:
+
+   http://localhost:8000
+
+   This opens the Login Portal.
+
+STEP 7 — Stop the server
+   Go back to the PowerShell window and press Ctrl+C
+
+
+==========================================
+  OPTION C — COMMAND PROMPT (cmd.exe)
+==========================================
+
+STEP 1 — Open Command Prompt
+   Press Win+R, type cmd, press Enter
+
+STEP 2 — Activate the environment
+
+   C:\Users\angel\Desktop\amalyn_tech\AMALYN_TECH\amalyn_env\Scripts\activate.bat
+
+STEP 3 — Navigate to AI folder
+
+   cd C:\Users\angel\Desktop\amalyn_tech\AMALYN_TECH\AMALYN_AI
+
+STEP 4 — Start
+
+   python api.py
+
+STEP 5 — Open http://localhost:8000 in your browser
+
+
+======================================================
+  THE PORTALS — WHAT EACH PAGE DOES
+======================================================
+
+After logging in, you can access these pages:
+
+  http://localhost:8000              Login / Sign Up
+  http://localhost:8000/dashboard    Engineer Dashboard
+                                    — Live spectrum analyzer
+                                    — Feedback alerts & auto-EQ
+                                    — Perfect State setup
+                                    — Sentinel health monitor
+
+  http://localhost:8000/musician     Musician IEM Portal
+                                    — Personal in-ear monitor mix
+                                    — Channel level & mute controls
+                                    — Save/load mix presets
+
+  http://localhost:8000/producer     Producer Analysis Suite
+                                    — Deep frequency analysis
+                                    — Phase correlation tools
+                                    — Session history & reports
+
+  http://localhost:8000/mixer-setup  Mixer Setup
+                                    — Scan network for digital mixers
+                                    — Connect to Yamaha / Behringer / A&H
+                                    — Analog mixer USB detection
+
+  http://localhost:8000/analog       Analog Rack Advisor
+                                    — 31-band graphic EQ guidance
+                                    — Outboard gear recommendations
+                                    — Mains hum detection (50/60 Hz)
+
+
+======================================================
+  USER ROLES
+======================================================
+
+When creating an account, choose your role:
+
+  Engineer  — Full access to dashboard, setup, mixer control
+  Producer  — Access to producer analysis suite
+  Musician  — Access to IEM monitor portal
+
+
+======================================================
+  FIRST-TIME SETUP (If environment does not exist)
+======================================================
+
+If the amalyn_env folder is missing, create it:
+
+  1. Open PowerShell in the AMALYN_TECH folder
+  2. Run these commands one by one:
+
+     python -m venv amalyn_env
+     .\amalyn_env\Scripts\Activate.ps1
+     pip install -r requirements.txt
+
+  3. Then follow Option B from Step 4 above
+
+
+======================================================
+  TROUBLESHOOTING
+======================================================
+
+PROBLEM: "PyAudio is unavailable"
+  — The system will still run in API-only mode
+  — To fix: install PyAudio with
+    pip install pyaudio
+  — On some machines you may need to install it from a wheel file
+
+PROBLEM: "[DB] Startup check failed"
+  — MongoDB is not running or not configured
+  — The system still works for live audio analysis
+  — Sessions and user data won't be saved to the database
+  — To fix: set MONGODB_URI in AMALYN_TECH\.env
+
+PROBLEM: Port 8000 is already in use
+  — Another program is using port 8000
+  — Use START_SERVER.bat (it kills old instances automatically)
+  — Or manually: netstat -aon | findstr :8000
+    then: taskkill /PID <number> /F
+
+PROBLEM: "Scripts cannot be loaded" error in PowerShell
+  — Run this first:
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+
+PROBLEM: Python not found
+  — Make sure Python 3.11 is installed
+  — Download from: https://www.python.org/downloads/
+  — During install, CHECK "Add Python to PATH"
+
+
+======================================================
+  HOW TO STOP AMALYN
+======================================================
+
+  — Press Ctrl+C in the terminal window
+  — Or close the terminal window
+  — The server will shut down and release port 8000
+
+
+======================================================
+  Because sound should never fail.
+======================================================

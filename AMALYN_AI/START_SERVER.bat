@@ -9,12 +9,16 @@ echo.
 
 cd /d "%~dp0"
 
-:: Check if Python 3.11 is available
-py -3.11 --version >nul 2>&1
-if errorlevel 1 (
-    echo  [ERROR] Python 3.11 not found. Please install it.
-    pause
-    exit /b 1
+:: Prefer the bundled environment so the declared dependencies are used.
+set "PYTHON=%~dp0..\amalyn_env\Scripts\python.exe"
+if not exist "%PYTHON%" (
+    py -3.11 --version >nul 2>&1
+    if errorlevel 1 (
+        echo  [ERROR] Python 3.11 not found and the bundled environment is missing.
+        pause
+        exit /b 1
+    )
+    set "PYTHON="
 )
 
 :: Kill any old instance on port 8000
@@ -29,6 +33,10 @@ echo  Press Ctrl+C to stop the server.
 echo.
 
 :: Start the server
-py -3.11 api.py
+if defined PYTHON (
+    "%PYTHON%" api.py
+) else (
+    py -3.11 api.py
+)
 
 pause

@@ -22,13 +22,22 @@ if not MONGO_URI:
     raise RuntimeError("MONGODB_URI must be configured in .env before starting the API")
 
 DB_NAME = os.getenv("MONGODB_DATABASE", "amalyn")
+MONGO_SERVER_SELECTION_TIMEOUT_MS = int(
+    os.getenv("MONGODB_SERVER_SELECTION_TIMEOUT_MS", "3000")
+)
 
 # Async client — used by FastAPI endpoints
-async_client = AsyncIOMotorClient(MONGO_URI)
+async_client = AsyncIOMotorClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=MONGO_SERVER_SELECTION_TIMEOUT_MS,
+)
 async_db = async_client[DB_NAME]
 
 # Sync client — used by background audio engine thread
-sync_client = MongoClient(MONGO_URI)
+sync_client = MongoClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=MONGO_SERVER_SELECTION_TIMEOUT_MS,
+)
 sync_db = sync_client[DB_NAME]
 
 # ── Collections ────────────────────────────────────────────────────────
