@@ -224,12 +224,21 @@ async def start_oauth_verification(name, email, role):
         result = await users_col.insert_one(user)
         user["_id"] = result.inserted_id
     else:
+        existing_role = user.get("role")
         await users_col.update_one(
             {"_id": user["_id"]},
-            {"$set": {"name": clean_name, "role": role or user.get("role", "musician")}},
+            {
+                "$set": {
+                    "name": clean_name,
+                    "role": role or existing_role or "musician",
+                    "oauth": True,
+                    "email_verified": True,
+                }
+            },
         )
         user["name"] = clean_name
-        user["role"] = role or user.get("role", "musician")
+        user["role"] = role or existing_role or "musician"
+        user["email_verified"] = True
 
     return _public_user(user), None
 

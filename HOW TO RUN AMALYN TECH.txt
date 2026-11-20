@@ -33,6 +33,9 @@ Make sure you have:
 6. The Login Portal will appear — sign in or create an account
 7. To stop: press Ctrl+C in the black terminal window
 
+The START_SERVER.bat script now waits for port 8000 before opening the
+browser. It should open http://127.0.0.1:8000/ automatically.
+
 
 ==========================================
   OPTION B — POWERSHELL (Step by Step)
@@ -187,6 +190,25 @@ PROBLEM: Port 8000 is already in use
 PROBLEM: "Scripts cannot be loaded" error in PowerShell
   — Run this first:
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+
+PROBLEM: Google sign-in does not work
+  1. Start AMALYN through START_SERVER.bat or START AMALYN.bat.
+  2. In Supabase, open Authentication -> Providers -> Google and enable it.
+  3. Add the exact callback URL shown by Google to the Google Cloud OAuth
+     application and add these AMALYN redirect URLs in Supabase:
+
+     Local:
+       http://127.0.0.1:8000/login.html
+       http://localhost:8000/login.html
+
+     Hosted:
+       https://YOUR-SERVICE.onrender.com/login.html
+
+  4. Confirm SUPABASE_URL and SUPABASE_ANON_KEY are in
+     AMALYN_TECH\.env or AMALYN_TECH\AMALYN_AI\.env.
+  5. Restart the server after changing environment variables.
+  6. Open AMALYN through http://127.0.0.1:8000/, not by double-clicking
+     login.html from File Explorer.
 
 PROBLEM: Python not found
   — Make sure Python 3.11 is installed

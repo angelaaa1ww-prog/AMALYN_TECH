@@ -105,6 +105,17 @@ Configuration → Redirect URLs, using:
 https://YOUR-SERVICE.onrender.com/login.html
 ```
 
+For local Google sign-in, also add both of these URLs to Supabase:
+
+```
+http://localhost:8000/login.html
+http://127.0.0.1:8000/login.html
+```
+
+Google sign-in only works when the application is opened through the local
+server or through the deployed HTTPS origin. Opening `login.html` directly
+from File Explorer is not a supported OAuth callback environment.
+
 Enable Google, Microsoft, and Apple under Supabase Authentication → Providers,
 then enter each provider's OAuth client credentials and callback URL from
 Supabase. The login page reads only `SUPABASE_URL` and `SUPABASE_ANON_KEY` from

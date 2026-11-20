@@ -13,8 +13,6 @@ const AMALYN_CONFIG = (() => {
 
     const LOCAL_IP = '192.168.1.100';
     const LOCAL_PORT = '8000';
-    const RENDER_API = 'https://amalyn-tech.onrender.com';
-
     let apiUrl, wsUrl;
 
     if (location.protocol === 'file:') {
@@ -24,8 +22,8 @@ const AMALYN_CONFIG = (() => {
         apiUrl = `http://${hostname}:${LOCAL_PORT}`;
         wsUrl = `ws://${hostname}:${LOCAL_PORT}/ws`;
     } else {
-        apiUrl = RENDER_API;
-        wsUrl = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${new URL(RENDER_API).host}/ws`;
+        apiUrl = location.origin;
+        wsUrl = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws`;
     }
 
     // --- THEME MANAGEMENT ---

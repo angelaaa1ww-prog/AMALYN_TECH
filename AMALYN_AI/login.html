@@ -1208,7 +1208,7 @@ async function applyOAuthUser(user){
     }
     const metadata = user.user_metadata || {}
     const displayName = metadata.full_name || metadata.name || user.email.split('@')[0]
-    const role = metadata.role || 'musician'
+    const role = metadata.role || null
     try{
        const res = await fetch(`${API}/auth/oauth/verify/start`,{
            method:'POST',

@@ -4,13 +4,22 @@ import os
 import time
 import webbrowser
 import threading
+import urllib.request
 
 BASE = os.path.dirname(__file__)
 
 def open_login():
-    time.sleep(3)
-    webbrowser.open('http://localhost:8000/')
-    print("[LAUNCHER] AMALYN Login Portal opened at http://localhost:8000/")
+    url = 'http://localhost:8000/'
+    for _ in range(60):
+        try:
+            with urllib.request.urlopen(url + 'health', timeout=1) as response:
+                if response.status == 200:
+                    webbrowser.open(url)
+                    print("[LAUNCHER] AMALYN Login Portal opened at " + url)
+                    return
+        except Exception:
+            time.sleep(0.5)
+    print("[LAUNCHER] AMALYN did not become ready; open " + url + " manually")
 
 def main():
     print("\n" + "="*50)

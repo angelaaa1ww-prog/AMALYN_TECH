@@ -34,9 +34,25 @@ echo.
 
 :: Start the server
 if defined PYTHON (
-    "%PYTHON%" api.py
+    start "" /D "%~dp0" "%PYTHON%" api.py
 ) else (
-    py -3.11 api.py
+    start "" /D "%~dp0" py -3.11 api.py
 )
 
+set "READY="
+for /l %%i in (1,1,60) do (
+    if not defined READY (
+        curl -s -f http://127.0.0.1:8000/health >nul 2>&1
+        if not errorlevel 1 (
+            set "READY=1"
+            start "" http://127.0.0.1:8000/
+            echo  [OK] AMALYN is ready. Browser opened.
+        ) else (
+            timeout /t 1 /nobreak >nul
+        )
+    )
+)
+if not defined READY (
+    echo  [ERROR] AMALYN did not start within 60 seconds. Check Python and the terminal output.
+)
 pause
