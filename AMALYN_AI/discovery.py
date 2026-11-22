@@ -29,8 +29,21 @@ def get_local_network():
         local_ip = sock.getsockname()[0]
         network = ipaddress.ip_network(f"{local_ip}/24", strict=False)
         return str(network.network_address).rsplit(".", 1)[0], local_ip
-    except OSError as error:
-        raise RuntimeError("Could not determine the local network") from error
+    except OSError:
+        try:
+            hostname = socket.gethostname()
+            addresses = socket.getaddrinfo(hostname, None, socket.AF_INET)
+            candidate = next(
+                (item[4][0] for item in addresses
+                 if item[4][0] and not item[4][0].startswith("127.")),
+                None,
+            )
+            if candidate:
+                network = ipaddress.ip_network(f"{candidate}/24", strict=False)
+                return str(network.network_address).rsplit(".", 1)[0], candidate
+        except Exception:
+            pass
+        return "192.168.1", "127.0.0.1"
     finally:
         if sock is not None:
             sock.close()

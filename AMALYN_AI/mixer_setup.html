@@ -489,11 +489,22 @@ async function loadInterfaces(){
       <div class="iface-item" onclick="selectInterface(${JSON.stringify(d).replace(/"/g,'&quot;')}, event)">
         <div>
           <div class="iface-name">${d.name}</div>
-          <div class="iface-info">${d.channels} input channel(s) • ${d.sample_rate} Hz</div>
+          <div class="iface-info">${d.channels} input channel(s) • ${d.sample_rate} Hz${d.matched_profile ? ` • ${d.confidence}% ${d.matched_profile}` : ''}</div>
         </div>
-        <div style="font-size:9px;color:#252535">Index ${d.index}</div>
+        <div style="font-size:9px;color:${d.is_usb?'#00ff88':'#252535'}">${d.is_usb?'USB • ':''}Index ${d.index}</div>
       </div>
     `).join('')
+    const bestMatch = data.interfaces
+      .filter(d=>d.profile_key && d.confidence >= 80)
+      .sort((a,b)=>b.confidence-a.confidence)[0]
+    if(bestMatch){
+      const card = Array.from(document.querySelectorAll('.iface-item'))
+        .find(item=>item.innerHTML.includes(bestMatch.name))
+      if(card){
+        const syntheticEvent = {currentTarget: card}
+        selectInterface(bestMatch, syntheticEvent)
+      }
+    }
   }catch(e){
     document.getElementById('interface-list').innerHTML =
       '<div class="empty-results">Could not list audio interfaces. Check that audio capture is available.</div>'
@@ -547,13 +558,13 @@ async function doConnect(){
       btn.disabled = false; btn.textContent = 'CONNECT TO MIXER'
     }
   }catch(e){
-    alert('Cannot reach AMALYN API. Make sure api.py is running.')
+  alert('Cannot reach AMALYN API. Make sure AMALYN is running.')
     btn.disabled = false; btn.textContent = 'CONNECT TO MIXER'
   }
 }
 
 function goDashboard(){
-  window.location.href = 'dashboard.html'
+  window.location.href = '/dashboard'
 }
 
 // Load analog options on start

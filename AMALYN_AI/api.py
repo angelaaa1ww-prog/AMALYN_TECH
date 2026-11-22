@@ -581,9 +581,13 @@ def start_scan():
         def prog(sc,tot,found):
             with discovery_lock:
                 discovery_results.update({"progress":sc,"total":tot,"mixers":found})
-        found = scan_network(progress_callback=prog)
-        with discovery_lock:
-            discovery_results.update({"status":"complete","mixers":found})
+        try:
+            found = scan_network(progress_callback=prog)
+            with discovery_lock:
+                discovery_results.update({"status":"complete","mixers":found,"progress":100,"total":254})
+        except Exception as error:
+            with discovery_lock:
+                discovery_results.update({"status":"error","error":str(error),"mixers":[]})
     threading.Thread(target=run, daemon=True).start()
     return {"status":"scanning_started"}
 
@@ -598,12 +602,84 @@ def get_analog():
 
 @app.get("/mixer/interfaces")
 def get_interfaces():
-    return {"interfaces": get_audio_interfaces()}
+    scan = analog_manager.scan_usb_mixers()
+    matches = {
+        device["device_index"]: device
+        for device in scan["devices"]
+    }
+    interfaces = []
+    for interface in get_audio_interfaces():
+        match = matches.get(interface["index"], {})
+        profile = match.get("matched_mixer") or {}
+        interfaces.append({
+            **interface,
+            "matched_profile": (
+                f'{profile.get("brand", "")} {profile.get("model", "")}'.strip()
+                if profile else None
+            ),
+            "profile_key": profile.get("key"),
+            "confidence": match.get("confidence", 0),
+            "match_reason": match.get("match_reason", "No USB profile match"),
+            "is_usb": interface["name"].lower().find("usb") >= 0
+            or bool(match.get("is_usb")),
+        })
+    return {
+        "interfaces": interfaces,
+        "message": "No USB or audio input interfaces found." if not interfaces else None,
+        "auto_detected": scan["auto_detected"],
+    }
 
 @app.post("/mixer/connect")
 def connect_mixer(req: ConnectRequest):
-    global mixer
+    global mixer, p, stream
     try:
+        if req.mixer_key != "simulator" and req.mixer_key not in MIXER_PROFILES:
+            profile_key = {
+                "yamaha_mg": "yamaha_mg",
+                "mackie_vlz": "mackie_profx",
+                "behringer_xenyx": "behringer_xenyx",
+                "allen_heath_zed": "allen_heath_zed",
+                "soundcraft_efx": "soundcraft_signature",
+            }.get(req.mixer_key, "generic_analog")
+            device_name = None
+            if req.interface_index is not None:
+                for interface in get_audio_interfaces():
+                    if interface["index"] == req.interface_index:
+                        device_name = interface["name"]
+                        break
+            analog_manager.set_active_mixer(
+                profile_key,
+                device_name=device_name,
+                manual=True,
+            )
+
+            if req.interface_index is not None:
+                if p is not None and stream is not None:
+                    try:
+                        stream.stop_stream()
+                        stream.close()
+                    except Exception:
+                        pass
+                if p is not None:
+                    try:
+                        stream = p.open(
+                            format=FORMAT,
+                            channels=CHANNELS,
+                            rate=RATE,
+                            input=True,
+                            frames_per_buffer=CHUNK,
+                            input_device_index=req.interface_index,
+                        )
+                    except (OSError, ValueError) as error:
+                        stream = None
+                        return {"status":"error","message":f"Could not open selected USB interface: {error}"}
+            return {
+                "status":"connected",
+                "mixer":req.mixer_key,
+                "analog_profile":analog_manager.active_mixer_key,
+                "interface_index":req.interface_index,
+            }
+
         new_mixer = AmalynMixerBridge(mixer_type=req.mixer_key, channel=1)
         if req.ip:
             new_mixer.profile['ip'] = req.ip

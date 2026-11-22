@@ -195,7 +195,7 @@
       "model": "Standard Analog Mixing Console",
       "category": "ANALOG_MIXER",
       "connection_type": "USB_AUDIO",
-      "usb_keywords": ["usb audio codec", "usb audio", "generic", "microphone", "sound mapper"],
+      "usb_keywords": ["usb audio codec", "usb audio", "generic usb", "generic"],
       "specs": {
         "hpf_freq": 80,
         "hpf_label": "80 Hz",

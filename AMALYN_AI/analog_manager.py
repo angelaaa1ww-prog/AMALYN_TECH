@@ -147,7 +147,7 @@ class AnalogMixerManager:
         lower = name.lower()
         # Common USB terms
         indicators = ["usb", "codec", "mg-xu", "profx", "xenyx", "zed", "scarlett",
-                      "u-phoria", "umc", "audiobox", "line (", "external", "capture"]
+                      "u-phoria", "umc", "audiobox", "external"]
         # Internal sound card markers
         internal_markers = ["realtek", "intel® smart sound", "internal", "stereo mix"]
         if any(marker in lower for marker in internal_markers):
@@ -162,7 +162,7 @@ class AnalogMixerManager:
         if not device_name:
             return None, 0.0, "Empty device name"
 
-        name_lower = device_name.lower().strip()
+        name_lower = re.sub(r"[^a-z0-9]+", " ", device_name.lower()).strip()
 
         # 1. User custom mapping check (100% confidence)
         if device_name in self.device_mappings:
@@ -181,16 +181,15 @@ class AnalogMixerManager:
         for key, mixer in all_mixers.items():
             keywords = mixer.get("usb_keywords", [])
             for kw in keywords:
-                kw_lower = kw.lower().strip()
+                kw_lower = re.sub(r"[^a-z0-9]+", " ", kw.lower()).strip()
                 if not kw_lower:
                     continue
-
-                # Exact or substring match
                 if kw_lower in name_lower:
                     # Longer keyword matches are generally more specific
-                    score = 75.0 + min(20.0, len(kw_lower) * 2.0)
+                    score = 78.0 + min(17.0, len(kw_lower) * 1.5)
                     # Boost for high-specificity keywords
-                    if kw_lower in ("mg-xu", "mg10xu", "mg12xu", "mg16xu", "profx", "xenyx", "zedi", "signature", "scarlett"):
+                    if kw_lower in ("mg xu", "mg10xu", "mg12xu", "mg16xu", "mg20xu",
+                                    "profx", "xenyx", "zedi", "signature", "scarlett"):
                         score = max(score, 95.0)
 
                     if score > highest_score:
