@@ -101,11 +101,17 @@ async def startup():
 
 @app.get("/")
 def serve_login():
-    return FileResponse(os.path.join(BASE_DIR, "login.html"))
+    return FileResponse(
+        os.path.join(BASE_DIR, "login.html"),
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+    )
 
 @app.get("/login.html")
 def serve_login_file():
-    return FileResponse(os.path.join(BASE_DIR, "login.html"))
+    return FileResponse(
+        os.path.join(BASE_DIR, "login.html"),
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+    )
 
 @app.get("/dashboard")
 def serve_dashboard():
