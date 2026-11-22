@@ -67,7 +67,21 @@ app.add_middleware(
 )
 
 # Static files
-app.add_middleware("http", middleware="add_process_time_header")
+
+# ── Request timing middleware ─────────────────────────────────────
+from starlette.middleware.base import BaseHTTPMiddleware
+import time
+
+class ProcessTimeHeaderMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        start = time.time()
+        response = await call_next(request)
+        process_time = time.time() - start
+        response.headers["X-Process-Time"] = f"{process_time:.4f}s"
+        return response
+
+app.add_middleware(ProcessTimeHeaderMiddleware)
+# ── End of request timing middleware ───────────────────────────────────
 
 # Static files
 app.mount("/static", StaticFiles(directory=BASE_DIR), name="static")

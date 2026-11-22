@@ -1,80 +1,55 @@
-# database.py — AMALYN MongoDB Connection
+# database.py - AMALYN MongoDB connection
 
 import os
+from datetime import datetime
+
 from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import MongoClient
-from datetime import datetime
 
-load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"), override=True)
-load_dotenv(os.path.join(os.path.dirname(__file__), ".env"), override=False)
 
-# ── Connection String ──────────────────────────────────────────────────
-# Put your MongoDB connection string in a .env file:
-# MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/amalyn
-MONGO_URI = os.getenv(
-    "MONGO_URI",
-    "mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER.mongodb.net/amalyn"
-)
+BASE_DIR = os.path.dirname(__file__)
+load_dotenv(os.path.join(os.path.dirname(BASE_DIR), ".env"), override=True)
+load_dotenv(os.path.join(BASE_DIR, ".env"), override=False)
 
-MONGO_URI = os.getenv("MONGODB_URI", MONGO_URI)
+MONGO_URI = os.getenv("MONGODB_URI", os.getenv("MONGO_URI", "")).strip()
 if not MONGO_URI:
     raise RuntimeError("MONGODB_URI must be configured in .env before starting the API")
 
-DB_NAME = os.getenv("MONGODB_DATABASE", "amalyn")
+DB_NAME = os.getenv("MONGODB_DATABASE", "amalyn").strip() or "amalyn"
 MONGO_SERVER_SELECTION_TIMEOUT_MS = int(
     os.getenv("MONGODB_SERVER_SELECTION_TIMEOUT_MS", "3000")
 )
 
-# Async client — used by FastAPI endpoints
 async_client = AsyncIOMotorClient(
     MONGO_URI,
     serverSelectionTimeoutMS=MONGO_SERVER_SELECTION_TIMEOUT_MS,
 )
 async_db = async_client[DB_NAME]
 
-# Sync client — used by background audio engine thread
 sync_client = MongoClient(
     MONGO_URI,
     serverSelectionTimeoutMS=MONGO_SERVER_SELECTION_TIMEOUT_MS,
 )
 sync_db = sync_client[DB_NAME]
 
-# ── Collections ────────────────────────────────────────────────────────
-# Async
-users_col       = async_db["users"]
-sessions_col    = async_db["sessions"]
-presets_col     = async_db["presets"]
-show_files_col  = async_db["show_files"]
-events_col      = async_db["events"]
-venues_col      = async_db["venues"]
+users_col = async_db["users"]
+sessions_col = async_db["sessions"]
+presets_col = async_db["presets"]
+show_files_col = async_db["show_files"]
+events_col = async_db["events"]
+venues_col = async_db["venues"]
 
-# Sync (for audio engine thread)
-sync_events_col  = sync_db["events"]
+sync_events_col = sync_db["events"]
 sync_sessions_col = sync_db["sessions"]
 
 
 async def init_indexes():
-    """
-    Create database indexes on startup.
-    Ensures fast queries and unique constraints.
-    """
-    # Users — unique email
     await users_col.create_index("email", unique=True)
-
-    # Sessions — query by user and date
     await sessions_col.create_index([("user_id", 1), ("created_at", -1)])
-
-    # Events — query by session
     await events_col.create_index([("session_id", 1), ("timestamp", -1)])
-
-    # Presets — query by user and venue
     await presets_col.create_index([("user_id", 1), ("venue_key", 1)])
-
-    # Show files — query by user
     await show_files_col.create_index([("user_id", 1), ("created_at", -1)])
-
-    print("[DB] MongoDB indexes created")
 
 
 def get_timestamp():

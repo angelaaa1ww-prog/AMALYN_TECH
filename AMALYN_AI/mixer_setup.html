@@ -390,15 +390,16 @@ async function startScan(){
 
 function renderDigitalResults(mixers){
   const el = document.getElementById('digital-results')
-  if(!mixers.length){
+  const supported = mixers.filter(m => m.connectable !== false)
+  if(!supported.length){
     el.innerHTML = `<div class="empty-results">
-      No mixers found on the network.<br><br>
+      No supported mixers found on the network.<br><br>
       Make sure your mixer is powered on and connected to the same WiFi or ethernet switch as your laptop.<br>
-      Also verify OSC is enabled on the mixer.
+      Also verify OSC is enabled on the mixer. Unsupported port matches are excluded.
     </div>`
     return
   }
-  el.innerHTML = mixers.map(m=>`
+  el.innerHTML = supported.map(m=>`
     <div class="mixer-card" id="mc-${m.ip}-${m.port}" onclick="selectMixer(${JSON.stringify(m).replace(/"/g,'&quot;')})">
       <span class="mx-badge">FOUND</span>
       <div class="mx-brand">${m.brand}</div>

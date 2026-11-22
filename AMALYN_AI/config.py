@@ -12,7 +12,7 @@ except ImportError:  # The API and offline DSP tests remain usable without PyAud
 CHANNELS = 1
 RATE = 44_100
 # 512 samples keeps end-to-end detection latency low (~11.6 ms per captured frame).
-CHUNK = 1024
+CHUNK = 512
 FORMAT = pyaudio.paInt16 if pyaudio is not None else None
 
 
@@ -33,7 +33,7 @@ LOCAL_NOISE_BINS = 4
 
 # --- ALERT LEVELS ---
 WARNING_THRESHOLD_DB = -15
-CRITICAL_THRESHOLD_DB = -6
+CRITICAL_THRESHOLD_DB = -12
 
 # --- ML SETTINGS ---
 ML_FEATURE_COUNT = 257
