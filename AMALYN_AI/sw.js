@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amalyn-pwa-v2';
+const CACHE_NAME = 'amalyn-pwa-v4';
 const urlsToCache = [
   '/',
   '/login.html',
@@ -6,7 +6,10 @@ const urlsToCache = [
   '/producer.html',
   '/musician.html',
   '/config.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/static/logo.png',
+  '/static/icon-192.png',
+  '/static/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -16,14 +19,26 @@ self.addEventListener('install', event => {
   );
 });
 
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys
+        .filter(key => key !== CACHE_NAME)
+        .map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
+});
+
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        return response;
       })
+      .catch(() => caches.match(event.request))
   );
 });

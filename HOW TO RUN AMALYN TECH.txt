@@ -23,8 +23,8 @@ Make sure you have:
 ==========================================
 
 1. Open File Explorer
-2. Go to: AMALYN_TECH\AMALYN_AI
-3. Double-click "START_SERVER.bat"
+2. Go to: AMALYN_TECH
+3. Double-click "START AMALYN.bat"
 4. Wait until you see:
       [OK] Starting AMALYN API on http://localhost:8000
       [ENGINE] Audio engine started
@@ -33,7 +33,7 @@ Make sure you have:
 6. The Login Portal will appear — sign in or create an account
 7. To stop: press Ctrl+C in the black terminal window
 
-The START_SERVER.bat script now waits for port 8000 before opening the
+The START AMALYN.bat script now waits for port 8000 before opening the
 browser. It should open http://127.0.0.1:8000/ automatically.
 
 
@@ -183,7 +183,7 @@ PROBLEM: "[DB] Startup check failed"
 
 PROBLEM: Port 8000 is already in use
   — Another program is using port 8000
-  — Use START_SERVER.bat (it kills old instances automatically)
+  — Use START AMALYN.bat (it starts the only supported launcher)
   — Or manually: netstat -aon | findstr :8000
     then: taskkill /PID <number> /F
 
@@ -192,7 +192,7 @@ PROBLEM: "Scripts cannot be loaded" error in PowerShell
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 
 PROBLEM: Google sign-in does not work
-  1. Start AMALYN through START_SERVER.bat or START AMALYN.bat.
+  1. Start AMALYN through START AMALYN.bat.
   2. In Supabase, open Authentication -> Providers -> Google and enable it.
   3. Add the exact callback URL shown by Google to the Google Cloud OAuth
      application and add these AMALYN redirect URLs in Supabase:

@@ -9,18 +9,34 @@ echo.
 echo  Starting AMALYN...
 echo.
 
-cd /d "%~dp0"
-cd AMALYN_AI
+cd /d "%~dp0\AMALYN_AI"
 
-call ..\amalyn_env\Scripts\activate.bat
+for /f "tokens=5" %%p in ('netstat -aon ^| findstr ":8000"') do (
+    taskkill /PID %%p /F >nul 2>&1
+)
 
-echo  [ENGINE] Launching AI Engine...
-echo  [BROWSER] Opening Dashboard...
-echo.
+set "PYTHON=%~dp0\amalyn_env\Scripts\python.exe"
+if not exist "%PYTHON%" (
+    py -3.11 api.py
+) else (
+    start "" /D "%~dp0\AMALYN_AI" "%PYTHON%" api.py
+)
 
-start "" "%~dp0amalyn_env\Scripts\python.exe" launcher.py
+set "READY="
+for /l %%i in (1,1,60) do (
+    if not defined READY (
+        curl -s -f http://127.0.0.1:8000/health >nul 2>&1
+        if not errorlevel 1 (
+            set "READY=1"
+            start "" http://127.0.0.1:8000/
+            echo  [OK] AMALYN is ready. Browser opened.
+        ) else (
+            timeout /t 1 /nobreak >nul
+        )
+    )
+)
 
-echo  AMALYN is running.
-echo  Close this window to stop AMALYN.
-echo.
+if not defined READY (
+    echo  [ERROR] AMALYN did not start within 60 seconds.
+)
 pause

@@ -94,16 +94,32 @@ def serve_login_file():
 def serve_dashboard():
     return FileResponse(os.path.join(BASE_DIR, "dashboard.html"))
 
+@app.get("/dashboard.html")
+def serve_dashboard_file():
+    return FileResponse(os.path.join(BASE_DIR, "dashboard.html"))
+
 @app.get("/musician")
 def serve_musician():
+    return FileResponse(os.path.join(BASE_DIR, "musician.html"))
+
+@app.get("/musician.html")
+def serve_musician_file():
     return FileResponse(os.path.join(BASE_DIR, "musician.html"))
 
 @app.get("/producer")
 def serve_producer():
     return FileResponse(os.path.join(BASE_DIR, "producer.html"))
 
+@app.get("/producer.html")
+def serve_producer_file():
+    return FileResponse(os.path.join(BASE_DIR, "producer.html"))
+
 @app.get("/mixer-setup")
 def serve_mixer_setup():
+    return FileResponse(os.path.join(BASE_DIR, "mixer_setup.html"))
+
+@app.get("/mixer_setup.html")
+def serve_mixer_setup_file():
     return FileResponse(os.path.join(BASE_DIR, "mixer_setup.html"))
 
 @app.get("/config.js")

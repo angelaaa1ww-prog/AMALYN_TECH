@@ -4,8 +4,8 @@
 <script src="config.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="/static/icon-192.png">
+<link rel="manifest" href="/static/manifest.json">
 <meta name="theme-color" content="#03030a">
 <title>AMALYN TECH — AI Audio Intelligence</title>
 <script>
@@ -547,7 +547,7 @@ body{
     <div class="auth-card">
         <div class="brand-center">
             <div class="brand-mark">
-                <img src="logo.png" style="width: 100%; height: 100%; object-fit: contain;">
+                <img src="/static/logo.png" alt="AMALYN TECH logo" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
             <div class="brand-name">AMALYN TECH</div>
             <div class="brand-sub">AI AUDIO INTELLIGENCE</div>
@@ -557,7 +557,7 @@ body{
         <div class="auth-sub">Sign in to access your portal</div>
 
         <!-- Google OAuth -->
-        <button class="oauth-btn-google-primary" onclick="oauthLogin('google')">
+        <button class="oauth-btn-google-primary" onclick="oauthLogin('google', this)">
             <svg viewBox="0 0 24 24"><path fill="#ea4335" d="M5.27 9.76A7.08 7.08 0 0 1 12 4.9c1.76 0 3.35.63 4.59 1.67L19.9 3.3A11.8 11.8 0 0 0 12 .5 11.9 11.9 0 0 0 .9 7.6l4.37 2.16Z"/><path fill="#34a853" d="M16.04 18.01A7 7 0 0 1 12 19.1a7.08 7.08 0 0 1-6.72-4.86L.9 16.4A11.9 11.9 0 0 0 12 23.5c2.9 0 5.67-1.04 7.76-2.93l-3.72-2.56Z"/><path fill="#4a90e2" d="M19.76 20.57A11.85 11.85 0 0 0 23.5 12c0-.7-.07-1.43-.2-2.12H12v4.5h6.48a5.57 5.57 0 0 1-2.44 3.62l3.72 2.57Z"/><path fill="#fbbc05" d="M5.28 14.24a7.13 7.13 0 0 1 0-4.48L.91 7.6A11.9 11.9 0 0 0 .5 12c0 1.55.28 3.04.79 4.4l4.0-2.16Z"/></svg>
             Continue with Google
         </button>
@@ -597,7 +597,7 @@ body{
     <div class="auth-card">
         <div class="brand-center">
             <div class="brand-mark">
-                <img src="logo.png" style="width: 100%; height: 100%; object-fit: contain;">
+                <img src="/static/logo.png" alt="AMALYN TECH logo" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
             <div class="brand-name">AMALYN TECH</div>
             <div class="brand-sub">CREATE ACCOUNT</div>
@@ -607,7 +607,7 @@ body{
         <div class="auth-sub">Create your free account</div>
 
         <!-- Google OAuth -->
-        <button class="oauth-btn-google-primary" onclick="oauthLogin('google')">
+        <button class="oauth-btn-google-primary" onclick="oauthLogin('google', this)">
             <svg viewBox="0 0 24 24"><path fill="#ea4335" d="M5.27 9.76A7.08 7.08 0 0 1 12 4.9c1.76 0 3.35.63 4.59 1.67L19.9 3.3A11.8 11.8 0 0 0 12 .5 11.9 11.9 0 0 0 .9 7.6l4.37 2.16Z"/><path fill="#34a853" d="M16.04 18.01A7 7 0 0 1 12 19.1a7.08 7.08 0 0 1-6.72-4.86L.9 16.4A11.9 11.9 0 0 0 12 23.5c2.9 0 5.67-1.04 7.76-2.93l-3.72-2.56Z"/><path fill="#4a90e2" d="M19.76 20.57A11.85 11.85 0 0 0 23.5 12c0-.7-.07-1.43-.2-2.12H12v4.5h6.48a5.57 5.57 0 0 1-2.44 3.62l3.72 2.57Z"/><path fill="#fbbc05" d="M5.28 14.24a7.13 7.13 0 0 1 0-4.48L.91 7.6A11.9 11.9 0 0 0 .5 12c0 1.55.28 3.04.79 4.4l4.0-2.16Z"/></svg>
             Sign up with Google
         </button>
@@ -689,7 +689,7 @@ body{
     <div class="topbar">
         <div class="topbar-brand">
             <div class="topbar-mark">
-                <img src="logo.png" style="width: 100%; height: 100%; object-fit: contain;">
+                <img src="/static/logo.png" alt="AMALYN TECH logo" style="width: 100%; height: 100%; object-fit: contain;">
             </div>
             <span class="topbar-name">AMALYN TECH</span>
         </div>
@@ -1170,7 +1170,10 @@ async function initializeSupabase(){
             console.warn('Supabase JS library not loaded from CDN')
             return null
         }
-        const res = await fetch(`${API}/config`)
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
+        const res = await fetch(`${API}/config`, { signal: controller.signal })
+        clearTimeout(timeoutId)
         if(!res.ok) throw new Error(`HTTP ${res.status}`)
         const config = await res.json()
         if(!config.supabase_url || !config.supabase_anon_key){
@@ -1273,11 +1276,15 @@ async function doLogin(){
     err.classList.remove('show')
 
     try{
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 15000)
         const res = await fetch(`${API}/auth/login`,{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({email,password})
+            body:JSON.stringify({email,password}),
+            signal: controller.signal
         })
+        clearTimeout(timeoutId)
         const data = await res.json()
         if(data.status==='ok'){
             currentUser = data.user
@@ -1290,7 +1297,9 @@ async function doLogin(){
             err.classList.add('show')
         }
     }catch(e){
-        err.textContent = 'Cannot connect to AMALYN API. Make sure api.py is running.'
+        err.textContent = e.name === 'AbortError'
+            ? 'Sign-in timed out. Check the server and MongoDB connection.'
+            : 'Cannot connect to AMALYN API. Make sure api.py is running.'
         err.classList.add('show')
     }finally{
         btn.disabled=false; btn.textContent='Sign In →'
@@ -1319,13 +1328,22 @@ async function doRegister(){
         err.classList.add('show'); return
     }
     err.classList.remove('show')
+    const btn = document.querySelector('#screen-register .btn-primary')
+    if(btn){
+        btn.disabled = true
+        btn.textContent = 'Creating account...'
+    }
 
     try{
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 15000)
         const res = await fetch(`${API}/auth/register`,{
             method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({name,email,password,confirm_password:confirmPassword,role})
+            body:JSON.stringify({name,email,password,confirm_password:confirmPassword,role}),
+            signal: controller.signal
         })
+        clearTimeout(timeoutId)
         const data = await res.json()
         if(data.status==='ok'){
             currentUser = data.user
@@ -1339,8 +1357,15 @@ async function doRegister(){
         }
 
     }catch(e){
-        err.textContent='Cannot connect to AMALYN API'
+        err.textContent = e.name === 'AbortError'
+            ? 'AMALYN account request timed out. Check the server and MongoDB connection.'
+            : 'Cannot connect to AMALYN API'
         err.classList.add('show')
+    }finally{
+        if(btn){
+            btn.disabled=false
+            btn.textContent='Create Account →'
+        }
     }
 }
 
@@ -1464,12 +1489,22 @@ function doLogout(){
 }
 
 function openPortal(portal){
-    window.open(portal,'_blank')
+    const routes = {
+        'dashboard.html': '/dashboard',
+        'musician.html': '/musician',
+        'producer.html': '/producer',
+        'mixer_setup.html': '/mixer-setup'
+    }
+    window.open(routes[portal] || portal, '_blank', 'noopener')
 }
 
-async function oauthLogin(provider){
+async function oauthLogin(provider, button){
     const errorElement = document.getElementById('login-error')
     const regErrorElement = document.getElementById('register-error')
+    if(button){
+        button.disabled = true
+        button.textContent = 'Connecting...'
+    }
     if(errorElement) errorElement.classList.remove('show')
     if(regErrorElement) regErrorElement.classList.remove('show')
 
@@ -1486,21 +1521,39 @@ async function oauthLogin(provider){
         }
         if(errorElement) { errorElement.textContent = msg; errorElement.classList.add('show') }
         if(regErrorElement) { regErrorElement.textContent = msg; regErrorElement.classList.add('show') }
+        if(button){
+            button.disabled = false
+            button.textContent = provider === 'google' ? 'Continue with Google' : `Continue with ${provider}`
+        }
         return
     }
 
     // Supabase Auth uses 'azure' for Microsoft accounts
     const targetProvider = provider === 'microsoft' ? 'azure' : provider
-    const redirectUrl = `${location.origin}/login.html`
+    const redirectUrl = `${location.origin}/`
     
-    const {error} = await supabaseClient.auth.signInWithOAuth({
-        provider: targetProvider,
-        options: { redirectTo: redirectUrl }
-    })
-    if(error){
+    try{
+        const {error} = await supabaseClient.auth.signInWithOAuth({
+            provider: targetProvider,
+            options: { redirectTo: redirectUrl }
+        })
+        if(error){
+            const msg = error.message || `Unable to sign in with ${provider}.`
+            if(errorElement) { errorElement.textContent = msg; errorElement.classList.add('show') }
+            if(regErrorElement) { regErrorElement.textContent = msg; regErrorElement.classList.add('show') }
+            if(button){
+                button.disabled = false
+                button.textContent = provider === 'google' ? 'Continue with Google' : `Continue with ${provider}`
+            }
+        }
+    }catch(error){
         const msg = error.message || `Unable to sign in with ${provider}.`
         if(errorElement) { errorElement.textContent = msg; errorElement.classList.add('show') }
         if(regErrorElement) { regErrorElement.textContent = msg; regErrorElement.classList.add('show') }
+        if(button){
+            button.disabled = false
+            button.textContent = provider === 'google' ? 'Continue with Google' : `Continue with ${provider}`
+        }
     }
 }
 
