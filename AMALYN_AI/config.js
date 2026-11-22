@@ -252,7 +252,6 @@ const AMALYN_CONFIG = (() => {
         isLocal,
         LOCAL_IP,
         LOCAL_PORT,
-        RENDER_API,
         getStoredTheme,
         setTheme,
         toggleTheme,

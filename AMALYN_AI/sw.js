@@ -1,4 +1,4 @@
-const CACHE_NAME = 'amalyn-pwa-v4';
+const CACHE_NAME = 'amalyn-pwa-v5';
 const urlsToCache = [
   '/',
   '/login.html',

@@ -102,7 +102,7 @@
             "brand": "Analog Mixer",
             "model": "Any analog desk",
             "protocol": "AUDIO_INTERFACE",
-            "description": "Connect via audio interface — AMALYN listens and advises",
+            "description": "Connect via audio interface - AMALYN listens and advises",
             "image": "analog"
         },
         "mackie_vlz": {

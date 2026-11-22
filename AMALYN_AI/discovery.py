@@ -9,6 +9,16 @@ import ipaddress
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from mixer import MIXER_PROFILES
 
+
+def clean_device_text(value):
+    text = str(value or "").strip()
+    try:
+        repaired = text.encode("latin1").decode("utf-8")
+        text = repaired
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        pass
+    return text.replace("\ufffd", "").replace("Ã", "A").replace("Â", "")
+
 PROFILES_PATH = os.path.join(os.path.dirname(__file__), 'mixer_profiles.json')
 
 with open(PROFILES_PATH, 'r') as f:
@@ -174,7 +184,7 @@ def get_audio_interfaces():
             if info['maxInputChannels'] > 0:
                 devices.append({
                     "index": i,
-                    "name": info['name'],
+                    "name": clean_device_text(info['name']),
                     "channels": info['maxInputChannels'],
                     "sample_rate": int(info['defaultSampleRate'])
                 })

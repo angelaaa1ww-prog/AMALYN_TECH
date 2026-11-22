@@ -67,6 +67,9 @@ app.add_middleware(
 )
 
 # Static files
+app.add_middleware("http", middleware="add_process_time_header")
+
+# Static files
 app.mount("/static", StaticFiles(directory=BASE_DIR), name="static")
 
 @app.on_event("startup")
@@ -114,6 +117,14 @@ def serve_producer():
 def serve_producer_file():
     return FileResponse(os.path.join(BASE_DIR, "producer.html"))
 
+@app.get("/analog")
+def serve_analog():
+    return FileResponse(os.path.join(BASE_DIR, "analog.html"))
+
+@app.get("/analog.html")
+def serve_analog_file():
+    return FileResponse(os.path.join(BASE_DIR, "analog.html"))
+
 @app.get("/mixer-setup")
 def serve_mixer_setup():
     return FileResponse(os.path.join(BASE_DIR, "mixer_setup.html"))
@@ -124,7 +135,11 @@ def serve_mixer_setup_file():
 
 @app.get("/config.js")
 def serve_config():
-    return FileResponse(os.path.join(BASE_DIR, "config.js"))
+    return FileResponse(
+        os.path.join(BASE_DIR, "config.js"),
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate"},
+    )
 
 @app.get("/config")
 def public_config():
@@ -654,25 +669,15 @@ def connect_mixer(req: ConnectRequest):
             )
 
             if req.interface_index is not None:
-                if p is not None and stream is not None:
-                    try:
-                        stream.stop_stream()
-                        stream.close()
-                    except Exception:
-                        pass
-                if p is not None:
-                    try:
-                        stream = p.open(
-                            format=FORMAT,
-                            channels=CHANNELS,
-                            rate=RATE,
-                            input=True,
-                            frames_per_buffer=CHUNK,
-                            input_device_index=req.interface_index,
-                        )
-                    except (OSError, ValueError) as error:
-                        stream = None
-                        return {"status":"error","message":f"Could not open selected USB interface: {error}"}
+                valid_indexes = {
+                    interface["index"]
+                    for interface in get_audio_interfaces()
+                }
+                if req.interface_index not in valid_indexes:
+                    return {
+                        "status":"error",
+                        "message":"Selected USB interface is no longer available.",
+                    }
             return {
                 "status":"connected",
                 "mixer":req.mixer_key,

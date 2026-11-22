@@ -18,6 +18,16 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
+
+def clean_device_text(value):
+    text = str(value or "").strip()
+    try:
+        repaired = text.encode("latin1").decode("utf-8")
+        text = repaired
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        pass
+    return text.replace("\ufffd", "").replace("Ã", "A").replace("Â", "")
+
 BASE_DIR = os.path.dirname(__file__)
 PROFILES_PATH = os.path.join(BASE_DIR, "analog_profiles.json")
 CUSTOM_MIXERS_PATH = os.path.join(BASE_DIR, "custom_mixers.json")
@@ -130,7 +140,7 @@ class AnalogMixerManager:
                     if info.get("maxInputChannels", 0) > 0:
                         devices.append({
                             "index": i,
-                            "name": info.get("name", f"Audio Device {i}"),
+                            "name": clean_device_text(info.get("name", f"Audio Device {i}")),
                             "channels": info.get("maxInputChannels", 1),
                             "sample_rate": int(info.get("defaultSampleRate", 44100)),
                             "is_usb": self._is_likely_usb(info.get("name", ""))

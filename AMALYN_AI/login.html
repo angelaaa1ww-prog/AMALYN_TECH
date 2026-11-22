@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="config.js"></script>
+<script src="/config.js?v=6"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="/static/icon-192.png">
@@ -1146,10 +1146,10 @@ const API = typeof AMALYN_CONFIG !== 'undefined'
 const WS = typeof AMALYN_CONFIG !== 'undefined'
     ? AMALYN_CONFIG.wsUrl
     : `${location.protocol==='https:'?'wss:':'ws:'}//${location.hostname||'localhost'}:8000/ws`
-let currentUser = null
-let supabaseClient = null
-let pendingVerificationEmail = ''
-let pendingVerificationKind = 'email'
+var currentUser = null
+var supabaseClient = null
+var pendingVerificationEmail = ''
+var pendingVerificationKind = 'email'
 
 // Check saved session
 const saved = sessionStorage.getItem('amalyn_user')
