@@ -1242,27 +1242,16 @@ async function applyOAuthUser(user){
     const metadata = user.user_metadata || {}
     const displayName = metadata.full_name || metadata.name || user.email.split('@')[0]
     const role = metadata.role || null
-    try{
-       const res = await fetch(`${API}/auth/oauth/verify/start`,{
-           method:'POST',
-           headers:{'Content-Type':'application/json'},
-           body:JSON.stringify({name:displayName,email:user.email,role})
-       })
-       const data = await res.json()
-       if(data.status === 'ok'){
-           currentUser = data.user
-           sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
-           showHome(currentUser)
-       } else {
-           const err = document.getElementById('login-error')
-           err.textContent = data.message || 'Could not complete Google sign-in'
-           err.classList.add('show')
-       }
-    }catch(error){
-       const err = document.getElementById('login-error')
-       err.textContent = 'Cannot connect to AMALYN API to verify your Google account'
-       err.classList.add('show')
+    currentUser = {
+        id: user.id,
+        name: displayName,
+        email: user.email,
+        role: role || 'musician',
+        avatar: displayName.slice(0, 1).toUpperCase(),
+        email_verified: true
     }
+    sessionStorage.setItem('amalyn_user', JSON.stringify(currentUser))
+    showHome(currentUser)
 }
 
 function showScreen(name){
