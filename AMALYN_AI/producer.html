@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="/config.js?v=8"></script>
+<script src="/config.js?v=9"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#020610">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="/static/icon-192.png">
+<link rel="manifest" href="/static/manifest.json">
 <title>AMALYN — Producer Portal</title>
 <script>
 if ('serviceWorker' in navigator) {
@@ -153,15 +153,15 @@ if ('serviceWorker' in navigator) {
 
 <div class="header">
     <div style="display:flex;align-items:center;gap:14px;min-width:0">
-        <a href="dashboard.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
-            <img src="logo.png" style="height:36px;width:36px;object-fit:contain;" alt="logo">
+        <a href="/dashboard" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+            <img src="/static/logo.png" style="height:36px;width:36px;object-fit:contain;" alt="logo">
             <span class="logo">AMALYN <span>PRODUCER</span></span>
         </a>
         <div style="display:flex;align-items:center;gap:4px;background:rgba(125,175,225,.1);padding:3px 6px;border-radius:10px;border:1px solid var(--line)">
-            <a href="dashboard.html" style="padding:5px 10px;border-radius:7px;color:var(--dim);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Engineer</a>
-            <a href="analog.html" style="padding:5px 10px;border-radius:7px;color:var(--dim);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Analog Rack</a>
-            <a href="producer.html" style="padding:5px 10px;border-radius:7px;color:var(--cyan);background:var(--panel2);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Producer</a>
-            <a href="musician.html" style="padding:5px 10px;border-radius:7px;color:var(--dim);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Musician</a>
+            <a href="/dashboard" style="padding:5px 10px;border-radius:7px;color:var(--dim);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Engineer</a>
+            <a href="/analog" style="padding:5px 10px;border-radius:7px;color:var(--dim);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Analog Rack</a>
+            <a href="/producer" style="padding:5px 10px;border-radius:7px;color:var(--cyan);background:var(--panel2);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Producer</a>
+            <a href="/musician" style="padding:5px 10px;border-radius:7px;color:var(--dim);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none">Musician</a>
         </div>
         <div class="tab-bar">
             <div class="tab active" onclick="switchTab('analysis')">Analysis</div>

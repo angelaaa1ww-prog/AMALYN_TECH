@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en" data-theme="dark">
 <head>
-  <script src="/config.js?v=8"></script>
+  <script src="/config.js?v=9"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#050d18">
-  <link rel="icon" type="image/png" href="icon-192.png">
-  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="/static/icon-192.png">
+  <link rel="manifest" href="/static/manifest.json">
   <title>AMALYN TECH | Audio Intelligence Console</title>
   <script>
   if ('serviceWorker' in navigator) {
@@ -364,10 +364,10 @@
     }
     .modal-layer[aria-hidden="true"]{visibility:hidden;opacity:0;pointer-events:none}
     .modal{
-      position:relative;width:min(620px,100%);padding:clamp(24px,4vw,38px);border:1px solid var(--glass-edge);border-radius:24px;
+      position:relative;width:min(620px,100%);max-height:calc(100vh - 36px);overflow-y:auto;padding:clamp(24px,4vw,38px);border:1px solid var(--glass-edge);border-radius:24px;
       background:var(--panel2);
       box-shadow:0 40px 110px -20px #000c,0 0 80px -10px rgba(63,152,255,.2),0 1px 0 var(--glass-hi) inset;
-      animation:reveal .5s var(--ease-spring) both;overflow:hidden
+      animation:reveal .5s var(--ease-spring) both
     }
     .modal:before{content:"";position:absolute;top:-40%;left:50%;translate:-50% 0;width:140%;height:60%;background:radial-gradient(ellipse,rgba(123,232,255,.1),transparent 70%);pointer-events:none}
     .modal-layer[aria-hidden="true"] .modal{animation:none}
@@ -463,15 +463,15 @@
 
   <header class="app-header">
     <div class="brand-wrap">
-      <a class="brand" href="dashboard.html" aria-label="AMALYN TECH Audio Intelligence">
-        <span class="mark" aria-hidden="true"><img src="logo.png" alt="AMALYN logo"></span>
+      <a class="brand" href="/dashboard" aria-label="AMALYN TECH Audio Intelligence">
+      <span class="mark" aria-hidden="true"><img src="/static/logo.png" alt="AMALYN logo"></span>
         <div><p class="brand-name">AMALYN TECH</p><span class="brand-sub">Audio Intelligence Console</span></div>
       </a>
       <nav class="portal-nav" aria-label="Portal selection">
-        <a class="nav-link active" href="dashboard.html">Engineer</a>
-        <a class="nav-link" href="analog.html">Analog Rack</a>
-        <a class="nav-link" href="producer.html">Producer Suite</a>
-        <a class="nav-link" href="musician.html">Musician IEM</a>
+        <a class="nav-link active" href="/dashboard">Engineer</a>
+        <a class="nav-link" href="/analog">Analog Rack</a>
+        <a class="nav-link" href="/producer">Producer Suite</a>
+        <a class="nav-link" href="/musician">Musician IEM</a>
       </nav>
     </div>
     <div class="header-actions">
@@ -540,7 +540,7 @@
       <section class="panel" aria-labelledby="analog-heading">
         <div class="section-label" id="analog-heading" style="display:flex;justify-content:space-between;align-items:center;">
           <span>Analog Rack Advisor</span>
-          <a href="analog.html" style="color:var(--cyan);text-decoration:none;font-size:9px;font-weight:800;letter-spacing:.08em;">OPEN RACK &rarr;</a>
+          <a href="/analog" style="color:var(--cyan);text-decoration:none;font-size:9px;font-weight:800;letter-spacing:.08em;">OPEN RACK &rarr;</a>
         </div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;" id="dash-analog-summary">Listening to room signal…</div>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -631,7 +631,7 @@
   <!-- Modal Session Setup -->
   <div class="modal-layer" id="modal" role="dialog" aria-modal="true" aria-labelledby="setup-title" aria-describedby="setup-description">
     <div class="modal">
-      <div class="modal-brand"><span class="mark" aria-hidden="true"><img src="logo.png" alt="logo"></span>AMALYN TECH</div>
+      <div class="modal-brand"><span class="mark" aria-hidden="true"><img src="/static/logo.png" alt="logo"></span>AMALYN TECH</div>
       <div class="modal-kicker">Session calibration</div>
       <h1 id="setup-title">Build your Perfect State</h1>
       <p class="modal-intro" id="setup-description">Tell AMALYN about your room and signal chain to load a safer, more relevant monitoring profile.</p>
@@ -647,7 +647,7 @@
   <div class="modal-layer calibration-modal" id="calibration-modal" role="dialog" aria-modal="true" aria-labelledby="calibration-title" aria-hidden="true">
     <div class="modal">
       <button class="calibration-close" id="calibration-close" type="button" aria-label="Close calibration tools">×</button>
-      <div class="modal-brand"><span class="mark" aria-hidden="true"><img src="logo.png" alt=""></span>AMALYN TECH</div>
+      <div class="modal-brand"><span class="mark" aria-hidden="true"><img src="/static/logo.png" alt=""></span>AMALYN TECH</div>
       <div class="modal-kicker">Engineer-controlled measurement</div>
       <h1 id="calibration-title">Calibration tools</h1>
       <p class="modal-intro">Use measured distances and a real SPL reference. Start RTA capture only after pink noise is safely routed through the PA.</p>

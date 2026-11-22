@@ -155,6 +155,29 @@ def serve_config():
         headers={"Cache-Control": "no-store, no-cache, must-revalidate"},
     )
 
+@app.get("/sw.js")
+def serve_service_worker():
+    return FileResponse(
+        os.path.join(BASE_DIR, "sw.js"),
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
+
+@app.get("/manifest.json")
+def serve_manifest():
+    return FileResponse(
+        os.path.join(BASE_DIR, "manifest.json"),
+        media_type="application/json",
+        headers={"Cache-Control": "no-cache"},
+    )
+
+@app.get("/favicon.ico")
+def serve_favicon():
+    return FileResponse(
+        os.path.join(BASE_DIR, "icon-192.png"),
+        media_type="image/png",
+    )
+
 @app.get("/config")
 def public_config():
     return {

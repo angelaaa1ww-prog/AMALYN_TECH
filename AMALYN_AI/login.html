@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="/config.js?v=6"></script>
+<script src="/config.js?v=9"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="/static/icon-192.png">
 <link rel="manifest" href="/static/manifest.json">
 <meta name="theme-color" content="#03030a">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>AMALYN TECH — AI Audio Intelligence</title>
 <script>
 if ('serviceWorker' in navigator) {
@@ -1170,21 +1173,51 @@ async function initializeSupabase(){
             console.warn('Supabase JS library not loaded from CDN')
             return null
         }
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000)
-        const res = await fetch(`${API}/config`, { signal: controller.signal })
-        clearTimeout(timeoutId)
-        if(!res.ok) throw new Error(`HTTP ${res.status}`)
-        const config = await res.json()
+        let config = null
+        let lastStatus = 0
+        for(let attempt = 0; attempt < 5 && !config; attempt++){
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 10000)
+            try{
+                const res = await fetch(`${API}/config`, {
+                    signal: controller.signal,
+                    cache: 'no-store'
+                })
+                lastStatus = res.status
+                if(res.ok){
+                    config = await res.json()
+                    break
+                }
+            }catch(error){
+                if(error.name !== 'AbortError'){
+                    console.warn('Supabase config retry:', error)
+                }
+            }finally{
+                clearTimeout(timeoutId)
+            }
+            if(attempt < 4){
+                await new Promise(resolve => setTimeout(resolve, 1500))
+            }
+        }
         if(!config.supabase_url || !config.supabase_anon_key){
-            console.info('Supabase credentials not configured in /config endpoint yet')
+            if(lastStatus === 503){
+                console.info('AMALYN is waking up; retrying Google configuration')
+            }else{
+                console.info('Supabase credentials not configured in /config endpoint')
+            }
             return null
         }
         supabaseClient = window.supabase.createClient(config.supabase_url, config.supabase_anon_key)
+        const callbackUrl = new URL(location.href)
+        const oauthCallback = callbackUrl.searchParams.has('code')
+            || callbackUrl.hash.includes('access_token')
+            || callbackUrl.hash.includes('error')
         const {data:{session}} = await supabaseClient.auth.getSession()
-        if(session && session.user) applyOAuthUser(session.user)
-        supabaseClient.auth.onAuthStateChange((_event, sessionState)=>{
-            if(sessionState && sessionState.user) applyOAuthUser(sessionState.user)
+        if(oauthCallback && session && session.user) applyOAuthUser(session.user)
+        supabaseClient.auth.onAuthStateChange((event, sessionState)=>{
+            if(event === 'SIGNED_IN' && sessionState && sessionState.user){
+                applyOAuthUser(sessionState.user)
+            }
         })
         return supabaseClient
     }catch(error){
@@ -1194,9 +1227,6 @@ async function initializeSupabase(){
 }
 
 async function applyOAuthUser(user){
-    if(pendingVerificationKind === 'oauth' && pendingVerificationEmail === user.email){
-        return
-    }
     const emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at)
     if(!emailVerified){
         const err = document.getElementById('login-error')
@@ -1223,12 +1253,9 @@ async function applyOAuthUser(user){
            currentUser = data.user
            sessionStorage.setItem('amalyn_user',JSON.stringify(currentUser))
            showHome(currentUser)
-       } else if(data.status === 'verification_required'){
-           pendingVerificationKind = 'oauth'
-           beginVerification(user.email, `Enter the code sent to your Google email address.`, 'oauth')
        } else {
            const err = document.getElementById('login-error')
-           err.textContent = data.message || 'Could not send the Google verification code'
+           err.textContent = data.message || 'Could not complete Google sign-in'
            err.classList.add('show')
        }
     }catch(error){
@@ -1313,6 +1340,7 @@ async function doRegister(){
     const confirmPassword = document.getElementById('reg-confirm-password').value
     const role = document.getElementById('reg-role').value
     const err = document.getElementById('register-error')
+    const btn = document.querySelector('#screen-register .btn-primary')
 
     if(!name||!email||!password){
         err.textContent='Please fill in all fields'
@@ -1328,7 +1356,6 @@ async function doRegister(){
         err.classList.add('show'); return
     }
     err.classList.remove('show')
-    const btn = document.querySelector('#screen-register .btn-primary')
     if(btn){
         btn.disabled = true
         btn.textContent = 'Creating account...'
@@ -1460,6 +1487,8 @@ async function resendVerificationCode(){
         return
     }
     err.classList.remove('show')
+    if(btn){ btn.disabled = true; btn.textContent = 'Creating account...' }
+
     try{
         const resendPath = pendingVerificationKind === 'oauth'
             ? '/auth/oauth/verify/resend' : '/auth/verify/resend'
@@ -1478,6 +1507,8 @@ async function resendVerificationCode(){
     }catch(e){
         err.textContent = 'Cannot connect to AMALYN API'
         err.classList.add('show')
+    }finally{
+        if(btn){ btn.disabled = false; btn.textContent = 'Create Account →' }
     }
 }
 
@@ -1516,6 +1547,8 @@ async function oauthLogin(provider, button){
         let msg = 'OAuth is not ready yet.'
         if(location.protocol === 'file:'){
             msg = 'Please open AMALYN in your browser via http://localhost:8000 (run "py -3.11 api.py") or your live Render URL, rather than opening the HTML file directly.'
+        } else if(location.hostname.endsWith('onrender.com')){
+            msg = 'AMALYN is waking up or Supabase credentials are temporarily unavailable. Wait a few seconds and try Google again. If it continues, verify SUPABASE_URL and SUPABASE_ANON_KEY in Render Environment settings.'
         } else {
             msg = 'Supabase credentials are not detected. Make sure SUPABASE_URL and SUPABASE_ANON_KEY are added to your Render Environment settings.'
         }
@@ -1530,7 +1563,7 @@ async function oauthLogin(provider, button){
 
     // Supabase Auth uses 'azure' for Microsoft accounts
     const targetProvider = provider === 'microsoft' ? 'azure' : provider
-    const redirectUrl = `${location.origin}/`
+    const redirectUrl = `${location.origin}/login.html`
     
     try{
         const {error} = await supabaseClient.auth.signInWithOAuth({
@@ -1567,6 +1600,12 @@ document.getElementById('verification-code').addEventListener('keydown',e=>{
 document.getElementById('reg-password').addEventListener('input', updatePasswordFeedback)
 document.getElementById('reg-confirm-password').addEventListener('input', updatePasswordFeedback)
 initializeSupabase()
+window.addEventListener('DOMContentLoaded', ()=>{
+    const loginError = document.getElementById('login-error')
+    const registerError = document.getElementById('register-error')
+    if(loginError) loginError.classList.remove('show')
+    if(registerError) registerError.classList.remove('show')
+})
 </script>
 </body>
 </html>

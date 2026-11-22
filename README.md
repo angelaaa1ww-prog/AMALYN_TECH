@@ -102,7 +102,7 @@ After deployment, add the Render URL to Supabase Authentication → URL
 Configuration → Redirect URLs, using:
 
 ```
-https://YOUR-SERVICE.onrender.com/login.html
+https://amalyn-tech.onrender.com/login.html
 ```
 
 For local Google sign-in, also add both of these URLs to Supabase:

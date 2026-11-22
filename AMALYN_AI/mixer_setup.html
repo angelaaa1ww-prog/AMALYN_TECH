@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AMALYN — Mixer Setup</title>
-<script src="/config.js?v=8"></script>
+<script src="/config.js?v=9"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#03030a;color:#fff;font-family:'Segoe UI',sans-serif;min-height:100vh}
@@ -224,7 +224,7 @@ body:after{width:42vw;height:42vw;right:-12vw;bottom:-20vh;background:#3b74e0;an
 
 <div class="header">
   <span class="logo">AMALYN — MIXER SETUP</span>
-  <button class="back" onclick="window.close()">← Back</button>
+  <button class="back" onclick="goBack()">← Back</button>
 </div>
 
 <div class="wrap">
@@ -566,6 +566,14 @@ async function doConnect(){
 
 function goDashboard(){
   window.location.href = '/dashboard'
+}
+
+function goBack(){
+  if(window.history.length > 1){
+    window.history.back()
+  }else{
+    window.location.href = '/'
+  }
 }
 
 // Load analog options on start
